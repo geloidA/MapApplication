@@ -22,10 +22,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         var map = this.FindControl<MapControl>("MapControl");
         
-        map.Map?.Layers.Add(new TileLayer(KnownTileSources.Create(KnownTileSource.BingAerial)));
-        var layer = new TileLayer(CreateTileSourse());
-        layer.Opacity = 0.5;
-        map.Map?.Layers.Add(layer);
+        map.Map?.Layers.Add(new TileLayer(KnownTileSources.Create(KnownTileSource.OpenStreetMap)));
         map.Map?.Layers.Add(CreateAnimatedPointLayer());
     }
 
