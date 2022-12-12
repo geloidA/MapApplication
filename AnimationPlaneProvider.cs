@@ -7,17 +7,18 @@ using Mapsui;
 using System.Threading.Tasks;
 using Mapsui.Fetcher;
 using Mapsui.Layers;
+using Mapsui.Projections;
 using Mapsui.Providers;
 using Mapsui.Utilities;
 
 namespace map_app
 {
-    public class AnimationPlaneProvider : MemoryProvider, IDynamic
+    public class AnimationAircraftsProvider : MemoryProvider, IDynamic
     {
         private IEnumerable<PointFeature> _previousFeatures = new List<PointFeature>();
         private AircraftDataSource _aircraftData;
-
-        public AnimationPlaneProvider()
+        private const double Delta = 1e-5;
+        public AnimationAircraftsProvider()
         {
             _aircraftData = new AircraftDataSource();
             _aircraftData.DataChanged += (s, e) => DataHasChanged();
@@ -33,10 +34,16 @@ namespace map_app
             {
                 var idAsString = aircraft.ID.ToString(CultureInfo.InvariantCulture);
 
-                features.Add(new PointFeature(new MPoint(aircraft.Point))
+                var aircraftPoint = Mercator.FromLonLat(lon: aircraft.Longtitude, lat: aircraft.Latitude);
+
+                var previousPoint = FindPreviousPosition(idAsString);
+
+                features.Add(new PointFeature(aircraftPoint)
                 {
-                    ["ID"] = aircraft.ID,
-                    ["rotation"] = AngleOf(aircraft.Point, FindPreviousPosition(idAsString)) + 180
+                    ["ID"] = idAsString,
+                    ["rotation"] = IsPositionChange(aircraftPoint, previousPoint) 
+                            ? AngleOf(aircraftPoint, previousPoint) - 90
+                            : FindPreviousRotation(idAsString)
                 });
             }
 
@@ -44,9 +51,21 @@ namespace map_app
             return Task.FromResult((IEnumerable<IFeature>)features);
         }
 
-        private MPoint? FindPreviousPosition(string countAsString)
+        private bool IsPositionChange(MPoint point1, MPoint? point2)
         {
-            return _previousFeatures.FirstOrDefault(f => f["ID"]?.ToString() == countAsString)?.Point;
+            if (point2 == null) return true;
+            return Math.Abs(point1.X - point2.X) > Delta
+                || Math.Abs(point1.Y - point2.Y) > Delta;
+        }
+
+        private double FindPreviousRotation(string idAsString)
+        {
+            return (double)_previousFeatures.FirstOrDefault(f => f["ID"]?.ToString() == idAsString)?["rotation"]!;
+        }
+
+        private MPoint? FindPreviousPosition(string idAsString)
+        {
+            return _previousFeatures.FirstOrDefault(f => f["ID"]?.ToString() == idAsString)?.Point;
         }
 
         public static double AngleOf(MPoint point1, MPoint? point2)

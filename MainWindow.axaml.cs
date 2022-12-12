@@ -23,14 +23,14 @@ public partial class MainWindow : Window
         var map = this.FindControl<MapControl>("MapControl");
         
         map.Map?.Layers.Add(new TileLayer(KnownTileSources.Create(KnownTileSource.OpenStreetMap)));
-        map.Map?.Layers.Add(CreateAnimatedPointLayer());
+        map.Map?.Layers.Add(CreateAnimatedAircraftsLayer());
     }
 
-    private ILayer CreateAnimatedPointLayer()
+    private ILayer CreateAnimatedAircraftsLayer()
     {
-        return new AnimatedPointLayer(new AnimationPlaneProvider())
+        return new AnimatedPointLayer(new AnimationAircraftsProvider())
         {
-            Name = "Plane",
+            Name = "Aircrafts",
             Style = CreatePointStyle()
         };
     }
@@ -39,13 +39,13 @@ public partial class MainWindow : Window
     {
         return new ThemeStyle(f => 
         {
-            return CreateSvgArrowStyle("Resources.Assets.plane.svg", 0.2, f);
+            return CreateSvgArrowStyle("Resources.Assets.aircraft.png", 0.1, f);
         });
     }
 
     private IStyle CreateSvgArrowStyle(string embeddedResourcePath, double scale, IFeature feature)
     {
-        var bitmapId = LoadSvgId(typeof(MainWindow), embeddedResourcePath);
+        var bitmapId = typeof(MainWindow).LoadBitmapId(embeddedResourcePath);
         return new SymbolStyle
         {
             BitmapId = bitmapId,
@@ -55,25 +55,7 @@ public partial class MainWindow : Window
         };
     }
 
-    private int LoadSvgId(Type typeInAssemblyOfEmbeddedResource, string relativePathToEmbeddedResource)
-    {
-        var assembly = typeInAssemblyOfEmbeddedResource.GetTypeInfo().Assembly;
-        var fullName = assembly.GetFullName(relativePathToEmbeddedResource);
-            if (!BitmapRegistry.Instance.TryGetBitmapId(fullName, out var bitmapId))
-            {
-                var resourses = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-                var result = assembly.GetManifestResourceStream(fullName).LoadSvgPicture();
-                if (result != null)
-                {
-                    bitmapId = BitmapRegistry.Instance.Register(result, fullName);
-                    return bitmapId;    
-                }
-            }
-
-        return bitmapId;
-    }
-
-    private HttpTileSource CreateTileSourse()
+    private HttpTileSource CreateOwnTileSourse()
     {
         return new HttpTileSource(new GlobalSphericalMercator(), "http://10.5.23.21/tile/{z}/{x}/{y}.png");
     }

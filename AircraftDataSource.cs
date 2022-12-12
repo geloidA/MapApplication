@@ -1,39 +1,30 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Drawing;
 using Mapsui.Fetcher;
-using System.Text;
-using Mapsui;
-using System.Threading.Tasks;
-using System.Net.Sockets;
 using map_app.Network;
-using System.Threading;
 
 namespace map_app
 {
     public class AircraftDataSource
     {
-        private List<Aircraft> _aircrafts = new List<Aircraft>();
-
-        public IReadOnlyList<Aircraft> Aircrafts => _aircrafts;
+        private List<AircraftClient> _aircrafts = new List<AircraftClient>();
+        public IReadOnlyList<AircraftClient> Aircrafts => _aircrafts;
 
         public AircraftDataSource() 
-        { 
-            var server = new AircraftServer(this);
-            server.Run();
+        {
+            var server = new AircraftServer(1234, this);
+            server.RunAsync(() => true, server.ProcessClientAsync);
         }
 
         public event DataChangedEventHandler? DataChanged;
 
-        public void AddAircraft(Aircraft aircraft)
+        public void AddAircraft(AircraftClient aircraft)
         {
             aircraft.DataChanged += (s, e) => DataHasChanged();
             _aircrafts.Add(aircraft);
         }
 
-        public Aircraft GetAircraftById(int id)
+        public AircraftClient GetAircraftById(int id)
         {
             if (id < 0 || id >= _aircrafts.Count)
             {
@@ -49,8 +40,7 @@ namespace map_app
         }
 
         private void ChangePoint()
-        {
-            
+        {            
             DataHasChanged();
         }
 

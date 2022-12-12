@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\Assets\plane.svg" />
+    <EmbeddedResource Include="Resources\Assets\aircraft.png" />
   </ItemGroup>  
 
   <ItemGroup>

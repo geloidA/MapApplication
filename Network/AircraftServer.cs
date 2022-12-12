@@ -6,33 +6,22 @@ using System.Net.Sockets;
 
 namespace map_app.Network
 {
-    public class AircraftServer
+    public class AircraftServer : Server
     {
         private int aircraftCount;
         private AircraftDataSource _aircraftSource;
 
-        public AircraftServer(AircraftDataSource aircraftSource)
+        public AircraftServer(int port, AircraftDataSource aircraftSource) : base(port)
         {
             _aircraftSource = aircraftSource;
         }
 
-        public async void Run()
+        public async Task ProcessClientAsync(TcpClient c)
         {
-            var tcpListener = TcpListener.Create(1234);
-            tcpListener.Start();
-            while (true) // тут какое-то разумное условие выхода
-            {
-                var tcpClient = await tcpListener.AcceptTcpClientAsync();
-                processAircraft(tcpClient); // await не нужен
-                aircraftCount++;
-            }
-        }
-
-        private async Task processAircraft(TcpClient c)
-        {
-            using (var aircraft = new Aircraft(aircraftCount, c))
+            using (var aircraft = new AircraftClient(aircraftCount, c))
             {
                 _aircraftSource.AddAircraft(aircraft);
+                aircraftCount++;
                 await aircraft.ProcessAsync();
             }
         }
