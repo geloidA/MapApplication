@@ -12,16 +12,14 @@ using Mapsui.Utilities;
 
 namespace map_app
 {
-    public class AnimationPlaneProvider : MemoryProvider, IDynamic, IDisposable
+    public class AnimationPlaneProvider : MemoryProvider, IDynamic
     {
         private IEnumerable<PointFeature> _previousFeatures = new List<PointFeature>();
         private AircraftDataSource _aircraftData;
-        private MPoint? _previousPoint;
 
         public AnimationPlaneProvider()
         {
             _aircraftData = new AircraftDataSource();
-            _previousPoint = new MPoint(_aircraftData.AircraftPoint);
             _aircraftData.DataChanged += (s, e) => DataHasChanged();
         }
 
@@ -31,15 +29,24 @@ namespace map_app
         {
             var features = new List<PointFeature>();
 
-            var currentPoint = new MPoint(_aircraftData.AircraftPoint.X, _aircraftData.AircraftPoint.Y);
-            features.Add(new PointFeature(currentPoint)
+            foreach (var aircraft in _aircraftData.Aircrafts)
+            {
+                var idAsString = aircraft.ID.ToString(CultureInfo.InvariantCulture);
+
+                features.Add(new PointFeature(new MPoint(aircraft.Point))
                 {
-                    ["rotation"] = AngleOf(currentPoint, _previousPoint) + 180
+                    ["ID"] = aircraft.ID,
+                    ["rotation"] = AngleOf(aircraft.Point, FindPreviousPosition(idAsString)) + 180
                 });
-            
-            _previousPoint = currentPoint;
+            }
+
             _previousFeatures = features;
             return Task.FromResult((IEnumerable<IFeature>)features);
+        }
+
+        private MPoint? FindPreviousPosition(string countAsString)
+        {
+            return _previousFeatures.FirstOrDefault(f => f["ID"]?.ToString() == countAsString)?.Point;
         }
 
         public static double AngleOf(MPoint point1, MPoint? point2)
@@ -57,20 +64,6 @@ namespace map_app
         private void OnDataChanged()
         {
             DataChanged?.Invoke(this, new DataChangedEventArgs(null, false, null));
-        }
-
-        public virtual void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        public virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _aircraftData.Dispose();
-            }
         }
     }
 }
