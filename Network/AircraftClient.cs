@@ -26,7 +26,7 @@ namespace map_app.Network
             var strCoordinates = string.Empty;
             while (strCoordinates != "quit\n")
             {
-                var bytes = await ReadFromStreamAsync(4096);
+                var bytes = await ReadFromStreamAsync(4096); //TODO json: id, lon, lat, height
                 strCoordinates = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
                 Console.WriteLine($"Client input: {strCoordinates}");
                 var coordinates = LonLatConverter.ConvertFrom(strCoordinates, " ");

@@ -10,7 +10,7 @@ namespace map_app
         private List<AircraftClient> _aircrafts = new List<AircraftClient>();
         public IReadOnlyList<AircraftClient> Aircrafts => _aircrafts;
 
-        public AircraftDataSource() 
+        public AircraftDataSource()
         {
             var server = new AircraftServer(1234, this);
             server.RunAsync(() => true, server.ProcessClientAsync);

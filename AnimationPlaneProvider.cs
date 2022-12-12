@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Threading;
 using Mapsui;
 using System.Threading.Tasks;
 using Mapsui.Fetcher;
@@ -16,12 +15,12 @@ namespace map_app
     public class AnimationAircraftsProvider : MemoryProvider, IDynamic
     {
         private IEnumerable<PointFeature> _previousFeatures = new List<PointFeature>();
-        private AircraftDataSource _aircraftData;
+        private AircraftDataSource _aircraftDataSource;
         private const double Delta = 1e-5;
         public AnimationAircraftsProvider()
         {
-            _aircraftData = new AircraftDataSource();
-            _aircraftData.DataChanged += (s, e) => DataHasChanged();
+            _aircraftDataSource = new AircraftDataSource();
+            _aircraftDataSource.DataChanged += (s, e) => DataHasChanged();
         }
 
         public event DataChangedEventHandler? DataChanged;
@@ -30,14 +29,12 @@ namespace map_app
         {
             var features = new List<PointFeature>();
 
-            foreach (var aircraft in _aircraftData.Aircrafts)
+            foreach (var aircraft in _aircraftDataSource.Aircrafts)
             {
                 var idAsString = aircraft.ID.ToString(CultureInfo.InvariantCulture);
-
                 var aircraftPoint = Mercator.FromLonLat(lon: aircraft.Longtitude, lat: aircraft.Latitude);
-
                 var previousPoint = FindPreviousPosition(idAsString);
-
+                
                 features.Add(new PointFeature(aircraftPoint)
                 {
                     ["ID"] = idAsString,

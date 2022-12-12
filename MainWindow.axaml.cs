@@ -1,12 +1,9 @@
 using Avalonia.Controls;
-using System;
 using Mapsui.UI.Avalonia;
 using Mapsui.Tiling.Layers;
 using BruTile.Web;
 using Mapsui;
 using Mapsui.Extensions;
-using System.Reflection;
-using Mapsui.Utilities;
 using BruTile.Predefined;
 using Mapsui.Layers;
 using Mapsui.Styles.Thematics;
