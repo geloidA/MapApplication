@@ -8,5 +8,8 @@
         Title="map_app">
     <Grid>
         <avalonia:MapControl Grid.Column="1" x:Name="MapControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
+        <Canvas Background="Yellow">
+            <Rectangle Fill="Blue" Width="63" Height="41"/>
+        </Canvas>
     </Grid>    
 </Window>

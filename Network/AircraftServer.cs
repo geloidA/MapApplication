@@ -8,7 +8,6 @@ namespace map_app.Network
 {
     public class AircraftServer : Server
     {
-        private int aircraftCount;
         private AircraftDataSource _aircraftSource;
 
         public AircraftServer(int port, AircraftDataSource aircraftSource) : base(port)
@@ -18,10 +17,9 @@ namespace map_app.Network
 
         public async Task ProcessClientAsync(TcpClient c)
         {
-            using (var aircraft = new AircraftClient(aircraftCount, c))
+            using (var aircraft = new AircraftClient(c))
             {
                 _aircraftSource.AddAircraft(aircraft);
-                aircraftCount++;
                 await aircraft.ProcessAsync();
             }
         }

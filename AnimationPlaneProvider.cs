@@ -31,14 +31,14 @@ namespace map_app
 
             foreach (var aircraft in _aircraftDataSource.Aircrafts)
             {
-                var idAsString = aircraft.ID.ToString(CultureInfo.InvariantCulture);
+                var idAsString = aircraft!.Id.ToString(CultureInfo.InvariantCulture);
                 var aircraftPoint = Mercator.FromLonLat(lon: aircraft.Longtitude, lat: aircraft.Latitude);
                 var previousPoint = FindPreviousPosition(idAsString);
                 
                 features.Add(new PointFeature(aircraftPoint)
                 {
                     ["ID"] = idAsString,
-                    ["rotation"] = IsPositionChange(aircraftPoint, previousPoint) 
+                    ["rotation"] = IsPositionChange(aircraftPoint, previousPoint)
                             ? AngleOf(aircraftPoint, previousPoint) - 90
                             : FindPreviousRotation(idAsString)
                 });
@@ -72,14 +72,8 @@ namespace map_app
             return (result < 0) ? (360.0 + result) : result;
         }
 
-        public void DataHasChanged()
-        {
-            OnDataChanged();
-        }
+        public void DataHasChanged() => OnDataChanged();
 
-        private void OnDataChanged()
-        {
-            DataChanged?.Invoke(this, new DataChangedEventArgs(null, false, null));
-        }
+        private void OnDataChanged() => DataChanged?.Invoke(this, new DataChangedEventArgs(null, false, null));
     }
 }

@@ -2,48 +2,53 @@ using System;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Mapsui.Layers;
+using map_app.Models;
 using Mapsui.Fetcher;
-using map_app.Converters;
-using System.Text;
+using System.Buffers;
+using System.Text.Json;
 
 namespace map_app.Network
 {
     public class AircraftClient : ServerClient, IDynamic
     {
-        public int ID { get; }
-        public double Longtitude { get; private set; }
-        public double Latitude { get; private set; }
+        private Aircraft? aircraft;
 
         public event DataChangedEventHandler? DataChanged;
 
-        public AircraftClient(int id, TcpClient client) : base(client)
+        public AircraftClient(TcpClient client) : base(client)
         {
-            ID = id;
+            
+        }
+
+        public Aircraft? GetAircraft()
+        {
+            return aircraft;
         }
 
         public override async Task ProcessAsync()
         {
-            var strCoordinates = string.Empty;
-            while (strCoordinates != "quit\n")
+            while (true)
             {
-                var bytes = await ReadFromStreamAsync(4096); //TODO json: id, lon, lat, height
-                strCoordinates = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
-                Console.WriteLine($"Client input: {strCoordinates}");
-                var coordinates = LonLatConverter.ConvertFrom(strCoordinates, " ");
-                Longtitude = coordinates.Lon;
-                Latitude = coordinates.Lat;
+                var bytes = await ReadFromStreamAsync(4096);
+                var newState = ParseFromBytes(bytes);
+                Console.WriteLine($"Client sended json");
+                if (aircraft != null && aircraft.Id != newState?.Id)
+                {
+                    throw new Exception($"Id was \"{newState.Id}\" but need \"{aircraft.Id}\"");
+                }
+                aircraft = newState;
                 DataHasChanged();
             }
         }
 
-        public void DataHasChanged()
+        private Aircraft? ParseFromBytes((byte[] Buf, int Count) bytes)
         {
-            OnDataChanged();
-        }
+            var doc = JsonDocument.Parse(new ReadOnlySequence<byte>(bytes.Buf, 0, bytes.Count));
+            return doc.Deserialize<Aircraft>();
+        } 
 
-        private void OnDataChanged()
-        {
-            DataChanged?.Invoke(this, new DataChangedEventArgs());
-        }
+        public void DataHasChanged() => OnDataChanged();
+
+        private void OnDataChanged() => DataChanged?.Invoke(this, new DataChangedEventArgs());
     }
 }

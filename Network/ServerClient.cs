@@ -1,6 +1,7 @@
 using System;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace map_app.Network
 {
@@ -15,16 +16,13 @@ namespace map_app.Network
 
         public abstract Task ProcessAsync();
 
-        public async Task<byte[]> ReadFromStreamAsync(int bufSize)
+        public async Task<(byte[] Buf, int Count)> ReadFromStreamAsync(int bufSize)
         {
             var buf = new byte[4096];
             var byteCount = await stream.ReadAsync(buf, 0, buf.Length);
-            return buf;
+            return (buf, byteCount);
         }
 
-        public void Dispose()
-        {
-            stream.Dispose();
-        }
+        public void Dispose() => stream.Dispose();
     }
 }
