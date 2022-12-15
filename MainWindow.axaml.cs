@@ -9,51 +9,31 @@ using Mapsui.Layers;
 using Mapsui.Styles.Thematics;
 using Mapsui.Styles;
 using Mapsui.Layers.AnimatedLayers;
+using System.Collections.Generic;
+using Mapsui.Nts.Extensions;
+using Mapsui.Providers;
+using NetTopologySuite.Geometries;
+using System;
+using Mapsui.Nts;
+using Avalonia.ReactiveUI;
+using MapEditing;
+using Avalonia.Interactivity;
+using System.Linq;
+using Avalonia.Input;
+using Mapsui.UI.Avalonia.Extensions;
+using Avalonia.Media;
 
 namespace map_app;
 
 public partial class MainWindow : Window
-{
+{    
     public MainWindow()
     {
         InitializeComponent();
-        var map = this.FindControl<MapControl>("MapControl");
-        
-        map.Map?.Layers.Add(new TileLayer(KnownTileSources.Create(KnownTileSource.OpenStreetMap)));
-        map.Map?.Layers.Add(CreateAnimatedAircraftsLayer());
-    }
-
-    private ILayer CreateAnimatedAircraftsLayer()
-    {
-        return new AnimatedPointLayer(new AnimationAircraftsProvider())
-        {
-            Name = "Aircrafts",
-            Style = CreatePointStyle()
-        };
-    }
-
-    private IStyle CreatePointStyle()
-    {
-        return new ThemeStyle(f => 
-        {
-            return CreateSvgArrowStyle("Resources.Assets.aircraft.png", 0.1, f);
-        });
-    }
-
-    private IStyle CreateSvgArrowStyle(string embeddedResourcePath, double scale, IFeature feature)
-    {
-        var bitmapId = typeof(MainWindow).LoadBitmapId(embeddedResourcePath);
-        return new SymbolStyle
-        {
-            BitmapId = bitmapId,
-            SymbolScale = scale,
-            SymbolOffset = new RelativeOffset(0.0, 0.5),
-            SymbolRotation = (double)feature["rotation"]!
-        };
-    }
-
-    private HttpTileSource CreateOwnTileSourse()
-    {
-        return new HttpTileSource(new GlobalSphericalMercator(), "http://10.5.23.21/tile/{z}/{x}/{y}.png");
+        var dataContext = new MainWindowViewModel(MapControl);
+        DataContext = dataContext;
+        MapControl.PointerMoved += dataContext.MapControlOnPointerMoved;
+        MapControl.PointerPressed += dataContext.MapControlOnPointerPressed;
+        MapControl.PointerReleased += dataContext.MapControlOnPointerReleased;
     }
 }

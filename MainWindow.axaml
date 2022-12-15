@@ -4,12 +4,28 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:avalonia="clr-namespace:Mapsui.UI.Avalonia;assembly=Mapsui.UI.Avalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        FontFamily="Ubuntu"
         x:Class="map_app.MainWindow"
         Title="map_app">
     <Grid>
-        <avalonia:MapControl Grid.Column="1" x:Name="MapControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
-        <Canvas Background="Yellow">
-            <Rectangle Fill="Blue" Width="63" Height="41"/>
-        </Canvas>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="0.1*"/>
+        </Grid.ColumnDefinitions>
+        <avalonia:MapControl x:Name="MapControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
+        <StackPanel Grid.Column="1">
+            <Button x:Name="AddPolygon" Content="Add Polygon" Command="{Binding AddPolygon}"/>
+            <Button x:Name="Modify" Command="{Binding Modify}" Content="Modify"/>
+            <Button Name="Select" Command="{Binding Select}" >Select (for delete)</Button>
+            <Button Name="Delete" Command="{Binding Delete}" >Delete</Button>
+            <Button Name="Rotate" Command="{Binding Rotate}" >Rotate</Button>
+            <Button Name="Scale" Command="{Binding Scale}" >Scale</Button>
+            <Button Name="AddLine" Command="{Binding AddLine}" >Add Line</Button>
+            <Button Name="Cancel" Command="{Binding Cancel}" >Cancel</Button>
+            <Button Name="Load" Command="{Binding Load}" >Load</Button>
+            <Button Name="None" Command="{Binding None}" >None</Button>
+            <Button Name="Save" Command="{Binding Save}" >Save</Button>
+            <Button Name="AddPoint" Command="{Binding AddPoint}">Add Point</Button>
+        </StackPanel>
     </Grid>    
 </Window>
