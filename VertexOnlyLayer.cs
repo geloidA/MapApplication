@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Mapsui;
 using Mapsui.Layers;
+using MapEditing;
 using Mapsui.Nts;
 using Mapsui.Styles;
 using NetTopologySuite.Geometries;

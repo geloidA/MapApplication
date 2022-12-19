@@ -25,6 +25,7 @@
             <Button Name="Load" Command="{Binding Load}" >Load</Button>
             <Button Name="None" Command="{Binding None}" >None</Button>
             <Button Name="Save" Command="{Binding Save}" >Save</Button>
+            <Button Name="OrthodromeMode" Command="{Binding AddOrthodromeLine}">OrthodromeMode</Button>
             <Button Name="AddPoint" Command="{Binding AddPoint}">Add Point</Button>
         </StackPanel>
     </Grid>    

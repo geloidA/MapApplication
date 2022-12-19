@@ -32,9 +32,9 @@ namespace map_app
             foreach (var aircraft in _aircraftDataSource.Aircrafts)
             {
                 var idAsString = aircraft!.Id.ToString(CultureInfo.InvariantCulture);
-                var aircraftPoint = Mercator.FromLonLat(lon: aircraft.Longtitude, lat: aircraft.Latitude);
+                var aircraftCoordinates = SphericalMercator.FromLonLat(lon: aircraft.Longtitude, lat: aircraft.Latitude);
                 var previousPoint = FindPreviousPosition(idAsString);
-                
+                var aircraftPoint = new MPoint(aircraftCoordinates.x, aircraftCoordinates.y);
                 features.Add(new PointFeature(aircraftPoint)
                 {
                     ["ID"] = idAsString,

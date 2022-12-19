@@ -6,13 +6,21 @@ using Mapsui.Layers;
 using Mapsui.UI.Avalonia;
 using MapEditing;
 using System.Linq;
+using Mapsui.Utilities;
 using Avalonia.Input;
 using Mapsui.UI.Avalonia.Extensions;
+using NetTopologySuite.IO;
+using NetTopologySuite.Geometries;
+using Mapsui.Projections;
+using Mapsui.Nts.Extensions;
+using Mapsui.Styles;
+using Mapsui.Nts;
 
 namespace map_app
 {    
     public class MainWindowViewModel
     {
+        private const double LineStep = 0.05;
         private WritableLayer? _targetLayer;
         private IEnumerable<IFeature>? _tempFeatures;
         private readonly EditManager _editManager = new();
@@ -25,7 +33,7 @@ namespace map_app
         public MainWindowViewModel(MapControl mapControl)
         {
             MapControl = mapControl;
-            MapControl.Map = MapCreator.Create();            
+            MapControl.Map = MapCreator.Create();
             InitializeEditSetup();
         }
 
@@ -72,10 +80,7 @@ namespace map_app
             MapControl.RefreshGraphics();
         }
 
-        private void None()
-        {
-            _editManager.EditMode = EditMode.None;
-        }
+        private void None() => _editManager.EditMode = EditMode.None;
 
         private void Delete()
         {
@@ -97,6 +102,8 @@ namespace map_app
 
         private void AddPolygon() => AddShape(EditMode.AddPolygon);
 
+        private void AddOrthodromeLine() => AddShape(EditMode.AddOrthodromeLine);
+
         private void AddShape(EditMode mode)
         {
             SaveBuffer();
@@ -113,15 +120,9 @@ namespace map_app
             _tempFeatures = new List<IFeature>(features);
         }
 
-        private void Scale()
-        {
-            _editManager.EditMode = EditMode.Scale;
-        }
+        private void Scale() => _editManager.EditMode = EditMode.Scale;
 
-        private void Select()
-        {
-            _selectMode = !_selectMode;
-        }
+        private void Select() => _selectMode = !_selectMode;
 
         internal void MapControlOnPointerMoved(object? sender, PointerEventArgs args)
         {
@@ -201,14 +202,8 @@ namespace map_app
             _editManager.EditMode = EditMode.Modify;
         }
 
-        private void Modify()
-        {
-            _editManager.EditMode = EditMode.Modify;
-        }
+        private void Modify() => _editManager.EditMode = EditMode.Modify;
 
-        private void Rotate()
-        {
-            _editManager.EditMode = EditMode.Rotate;
-        }
+        private void Rotate() => _editManager.EditMode = EditMode.Rotate;
     }
 }
