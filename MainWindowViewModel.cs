@@ -4,17 +4,10 @@ using Mapsui;
 using Mapsui.Extensions;
 using Mapsui.Layers;
 using Mapsui.UI.Avalonia;
-using MapEditing;
+using map_app.Editing;
 using System.Linq;
-using Mapsui.Utilities;
 using Avalonia.Input;
 using Mapsui.UI.Avalonia.Extensions;
-using NetTopologySuite.IO;
-using NetTopologySuite.Geometries;
-using Mapsui.Projections;
-using Mapsui.Nts.Extensions;
-using Mapsui.Styles;
-using Mapsui.Nts;
 
 namespace map_app
 {    

@@ -87,7 +87,7 @@ namespace map_app
             {
                 Fill = new Brush(PointLayerColor),
                 Line = new Pen(PointLayerColor, 3),
-                Outline = new Pen(Color.Gray, 2)                
+                Outline = new Pen(Color.Gray, 2)
             };
         }
 

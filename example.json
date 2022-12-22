@@ -1,1 +1,40 @@
-{"Id": "1","Longtitude": 0.321,"Latitude": 0.231,"Height": 12}
+{
+    "UserTags": {
+        "Malchic":
+            {
+                "boby": 12,
+                "as": 12
+            },
+        "Mulya":
+            {
+                "boby": 12,
+                "as": 12
+            }
+    },
+    "Color": [ 0, 0, 255, 2],
+    "LinearCoordinates": [
+        {
+            "X": 23.2,
+            "Y": 12,
+            "Z": 21
+        },
+        {
+            "X": 223,
+            "Y": 12.21,
+            "Z": 21.5
+        }
+    ],
+    "GeoCoordinates": [
+        {
+            "Longtitude": 12.23,
+            "Latitude": 23.123,
+            "Altitude": 25.12
+        },
+        {
+            "Longtitude": 15.23,
+            "Latitude": 27.123,
+            "Altitude": 21.12
+        }
+    ],
+    "GraphicObjectType": 2
+}

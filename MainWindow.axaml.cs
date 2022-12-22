@@ -16,7 +16,6 @@ using NetTopologySuite.Geometries;
 using System;
 using Mapsui.Nts;
 using Avalonia.ReactiveUI;
-using MapEditing;
 using Avalonia.Interactivity;
 using System.Linq;
 using Avalonia.Input;
