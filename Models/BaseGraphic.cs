@@ -12,6 +12,11 @@ namespace map_app.Models
     {
         private List<Coordinate> _linearPoints = new();
 
+        public BaseGraphic() : base() { }
+        public BaseGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
+        public BaseGraphic(Geometry? geometry) : base(geometry) { }
+
+
         public Dictionary<string, IUserTag>? UserTags { get; set; }
         public Color? Color { get; set; } // todo: auto generate style when change color
         public double Opacity { get; set; }
@@ -34,8 +39,12 @@ namespace map_app.Models
                 Geometry = ConstructGeomerty(_linearPoints);
             }
         }
-
-        public new Geometry? Geometry { get; private set; }
+        
+        public new Geometry? Geometry
+        {
+            get => base.Geometry;
+            set => base.Geometry = value;
+        }
 
         protected abstract Geometry ConstructGeomerty(List<Coordinate> points);
     }

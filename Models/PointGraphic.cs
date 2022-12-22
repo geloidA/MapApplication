@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Mapsui.Nts;
 using Mapsui.Nts.Extensions;
 using NetTopologySuite.Geometries;
 
@@ -7,6 +8,10 @@ namespace map_app.Models
 {
     public class PointGraphic : BaseGraphic
     {
+        public PointGraphic() : base() { }
+        public PointGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
+        public PointGraphic(Geometry? geometry) : base(geometry) { }
+
         protected override Geometry ConstructGeomerty(List<Coordinate> points)
         {
             if (points.Count != 1)

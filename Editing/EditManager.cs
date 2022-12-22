@@ -114,8 +114,7 @@ namespace map_app.Editing
             if (EditMode == EditMode.AddPoint)
             {
 #pragma warning disable IDISP004 // Don't ignore created IDisposable
-                var point = new PointGraphic { LinearPoints = new[] { worldPosition } }; 
-                Layer?.Add(point);
+                Layer?.Add(new PointGraphic { LinearPoints = new[] { worldPosition } });
                 Layer?.DataHasChanged();
 #pragma warning restore IDISP004 // Don't ignore created IDisposable
             }
