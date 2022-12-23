@@ -27,6 +27,9 @@ namespace map_app.Models
         })
         .ToList();
 
+        /// <summary>
+        /// Recalculation Geometry property when set method is called
+        /// </summary>
         public IReadOnlyList<Coordinate> LinearPoints
         {
             get => _linearPoints;
@@ -43,7 +46,7 @@ namespace map_app.Models
         public new Geometry? Geometry
         {
             get => base.Geometry;
-            set => base.Geometry = value;
+            private set => base.Geometry = value;
         }
 
         protected abstract Geometry ConstructGeomerty(List<Coordinate> points);
