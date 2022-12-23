@@ -14,8 +14,11 @@ namespace map_app.Services
             return GetOrthodromePath(worldPoint1.ToGeoPoint(), worldPoint2.ToGeoPoint());
         }
 
-        public static List<GeoPoint> GetOrthodromePath(GeoPoint degPoint1, GeoPoint degPoint2, double lineStep = 0.5)
+        public static List<GeoPoint> GetOrthodromePath(GeoPoint? degPoint1, GeoPoint? degPoint2, double lineStep = 0.5)
         {
+            if (degPoint1 is null) return new List<GeoPoint>();
+            if (degPoint2 is null) return new List<GeoPoint>();
+
             var lat1Rad = Algorithms.DegreesToRadians(degPoint1.Latitude);
             var lat2Rad = Algorithms.DegreesToRadians(degPoint2.Latitude);
             var lon1Rad = Algorithms.DegreesToRadians(degPoint1.Longtitude);

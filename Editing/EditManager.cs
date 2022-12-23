@@ -73,8 +73,10 @@ namespace map_app.Editing
             }
             else if (EditMode == EditMode.DrawingOrthodromeLine)
             {
-                //_addInfo.Feature.Geometry = new LineString(_addInfo.Vertices.ToArray());
+                _addInfo.Vertices.RemoveAt(_addInfo.Vertices.Count - 1);
+                _addInfo.Feature.LinearPoints = _addInfo.Vertices.ToList();
 
+                _addInfo.Feature?.RenderedGeometry.Clear();
                 _addInfo.Feature = null;
                 _addInfo.Vertex = null;
                 EditMode = EditMode.AddOrthodromeLine;
@@ -152,10 +154,7 @@ namespace map_app.Editing
                 var secondPoint = worldPosition.Copy();
                 _addInfo.Vertex = secondPoint;
                 _addInfo.Vertices = new List<Coordinate> { firstPoint, secondPoint };
-                _addInfo.Feature = new OrthodromeGraphic
-                { 
-                    LinearPoints = _addInfo.Vertices.ToList()
-                };
+                _addInfo.Feature = new OrthodromeGraphic();
                 Layer?.Add(_addInfo.Feature);
                 Layer?.DataHasChanged();
                 EditMode = EditMode.DrawingOrthodromeLine;

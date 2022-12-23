@@ -1,3 +1,4 @@
+using Mapsui.Nts.Extensions;
 using Mapsui.Projections;
 using NetTopologySuite.Geometries;
 
@@ -37,8 +38,7 @@ namespace map_app.Models
 
         public Coordinate ToWorldPosition()
         {
-            var point = SphericalMercator.FromLonLat(Longtitude, Latitude);
-            return new Coordinate(point.x, point.y);
+            return SphericalMercator.FromLonLat(Longtitude, Latitude).ToCoordinate();
         }
     }
 }
