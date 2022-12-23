@@ -42,9 +42,7 @@ namespace map_app.Editing.Extensions
             return new LinearPoint(target.X, target.Y, target.Z);
         }
 
-
         public static IEnumerable<Coordinate> LonLatToWorld(this IList<Coordinate> points) 
-            => points.Select(p => SphericalMercator.FromLonLat(p.X, p.Y).ToCoordinate());
-            
+            => points.Select(p => SphericalMercator.FromLonLat(p.X, p.Y).ToCoordinate());            
     }
 }

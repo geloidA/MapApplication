@@ -38,7 +38,6 @@ namespace map_app.Editing
         private Coordinate? _lastOrthodromeCoordinate = new();
         private readonly RotateInfo _rotateInfo = new();
         private readonly ScaleInfo _scaleInfo = new();
-        private const double LineStep = 0.5;
 
         public EditMode EditMode { get; set; }
 
@@ -142,17 +141,21 @@ namespace map_app.Editing
                 _addInfo.Vertex.SetXY(worldPosition);
                 _addInfo.Vertex = worldPosition.Copy(); // and create a new hover vertex
                 _addInfo.Vertices.Add(_addInfo.Vertex);
+                (_addInfo.Feature as PolygonGraphic)?.AddLinearPoint(_addInfo.Vertex);
 
-                _addInfo.Feature.LinearPoints = _addInfo.Vertices.ToList();
                 _addInfo.Feature?.RenderedGeometry.Clear();
                 Layer?.DataHasChanged();
             }
             else if (EditMode == EditMode.AddOrthodromeLine)
             {
-                _lastOrthodromeCoordinate = worldPosition.Copy();
-                _addInfo.Vertex = worldPosition.Copy();
-                //_addInfo.Feature = new OrthodromeGraphic { Geometry = new LineString(new[] { _addInfo.Vertex, _lastOrthodromeCoordinate }) };
-                _addInfo.Vertices = _addInfo.Feature.Geometry.MainCoordinates();
+                var firstPoint = worldPosition.Copy();
+                var secondPoint = worldPosition.Copy();
+                _addInfo.Vertex = secondPoint;
+                _addInfo.Vertices = new List<Coordinate> { firstPoint, secondPoint };
+                _addInfo.Feature = new OrthodromeGraphic
+                { 
+                    LinearPoints = _addInfo.Vertices.ToList()
+                };
                 Layer?.Add(_addInfo.Feature);
                 Layer?.DataHasChanged();
                 EditMode = EditMode.DrawingOrthodromeLine;
@@ -164,48 +167,13 @@ namespace map_app.Editing
 
                 _addInfo.Vertex.SetXY(worldPosition);
                 _addInfo.Vertex = worldPosition.Copy();
-                if (_lastOrthodromeCoordinate != null)
-                {
-                    foreach(var vertex in GetOrthodromeLonLatPath(_addInfo.Vertex, _lastOrthodromeCoordinate).LonLatToWorld())
-                    {
-                        _addInfo.Vertices.Add(vertex);
-                    }
-                    //_addInfo.Feature.Geometry = new LineString(_addInfo.Vertices.ToArray());
-                    _lastOrthodromeCoordinate = _addInfo.Vertex.Copy();
-                    _addInfo.Feature?.RenderedGeometry.Clear();
-                    Layer?.DataHasChanged();
-                }
+                _addInfo.Vertices.Add(_addInfo.Vertex);
+                _addInfo.Feature.LinearPoints = _addInfo.Vertices.ToList();
+                _addInfo.Feature?.RenderedGeometry.Clear();
+                Layer?.DataHasChanged();
             }
 
             return false;
-        }
-
-        private static List<Coordinate> GetOrthodromeLonLatPath(MPoint lonLatDeg1, MPoint lonLatDeg2)
-        {
-            var lat1Rad = Algorithms.DegreesToRadians(lonLatDeg1.Y);
-            var lat2Rad = Algorithms.DegreesToRadians(lonLatDeg2.Y);
-            var lon1Rad = Algorithms.DegreesToRadians(lonLatDeg1.X);
-            var lon2Rad = Algorithms.DegreesToRadians(lonLatDeg2.X);
-
-            var points = new List<Coordinate>();
-            var left = Math.Min(lonLatDeg1.X, lonLatDeg2.X) == lonLatDeg1.X ? lonLatDeg1 : lonLatDeg2;
-            var right = left.X == lonLatDeg1.X ? lonLatDeg2 : lonLatDeg1;
-            for (var lon = left.X; lon <= right.X; lon += LineStep)
-            {  
-                var lonRad = Algorithms.DegreesToRadians(lon);
-                var lat = Math.Atan((Math.Tan(lat1Rad) * Math.Sin(lon2Rad - lonRad)) / (Math.Sin(lon2Rad - lon1Rad)) + (Math.Tan(lat2Rad) * Math.Sin(lonRad - lon1Rad)) / (Math.Sin(lon2Rad - lon1Rad)));  
-                points.Add(new Coordinate(lon, lat / Math.PI * 180.0));
-            }
-            points.Add(right.ToCoordinate());
-            return points;
-        }
-
-        private static List<Coordinate> GetOrthodromeLonLatPath(Coordinate worldPoint1, Coordinate worldPoint2)
-        {
-            return GetOrthodromeLonLatPath(
-                SphericalMercator.ToLonLat(worldPoint1.ToMPoint()),
-                SphericalMercator.ToLonLat(worldPoint2.ToMPoint())
-            );
         }
 
         private static Coordinate? FindVertexTouched(MapInfo mapInfo, IEnumerable<Coordinate> vertices, double screenDistance)

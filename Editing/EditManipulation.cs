@@ -83,9 +83,6 @@ namespace map_app.Editing
                         return false;
                     }
                 case MouseState.Moving:
-                    if (editManager.EditMode == EditMode.DrawingOrthodromeLine)
-                        editManager.HoveringOrthodronomeVertex(mapControl.GetMapInfo(screenPosition));
-                    else
                         editManager.HoveringVertex(mapControl.GetMapInfo(screenPosition));
                     return false;
                 case MouseState.DoubleClick:

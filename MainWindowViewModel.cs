@@ -13,7 +13,6 @@ namespace map_app
 {    
     public class MainWindowViewModel
     {
-        private const double LineStep = 0.05;
         private WritableLayer? _targetLayer;
         private IEnumerable<IFeature>? _tempFeatures;
         private readonly EditManager _editManager = new();

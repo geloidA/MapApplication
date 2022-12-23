@@ -13,7 +13,7 @@ namespace map_app.Models
         public RectangleGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
         public RectangleGraphic(Geometry? geometry) : base(geometry) { }
 
-        protected override Geometry ConstructGeomerty(List<Coordinate> points)
+        protected override Geometry RenderGeomerty(List<Coordinate> points)
         {
             throw new NotImplementedException();
         }

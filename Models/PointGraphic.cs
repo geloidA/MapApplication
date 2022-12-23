@@ -12,7 +12,7 @@ namespace map_app.Models
         public PointGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
         public PointGraphic(Geometry? geometry) : base(geometry) { }
 
-        protected override Geometry ConstructGeomerty(List<Coordinate> points)
+        protected override Geometry RenderGeomerty(List<Coordinate> points)
         {
             if (points.Count != 1)
                 throw new ArgumentException($"List need contain one point, but was {points.Count}");

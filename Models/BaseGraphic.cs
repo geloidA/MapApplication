@@ -4,13 +4,14 @@ using System.Linq;
 using Mapsui.Nts;
 using Mapsui.Projections;
 using Mapsui.Styles;
+using map_app.Editing.Extensions;
 using NetTopologySuite.Geometries;
 
 namespace map_app.Models
 {
     public abstract class BaseGraphic : GeometryFeature
     {
-        private List<Coordinate> _linearPoints = new();
+        protected List<Coordinate> _linearPoints = new();
 
         public BaseGraphic() : base() { }
         public BaseGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
@@ -20,12 +21,7 @@ namespace map_app.Models
         public Dictionary<string, IUserTag>? UserTags { get; set; }
         public Color? Color { get; set; } // todo: auto generate style when change color
         public double Opacity { get; set; }
-        public IReadOnlyList<GeoPoint> GeoPoints => _linearPoints.Select(x => 
-        {
-            var point = SphericalMercator.ToLonLat(x.X, x.Y);
-            return new GeoPoint(point.lon, point.lat);
-        })
-        .ToList();
+        public IReadOnlyList<GeoPoint> GeoPoints => _linearPoints.Select(x => x.ToGeoPoint()).ToList();
 
         /// <summary>
         /// Recalculation Geometry property when set method is called
@@ -39,16 +35,16 @@ namespace map_app.Models
                     throw new ArgumentNullException();
                 
                 _linearPoints = value.ToList();
-                Geometry = ConstructGeomerty(_linearPoints);
+                Geometry = RenderGeomerty(_linearPoints);
             }
         }
         
         public new Geometry? Geometry
         {
             get => base.Geometry;
-            private set => base.Geometry = value;
+            protected set => base.Geometry = value;
         }
 
-        protected abstract Geometry ConstructGeomerty(List<Coordinate> points);
+        protected abstract Geometry RenderGeomerty(List<Coordinate> points);
     }
 }

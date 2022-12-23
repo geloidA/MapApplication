@@ -29,5 +29,16 @@ namespace map_app.Models
             var point = SphericalMercator.FromLonLat(Longtitude, Latitude);
             return new Point(point.x, point.y);
         }
+
+        public Coordinate ToGeoCoordinate()
+        {
+            return new Coordinate(Longtitude, Latitude);
+        }
+
+        public Coordinate ToWorldPosition()
+        {
+            var point = SphericalMercator.FromLonLat(Longtitude, Latitude);
+            return new Coordinate(point.x, point.y);
+        }
     }
 }
