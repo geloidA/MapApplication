@@ -18,6 +18,7 @@ namespace map_app.Services
         {
             if (degPoint1 is null) return new List<GeoPoint>();
             if (degPoint2 is null) return new List<GeoPoint>();
+            if (degPoint1.Equals(degPoint2)) return new List<GeoPoint>();
 
             var lat1Rad = Algorithms.DegreesToRadians(degPoint1.Latitude);
             var lat2Rad = Algorithms.DegreesToRadians(degPoint2.Latitude);
@@ -30,7 +31,7 @@ namespace map_app.Services
             for (var lon = left; lon <= right; lon += lineStep)
             {  
                 var lonRad = Algorithms.DegreesToRadians(lon);
-                var lat = Math.Atan((Math.Tan(lat1Rad) * Math.Sin(lon2Rad - lonRad)) / (Math.Sin(lon2Rad - lon1Rad)) + (Math.Tan(lat2Rad) * Math.Sin(lonRad - lon1Rad)) / (Math.Sin(lon2Rad - lon1Rad)));  
+                var lat = Math.Atan((Math.Tan(lat1Rad) * Math.Sin(lon2Rad - lonRad)) / (Math.Sin(lon2Rad - lon1Rad)) + (Math.Tan(lat2Rad) * Math.Sin(lonRad - lon1Rad)) / (Math.Sin(lon2Rad - lon1Rad)));
                 points.Add(new GeoPoint(lon, lat / Math.PI * 180.0));
             }
             points.Add(right == degPoint1.Longtitude ? degPoint1 : degPoint2);

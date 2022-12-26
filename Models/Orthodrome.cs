@@ -44,5 +44,10 @@ namespace map_app.Models
         {
             _path = MapAlgorithms.GetOrthodromePath(Start, End);
         }
+
+        public override string ToString()
+        {
+            return string.Format("Start:{0}\nEnd:{1}", Start, End);
+        }
     }
 }

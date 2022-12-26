@@ -32,7 +32,9 @@ namespace map_app.Network
                 var bytes = await ReadFromStreamAsync(4096);
                 var newState = ParseFromBytes(bytes);
                 Console.WriteLine($"Client sended json");
-                if (aircraft != null && aircraft.Id != newState?.Id)
+                if (newState is null)
+                    continue;
+                if (aircraft != null && aircraft.Id != newState.Id)
                 {
                     throw new Exception($"Id was \"{newState.Id}\" but need \"{aircraft.Id}\"");
                 }

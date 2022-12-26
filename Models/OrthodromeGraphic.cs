@@ -4,6 +4,7 @@ using map_app.Models.Extensions;
 using System.Linq;
 using Mapsui.Nts;
 using NetTopologySuite.Geometries;
+using System;
 
 namespace map_app.Models
 {
@@ -11,33 +12,51 @@ namespace map_app.Models
     {
         private Orthodrome? _orthodrome;
 
-        public OrthodromeGraphic(List<Coordinate> points) : base(points) { }
+        public OrthodromeGraphic(List<Coordinate> points) : base(points)
+        {
+            var firstPoints = points.Take(2).ToArray();
+            if (firstPoints.Length < 2)
+                throw new ArgumentException("length can't be less 2");
+
+            _orthodrome = new Orthodrome(firstPoints[0].ToGeoPoint(), firstPoints[1].ToGeoPoint());
+            AddRangeLinearPoints(points.Skip(2));
+        }
+
         public OrthodromeGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
         public OrthodromeGraphic(Geometry? geometry) : base(geometry) { }
 
         public void AddLinearPoint(Coordinate worldCoordinate)
         {
-            var newPoint = worldCoordinate.ToGeoPoint();
             if (_orthodrome is null)
+                return;
+
+            var last = _orthodrome;           
+                
+            while(last.Next != null)
             {
-                _orthodrome = new Orthodrome(newPoint, null);
+                last = last.Next;
             }
-            else
-            {
-                var last = _orthodrome;
-                while(last.Next != null)
-                {
-                    last = last.Next;
-                }
-                last.Next = new Orthodrome(last.End, newPoint);
-            }
+            last.Next = new Orthodrome(last.End, worldCoordinate.ToGeoPoint());
             _linearPoints.Add(worldCoordinate);
             Geometry = RenderGeomerty(_linearPoints);
         }
 
         public void AddRangeLinearPoints(IEnumerable<Coordinate> worldCoordinates)
         {
-            throw new System.NotImplementedException();
+            if (_orthodrome is null)
+                return;
+                
+            var last = _orthodrome;
+            
+            while(last.Next != null)
+                last = last.Next;                
+            foreach (var point in worldCoordinates)
+            {
+                last.Next = new Orthodrome(last.End, point.ToGeoPoint());
+                _linearPoints.Add(point);
+                last = last.Next;
+            }
+            Geometry = RenderGeomerty(_linearPoints);
         }
 
         public Geometry RenderStepGeometry(Coordinate worldPosition)
@@ -50,8 +69,6 @@ namespace map_app.Models
             var last = points.Last();
             var result = new List<GeoPoint>();
             var next = _orthodrome;
-            if (_orthodrome?.Start is null)
-                return new LineString(new Coordinate[0]);
             while(next != null)
             {
                 if (next.Next is null) // change last point while mouse moving

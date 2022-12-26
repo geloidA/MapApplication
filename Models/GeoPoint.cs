@@ -1,3 +1,4 @@
+using System;
 using Mapsui.Nts.Extensions;
 using Mapsui.Projections;
 using NetTopologySuite.Geometries;
@@ -6,6 +7,8 @@ namespace map_app.Models
 {
     public class GeoPoint
     {
+        private const double Eps = 1e-5;
+
         public double Longtitude { get; set; }
         public double Latitude { get; set; }
         public double Altitude { get; set; }
@@ -49,6 +52,23 @@ namespace map_app.Models
         public override string ToString()
         {
             return string.Format("Lon:{0:0.00} ; Lat:{1:0.00} ; Alt:{2:0.00}", Longtitude, Latitude, Altitude);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            var other = obj as GeoPoint;
+
+            if (other is null)
+                return false;
+
+            return Math.Abs(other.Longtitude - Longtitude) < Eps
+                && Math.Abs(other.Latitude - Latitude) < Eps
+                && Math.Abs(other.Altitude - Altitude) < Eps;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
     }
 }

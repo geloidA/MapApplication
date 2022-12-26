@@ -17,9 +17,9 @@ namespace map_app.Models
             _linearPoints = points;
             Geometry = RenderGeomerty(points);
         }
+
         public BaseGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
         public BaseGraphic(Geometry? geometry) : base(geometry) { }
-
 
         public Dictionary<string, IUserTag>? UserTags { get; set; }
         public Color? Color { get; set; } // todo: auto generate style when change color

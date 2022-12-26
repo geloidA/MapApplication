@@ -32,7 +32,7 @@ namespace map_app
         {
             var map = new Map();
             map.Layers.Add(new TileLayer(KnownTileSources.Create(KnownTileSource.OpenStreetMap)));
-            map.Layers.Add(CreateAnimatedAircraftsLayer());
+            //map.Layers.Add(CreateAnimatedAircraftsLayer());
             map.Layers.Add(CreatePointLayer());
             map.Layers.Add(CreateLineLayer());
             map.Layers.Add(CreatePolygonLayer());
