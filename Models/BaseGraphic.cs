@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mapsui.Nts;
-using Mapsui.Projections;
 using Mapsui.Styles;
 using map_app.Editing.Extensions;
 using NetTopologySuite.Geometries;
@@ -13,7 +12,11 @@ namespace map_app.Models
     {
         protected List<Coordinate> _linearPoints = new();
 
-        public BaseGraphic() : base() { }
+        public BaseGraphic(List<Coordinate> points) : base() 
+        { 
+            _linearPoints = points;
+            Geometry = RenderGeomerty(points);
+        }
         public BaseGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
         public BaseGraphic(Geometry? geometry) : base(geometry) { }
 

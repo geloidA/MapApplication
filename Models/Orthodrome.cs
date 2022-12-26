@@ -1,26 +1,48 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using map_app.Services;
 
 namespace map_app.Models
 {
     public class Orthodrome
     {
-        private List<GeoPoint>? _value;
+        private List<GeoPoint> _path;
+        private GeoPoint _start;
+        private GeoPoint _end;
+
+        public Orthodrome(GeoPoint start, GeoPoint end)
+        {
+            _start = start;
+            _end = end;
+            _path = MapAlgorithms.GetOrthodromePath(start, end);
+        }
 
         public Orthodrome? Next { get; set; }
-        public GeoPoint? Start { get; set; }
-        public GeoPoint? End { get; set; }
-        public List<GeoPoint> Value
+
+        public GeoPoint Start
         {
-            get
+            get => _start;
+            set
             {
-                if (_value is null)
-                    _value = MapAlgorithms.GetOrthodromePath(Start, End);
-                return _value;
+                _start = value;
+                RenderValue();
             }
+        }
+
+        public GeoPoint End
+        { 
+            get => _end;
+            set
+            {
+                _end = value;
+                RenderValue();
+            }
+        }
+
+        public List<GeoPoint> Path => _path;
+
+        private void RenderValue()
+        {
+            _path = MapAlgorithms.GetOrthodromePath(Start, End);
         }
     }
 }

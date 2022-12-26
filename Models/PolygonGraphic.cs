@@ -9,7 +9,7 @@ namespace map_app.Models
 {
     public class PolygonGraphic : BaseGraphic, IStepByStepGraphic
     {
-        public PolygonGraphic() : base() { }
+        public PolygonGraphic(List<Coordinate> points) : base(points) { }
         public PolygonGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
         public PolygonGraphic(Geometry? geometry) : base(geometry) { }
 

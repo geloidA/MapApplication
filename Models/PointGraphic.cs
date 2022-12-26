@@ -8,7 +8,7 @@ namespace map_app.Models
 {
     public class PointGraphic : BaseGraphic
     {
-        public PointGraphic() : base() { }
+        public PointGraphic(List<Coordinate> points) : base(points) { }
         public PointGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
         public PointGraphic(Geometry? geometry) : base(geometry) { }
 

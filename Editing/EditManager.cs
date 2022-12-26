@@ -126,7 +126,7 @@ namespace map_app.Editing
             if (EditMode == EditMode.AddPoint)
             {
 #pragma warning disable IDISP004 // Don't ignore created IDisposable
-                Layer?.Add(new PointGraphic { LinearPoints = new[] { worldPosition } });
+                Layer?.Add(new PointGraphic(new[] { worldPosition }.ToList()));
                 Layer?.DataHasChanged();
 #pragma warning restore IDISP004 // Don't ignore created IDisposable
             }
@@ -137,10 +137,7 @@ namespace map_app.Editing
                 var secondPoint = worldPosition.Copy();
                 _addInfo.Vertex = secondPoint;
                 _addInfo.Vertices = new List<Coordinate>(new[] { firstPoint, secondPoint });
-                _addInfo.Feature = new PolygonGraphic
-                {
-                    LinearPoints = _addInfo.Vertices.ToList()
-                };
+                _addInfo.Feature = new PolygonGraphic(_addInfo.Vertices.ToList());
                 Layer?.Add(_addInfo.Feature);
                 Layer?.DataHasChanged();
                 EditMode = EditMode.DrawingPolygon;
@@ -165,8 +162,7 @@ namespace map_app.Editing
                 var secondPoint = worldPosition.Copy();
                 _addInfo.Vertex = secondPoint;
                 _addInfo.Vertices = new List<Coordinate> { firstPoint, secondPoint };
-                _addInfo.Feature = new OrthodromeGraphic();
-                (_addInfo.Feature as OrthodromeGraphic)?.AddLinearPoint(firstPoint);
+                _addInfo.Feature = new OrthodromeGraphic(_addInfo.Vertices.ToList());
                 Layer?.Add(_addInfo.Feature);
                 Layer?.DataHasChanged();
                 EditMode = EditMode.DrawingOrthodromeLine;
@@ -190,10 +186,7 @@ namespace map_app.Editing
                 var secondPoint = worldPosition.Copy();
                 _addInfo.Vertex = secondPoint;
                 _addInfo.Vertices = new List<Coordinate>(new[] { firstPoint, secondPoint });
-                _addInfo.Feature = new RectangleGraphic
-                {
-                    LinearPoints = _addInfo.Vertices.ToList()
-                };
+                _addInfo.Feature = new RectangleGraphic(_addInfo.Vertices.ToList());
                 Layer?.Add(_addInfo.Feature);
                 Layer?.DataHasChanged();
                 EditMode = EditMode.DrawingRectangle;
