@@ -94,6 +94,8 @@ namespace map_app
 
         private void AddPolygon() => AddShape(EditMode.AddPolygon);
 
+        private void AddRectangle() => AddShape(EditMode.AddRectangle);
+
         private void AddOrthodromeLine() => AddShape(EditMode.AddOrthodromeLine);
 
         private void AddShape(EditMode mode)
@@ -143,7 +145,7 @@ namespace map_app
 
             if (MapControl.Map != null)
                 MapControl.Map.PanLock = _editManipulation.Manipulate(MouseState.Up,
-                args.GetPosition(MapControl).ToMapsui(), _editManager, MapControl);
+                    args.GetPosition(MapControl).ToMapsui(), _editManager, MapControl);
 
             if (_selectMode)
             {

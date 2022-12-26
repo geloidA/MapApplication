@@ -40,5 +40,15 @@ namespace map_app.Models
         {
             return SphericalMercator.FromLonLat(Longtitude, Latitude).ToCoordinate();
         }
+
+        public GeoPoint Copy()
+        {
+            return new GeoPoint(Longtitude, Latitude, Altitude);
+        }
+
+        public override string ToString()
+        {
+            return string.Format("Lon:{0:0.00} ; Lat:{1:0.00} ; Alt:{2:0.00}", Longtitude, Latitude, Altitude);
+        }
     }
 }

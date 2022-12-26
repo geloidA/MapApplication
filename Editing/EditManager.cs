@@ -26,7 +26,9 @@ namespace map_app.Editing
         Rotate,
         Scale,
         AddOrthodromeLine,
-        DrawingOrthodromeLine
+        DrawingOrthodromeLine,
+        AddRectangle,
+        DrawingRectangle
     }
 
     public class EditManager
@@ -81,6 +83,14 @@ namespace map_app.Editing
                 _addInfo.Vertex = null;
                 EditMode = EditMode.AddOrthodromeLine;
             }
+            else if (EditMode == EditMode.DrawingRectangle)
+            {
+                _addInfo.Feature?.RenderedGeometry.Clear();
+                _addInfo.Feature = null;
+                _addInfo.Vertex = null;
+                EditMode = EditMode.AddRectangle;
+                Layer?.DataHasChanged();
+            }
 
             return false;
         }
@@ -91,6 +101,7 @@ namespace map_app.Editing
             {
                 _addInfo.Vertex.SetXY(mapInfo?.WorldPosition);
                 _addInfo.Feature?.RenderedGeometry.Clear();
+                _addInfo.Feature?.RerenderGeometry();
                 Layer?.DataHasChanged();
             }
         }
@@ -155,6 +166,7 @@ namespace map_app.Editing
                 _addInfo.Vertex = secondPoint;
                 _addInfo.Vertices = new List<Coordinate> { firstPoint, secondPoint };
                 _addInfo.Feature = new OrthodromeGraphic();
+                (_addInfo.Feature as OrthodromeGraphic)?.AddLinearPoint(firstPoint);
                 Layer?.Add(_addInfo.Feature);
                 Layer?.DataHasChanged();
                 EditMode = EditMode.DrawingOrthodromeLine;
@@ -167,9 +179,24 @@ namespace map_app.Editing
                 _addInfo.Vertex.SetXY(worldPosition);
                 _addInfo.Vertex = worldPosition.Copy();
                 _addInfo.Vertices.Add(_addInfo.Vertex);
-                _addInfo.Feature.LinearPoints = _addInfo.Vertices.ToList();
+                (_addInfo.Feature as OrthodromeGraphic)?.AddLinearPoint(_addInfo.Vertex);
                 _addInfo.Feature?.RenderedGeometry.Clear();
                 Layer?.DataHasChanged();
+            }
+            else if (EditMode == EditMode.AddRectangle)
+            {
+                var firstPoint = worldPosition.Copy();
+                // Add a second point right away. The second one will be the 'hover' vertex
+                var secondPoint = worldPosition.Copy();
+                _addInfo.Vertex = secondPoint;
+                _addInfo.Vertices = new List<Coordinate>(new[] { firstPoint, secondPoint });
+                _addInfo.Feature = new RectangleGraphic
+                {
+                    LinearPoints = _addInfo.Vertices.ToList()
+                };
+                Layer?.Add(_addInfo.Feature);
+                Layer?.DataHasChanged();
+                EditMode = EditMode.DrawingRectangle;
             }
 
             return false;

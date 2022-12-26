@@ -27,6 +27,7 @@
             <Button Name="Save" Command="{Binding Save}" >Save</Button>
             <Button Name="OrthodromeMode" Command="{Binding AddOrthodromeLine}">OrthodromeMode</Button>
             <Button Name="AddPoint" Command="{Binding AddPoint}">Add Point</Button>
+            <Button Name="AddRectangle" Command="{Binding AddRectangle}">Add rect</Button>
         </StackPanel>
     </Grid>    
 </Window>

@@ -46,5 +46,10 @@ namespace map_app.Models
         }
 
         protected abstract Geometry RenderGeomerty(List<Coordinate> points);
+        
+        public void RerenderGeometry()
+        {
+            Geometry = RenderGeomerty(_linearPoints);
+        }
     }
 }
