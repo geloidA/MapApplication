@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using BruTile.Predefined;
 using BruTile.Web;
 using Mapsui;
@@ -5,9 +6,12 @@ using Mapsui.Extensions;
 using Mapsui.Layers;
 using Mapsui.Layers.AnimatedLayers;
 using Mapsui.Nts;
+using Mapsui.Projections;
+using Mapsui.Providers;
 using Mapsui.Styles;
 using Mapsui.Styles.Thematics;
 using Mapsui.Tiling.Layers;
+using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
 
 namespace map_app
@@ -38,8 +42,7 @@ namespace map_app
             map.Layers.Add(CreatePolygonLayer());
             var editLayer = CreateEditLayer();
             map.Layers.Add(editLayer);
-            map.Layers.Add(new VertexOnlyLayer(editLayer) { Name = "VertexLayer" });
-
+            map.Layers.Add(new VertexOnlyLayer(editLayer) { Name = "VertexLayer" });            
             return map;
         }
 

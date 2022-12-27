@@ -15,8 +15,7 @@
   </ItemGroup>  
 
   <ItemGroup>
-    <AvaloniaResource Include="Resources\Assets\minus.svg" />
-    <AvaloniaResource Include="Resources\Assets\plus.svg" />
+    <AvaloniaResource Include="Resources\Assets\*" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,6 +32,7 @@
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.18" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18" />
+    <PackageReference Include="Avalonia.Svg" Version="0.10.18" />
     <PackageReference Include="Mapsui" Version="4.0.0-beta.5" />
     <PackageReference Include="Mapsui.Avalonia" Version="4.0.0-beta.5" />
     <PackageReference Include="XamlNameReferenceGenerator" Version="1.3.4" />

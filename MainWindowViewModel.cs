@@ -18,7 +18,8 @@ namespace map_app
         private readonly EditManager _editManager = new();
         private readonly EditManipulation _editManipulation = new();
         private bool _selectMode;
-        private bool leftWasPressed;
+        private bool _gridIsActive = true;
+        private bool _leftWasPressed;
 
         private readonly MapControl MapControl;
 
@@ -140,7 +141,7 @@ namespace map_app
         {
             var point = args.GetCurrentPoint(MapControl);
 
-            if (!leftWasPressed)
+            if (!_leftWasPressed)
                 return;
 
             if (MapControl.Map != null)
@@ -164,10 +165,10 @@ namespace map_app
 
             if (!point.Properties.IsLeftButtonPressed)
             {
-                leftWasPressed = false;
+                _leftWasPressed = false;
                 return;
             }
-            leftWasPressed = true;
+            _leftWasPressed = true;
             if (MapControl.Map == null)
                 return;
 
@@ -199,5 +200,21 @@ namespace map_app
         private void Modify() => _editManager.EditMode = EditMode.Modify;
 
         private void Rotate() => _editManager.EditMode = EditMode.Rotate;
+
+        private void AddGridReference()
+        {
+            if (_gridIsActive)
+            {
+
+                MapControl.Map!.Layers.Add(GridReference.Grid);
+                _gridIsActive = false;
+                MapControl.RefreshGraphics();
+                return;
+            }
+
+            MapControl.Map!.Layers.Remove(GridReference.Grid);
+            MapControl.RefreshGraphics();
+            _gridIsActive = true;
+        }
     }
 }

@@ -1,50 +1,89 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:svg="clr-namespace:Avalonia.Svg;assembly=Avalonia.Svg"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:avalonia="clr-namespace:Mapsui.UI.Avalonia;assembly=Mapsui.UI.Avalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         FontFamily="Ubuntu"
         x:Class="map_app.MainWindow"
         Title="map_app">
-    <Avalonia.Resources>
-        <Image x:Key="Minus" Source="minus.svg"/>
-    </Avalonia.Resources>
+    <Window.Resources>
+        <svg:Svg x:Key="minus" Path="Resources/Assets/minus.svg" Width="20" Height="20" />
+        <svg:Svg x:Key="plus" Path="Resources/Assets/plus.svg" Width="15" Height="15" />
+        <svg:Svg x:Key="point" Path="Resources/Assets/point.svg" Width="20" Height="20" />
+        <svg:Svg x:Key="polygon" Path="Resources/Assets/polygon.svg" Width="20" Height="20" />
+        <svg:Svg x:Key="rectangle" Path="Resources/Assets/rectangle.svg" Width="20" Height="20" />
+        <svg:Svg x:Key="angle-up" Path="Resources/Assets/angle-up.svg" Width="20" Height="20" />
+        <svg:Svg x:Key="orthodrome" Path="Resources/Assets/orthodrome.svg" Width="20" Height="20" />
+        <svg:Svg x:Key="grid" Path="Resources/Assets/grid.svg" Width="20" Height="20" />
+    </Window.Resources>
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="0.1*"/>
-        </Grid.ColumnDefinitions>
         <avalonia:MapControl x:Name="MapControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
-        <StackPanel Grid.Column="1">
-            <Button x:Name="AddPolygon" Content="Add Polygon" Command="{Binding AddPolygon}"/>
-            <Button x:Name="Modify" Command="{Binding Modify}" Content="Modify"/>
-            <Button Name="Select" Command="{Binding Select}" >Select (for delete)</Button>
-            <Button Name="Delete" Command="{Binding Delete}" >Delete</Button>
-            <Button Name="Rotate" Command="{Binding Rotate}" >Rotate</Button>
-            <Button Name="Scale" Command="{Binding Scale}" >Scale</Button>
-            <Button Name="AddLine" Command="{Binding AddLine}" >Add Line</Button>
-            <Button Name="Cancel" Command="{Binding Cancel}" >Cancel</Button>
-            <Button Name="Load" Command="{Binding Load}" >Load</Button>
-            <Button Name="None" Command="{Binding None}" >None</Button>
-            <Button Name="Save" Command="{Binding Save}" >Save</Button>
-            <Button Name="OrthodromeMode" Command="{Binding AddOrthodromeLine}">OrthodromeMode</Button>
-            <Button Name="AddPoint" Command="{Binding AddPoint}">Add Point</Button>
-            <Button Name="AddRectangle" Command="{Binding AddRectangle}">Add rect</Button>
-        </StackPanel>
-        <Border BoxShadow="0 3 8 0 Black"
-            HorizontalAlignment="Right"
+
+        <Grid HorizontalAlignment="Right">
+            <Border BoxShadow="0 3 8 0 Black"
             Background="White"
             CornerRadius="3"
             Margin="0 10 10 0"
             VerticalAlignment="Top"
             Width="35"
             Height="60"
-            >
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Button Content="+ " Background="White" Width="30"/>
-                <Button Content=" -" Width="30" Background="White"/>
-            </StackPanel>
+                >
+                <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+
+                    <Button Content="{StaticResource plus}" Background="White"
+                        HorizontalAlignment="Center" VerticalAlignment="Top"/>
+                    <Button Grid.Row="1" Content="{StaticResource minus}" Background="White"
+                        HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
+                </Grid>
+            </Border>
+
+            <Border BoxShadow="0 3 8 0 Black" Background="White" CornerRadius="3" Margin="0 80 10 0" 
+                VerticalAlignment="Top"
+                Width="35"
+                Height="35"
+                    >
+                <Button Content="{StaticResource grid}" Background="White" Command="{Binding AddGridReference}" />
+            </Border>
+        </Grid>       
+
+        <Border BoxShadow="0 3 8 0 Black"
+            VerticalAlignment="Bottom"
+            HorizontalAlignment="Center"
+            Background="White"
+            Width="250"
+            Margin="30"
+            CornerRadius="15"
+            Height="35" >
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal">
+                    <Button CornerRadius="15" Content="{StaticResource rectangle}" Command="{Binding AddRectangle}" Background="White" />
+                    <Button CornerRadius="15" Content="{StaticResource orthodrome}" Command="{Binding AddOrthodromeLine}" Background="White" />
+                    <Button CornerRadius="15" Content="{StaticResource polygon}" Command="{Binding AddPolygon}" Background="White" />
+                    <Button CornerRadius="15" Content="{StaticResource point}" Command="{Binding AddPoint}" Background="White" />
+                </StackPanel>
+
+                <Button Grid.Column="1" CornerRadius="15" Content="{StaticResource angle-up}" HorizontalAlignment="Right" Background="White" >
+                    <Button.Flyout>
+                        <MenuFlyout Placement="Top">
+                            <MenuItem Header="Save" Command="{Binding Save}" />
+                            <MenuItem Header="Cancel" Command="{Binding Cancel}" />
+                            <MenuItem Header="Load" Command="{Binding Load}" />
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+            </Grid>
+        
         </Border>
     </Grid>    
 </Window>
