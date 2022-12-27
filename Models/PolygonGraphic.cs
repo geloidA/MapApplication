@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Mapsui.Nts;
 using NetTopologySuite.Geometries;
 
@@ -13,19 +12,21 @@ namespace map_app.Models
         public PolygonGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
         public PolygonGraphic(Geometry? geometry) : base(geometry) { }
 
+        public override GraphicType Type => GraphicType.Polygon;
+
         public void AddLinearPoint(Coordinate worldPoint)
         {
-            _linearPoints.Add(worldPoint);
-            Geometry = RenderGeomerty(_linearPoints);
+            _coordinates.Add(worldPoint);
+            Geometry = RenderGeomerty(_coordinates);
         }
 
         public void AddRangeLinearPoints(IEnumerable<Coordinate> worldPoints)
         {
             foreach(var point in worldPoints)
             {
-                _linearPoints.Add(point);
+                _coordinates.Add(point);
             }
-            Geometry = RenderGeomerty(_linearPoints);
+            Geometry = RenderGeomerty(_coordinates);
         }
 
         public Geometry RenderStepGeometry(Coordinate worldPosition)

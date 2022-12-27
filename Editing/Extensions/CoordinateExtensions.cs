@@ -34,9 +34,8 @@ namespace map_app.Editing.Extensions
             return new GeoPoint(lonLat.lon, lonLat.lat);
         }
 
-        public static LinearPoint? ToLinearPoint(this Coordinate target)
+        public static LinearPoint ToLinearPoint(this Coordinate target)
         {
-            if (target is null) return null;
             return new LinearPoint(target.X, target.Y, target.Z);
         }
 

@@ -2,43 +2,58 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mapsui.Nts;
+using Newtonsoft.Json;
 using Mapsui.Styles;
 using map_app.Editing.Extensions;
 using NetTopologySuite.Geometries;
 
 namespace map_app.Models
 {
+    [JsonObject(MemberSerialization.OptIn)]
     public abstract class BaseGraphic : GeometryFeature
     {
-        protected List<Coordinate> _linearPoints = new();
+        protected List<Coordinate> _coordinates = new();
 
         public BaseGraphic(List<Coordinate> points) : base() 
         { 
-            _linearPoints = points;
+            _coordinates = points;
             Geometry = RenderGeomerty(points);
         }
 
         public BaseGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
         public BaseGraphic(Geometry? geometry) : base(geometry) { }
 
+        [JsonProperty]
+        public abstract GraphicType Type { get; }
+
+        [JsonProperty]
         public Dictionary<string, IUserTag>? UserTags { get; set; }
+
+        [JsonProperty]
         public Color? Color { get; set; } // todo: auto generate style when change color
+
+        [JsonProperty]
         public double Opacity { get; set; }
-        public IReadOnlyList<GeoPoint> GeoPoints => _linearPoints.Select(x => x.ToGeoPoint()).ToList();
+
+        [JsonProperty]
+        public IReadOnlyList<GeoPoint> GeoPoints => _coordinates.Select(x => x.ToGeoPoint()).ToList();
+
+        [JsonProperty]
+        public IReadOnlyCollection<LinearPoint> LinearPoints => _coordinates.Select(x => x.ToLinearPoint()).ToList();
 
         /// <summary>
         /// Recalculation Geometry property when set method is called
         /// </summary>
-        public IReadOnlyList<Coordinate> LinearPoints
+        public IReadOnlyList<Coordinate> Coordinates
         {
-            get => _linearPoints;
+            get => _coordinates;
             set
             {
                 if (value is null)
                     throw new ArgumentNullException();
                 
-                _linearPoints = value.ToList();
-                Geometry = RenderGeomerty(_linearPoints);
+                _coordinates = value.ToList();
+                Geometry = RenderGeomerty(_coordinates);
             }
         }
         
@@ -52,7 +67,7 @@ namespace map_app.Models
         
         public void RerenderGeometry()
         {
-            Geometry = RenderGeomerty(_linearPoints);
+            Geometry = RenderGeomerty(_coordinates);
         }
     }
 }

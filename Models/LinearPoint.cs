@@ -1,9 +1,11 @@
-using NetTopologySuite.Geometries;
-
 namespace map_app.Models
 {
-    public class LinearPoint : Coordinate
+    public class LinearPoint
     {
+        public double X { get; set; }
+        public double Y { get; set; }
+        public double Z { get; set; }
+
         public LinearPoint() : this(0, 0, 0)
         {
         }

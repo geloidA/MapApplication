@@ -11,6 +11,8 @@ namespace map_app.Models
         public RectangleGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
         public RectangleGraphic(Geometry? geometry) : base(geometry) { }
 
+        public override GraphicType Type => GraphicType.Rectangle;
+
         protected override Geometry RenderGeomerty(List<Coordinate> points)
         {
             if (points.Count != 2)

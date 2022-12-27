@@ -1,15 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mapsui;
 using map_app.Editing.Extensions;
 using Mapsui.Layers;
 using Mapsui.Nts;
 using Mapsui.Nts.Extensions;
-using Mapsui.Projections;
 using Mapsui.UI;
 using map_app.Models;
-using Mapsui.Utilities;
 using NetTopologySuite.Geometries;
 
 namespace map_app.Editing
@@ -65,7 +62,7 @@ namespace map_app.Editing
                 var polygon = _addInfo.Feature.Geometry as Polygon;
                 if (polygon == null) return false;
 
-                _addInfo.Feature.LinearPoints = _addInfo.Vertices.ToList();
+                _addInfo.Feature.Coordinates = _addInfo.Vertices.ToList();
 
                 _addInfo.Feature?.RenderedGeometry.Clear(); // You need to clear the cache to see changes.
                 _addInfo.Feature = null;
@@ -76,7 +73,7 @@ namespace map_app.Editing
             else if (EditMode == EditMode.DrawingOrthodromeLine)
             {
                 _addInfo.Vertices.RemoveAt(_addInfo.Vertices.Count - 1);
-                _addInfo.Feature.LinearPoints = _addInfo.Vertices.ToList();
+                _addInfo.Feature.Coordinates = _addInfo.Vertices.ToList();
 
                 _addInfo.Feature?.RenderedGeometry.Clear();
                 _addInfo.Feature = null;

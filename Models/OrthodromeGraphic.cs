@@ -25,6 +25,8 @@ namespace map_app.Models
         public OrthodromeGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
         public OrthodromeGraphic(Geometry? geometry) : base(geometry) { }
 
+        public override GraphicType Type => GraphicType.Orthodrome;
+
         public void AddLinearPoint(Coordinate worldCoordinate)
         {
             if (_orthodrome is null)
@@ -37,8 +39,8 @@ namespace map_app.Models
                 last = last.Next;
             }
             last.Next = new Orthodrome(last.End, worldCoordinate.ToGeoPoint());
-            _linearPoints.Add(worldCoordinate);
-            Geometry = RenderGeomerty(_linearPoints);
+            _coordinates.Add(worldCoordinate);
+            Geometry = RenderGeomerty(_coordinates);
         }
 
         public void AddRangeLinearPoints(IEnumerable<Coordinate> worldCoordinates)
@@ -53,10 +55,10 @@ namespace map_app.Models
             foreach (var point in worldCoordinates)
             {
                 last.Next = new Orthodrome(last.End, point.ToGeoPoint());
-                _linearPoints.Add(point);
+                _coordinates.Add(point);
                 last = last.Next;
             }
-            Geometry = RenderGeomerty(_linearPoints);
+            Geometry = RenderGeomerty(_coordinates);
         }
 
         public Geometry RenderStepGeometry(Coordinate worldPosition)

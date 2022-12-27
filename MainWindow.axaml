@@ -17,6 +17,7 @@
         <svg:Svg x:Key="angle-up" Path="Resources/Assets/angle-up.svg" Width="20" Height="20" />
         <svg:Svg x:Key="orthodrome" Path="Resources/Assets/orthodrome.svg" Width="20" Height="20" />
         <svg:Svg x:Key="grid" Path="Resources/Assets/grid.svg" Width="20" Height="20" />
+        <svg:Svg x:Key="ruler" Path="Resources/Assets/ruler.svg" Width="20" Height="20" />
     </Window.Resources>
     <Grid>
         <avalonia:MapControl x:Name="MapControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
@@ -49,6 +50,14 @@
                 Height="35"
                     >
                 <Button Content="{StaticResource grid}" Background="White" Command="{Binding AddGridReference}" />
+            </Border>
+
+            <Border BoxShadow="0 3 8 0 Black" Background="White" CornerRadius="3" Margin="0 125 10 0" 
+                VerticalAlignment="Top"
+                Width="35"
+                Height="35"
+                    >
+                <Button Content="{StaticResource ruler}" Background="White" />
             </Border>
         </Grid>       
 
