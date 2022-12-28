@@ -7,7 +7,7 @@ using NetTopologySuite.Geometries;
 
 namespace map_app.Services
 {
-    public static class MapAlgorithms
+    public static class MapAlgorithms // todo: bug when draw right to left
     {
         public static List<GeoPoint> GetOrthodromePath(Coordinate worldPoint1, Coordinate worldPoint2)
         {

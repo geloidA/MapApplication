@@ -103,21 +103,6 @@ namespace map_app.Editing
             }
         }
 
-        internal void HoveringOrthodronomeVertex(MapInfo? mapInfo)
-        {
-            if (_addInfo.Vertex != null)
-            {
-                _addInfo.Vertex.SetXY(mapInfo?.WorldPosition);
-                if (_lastOrthodromeCoordinate != null)
-                {
-                    // change drawing
-                    //_addInfo.Feature!.Geometry = new LineString(GetOrthodromeLonLatPath(_addInfo.Vertex, _lastOrthodromeCoordinate).LonLatToWorld().ToArray());
-                    _addInfo.Feature?.RenderedGeometry.Clear();
-                    Layer?.DataHasChanged();
-                }
-            }
-        }
-
         public bool AddVertex(Coordinate worldPosition)
         {
             if (EditMode == EditMode.AddPoint)

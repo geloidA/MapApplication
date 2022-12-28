@@ -11,8 +11,9 @@
                 "as": 12
             }
     },
+    "Opacity": 0.0,
     "Color": [ 0, 0, 255, 2],
-    "LinearCoordinates": [
+    "LinearPoints": [
         {
             "X": 23.2,
             "Y": 12,
@@ -24,7 +25,7 @@
             "Z": 21.5
         }
     ],
-    "GeoCoordinates": [
+    "GeoPoints": [
         {
             "Longtitude": 12.23,
             "Latitude": 23.123,
@@ -36,5 +37,5 @@
             "Altitude": 21.12
         }
     ],
-    "GraphicObjectType": 2
+    "Type": 2
 }

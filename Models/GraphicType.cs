@@ -4,7 +4,7 @@ namespace map_app.Models
     {
         Point,
         Rectangle,
-        Polygon,
-        Orthodrome
+        Orthodrome,
+        Polygon
     }
 }
