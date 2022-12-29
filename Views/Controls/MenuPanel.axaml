@@ -11,5 +11,6 @@
         <Separator/>
         <MenuItem Header="Выход" Command="{Binding ExitApp}"/>
     </MenuItem>
+    <MenuItem Header="Управление слоями карты" Command="{Binding OpenLayersManageView}" />
   </Menu>
 </UserControl>

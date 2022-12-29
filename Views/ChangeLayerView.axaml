@@ -1,0 +1,26 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="map_app.Views.ChangeLayerView"
+        Title="ChangeLayerView">
+  <Grid RowDefinitions="1*,0.2*">
+    <UniformGrid Columns="2" VerticalAlignment="Center">
+      <StackPanel VerticalAlignment="Center" HorizontalAlignment="Right">
+        <TextBlock Text="Наименование" />
+        <TextBlock Text="Прозрачность" />
+        <TextBlock Text="Источник данных" />
+      </StackPanel>
+      <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left">
+        <TextBox Text="{Binding Name}" />
+        <Slider Value="{Binding Opacity}" Width="100" ></Slider>
+        <!-- Источник данных? -->
+      </StackPanel>
+    </UniformGrid>
+    <Grid ColumnDefinitions="1*,1*" Grid.Row="1">
+      <Button Content="ОК" HorizontalAlignment="Center" Command="{Binding ConfirmChangeLayer}" />
+      <Button Grid.Column="1" HorizontalAlignment="Center" Content="Отмена" Command="{Binding CancelChangeLayer}" />
+    </Grid>
+  </Grid>
+</Window>

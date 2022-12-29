@@ -14,7 +14,7 @@
 
             <Grid DockPanel.Dock="Bottom">
                 <avalonia:MapControl x:Name="MapControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />            
-                <controls:AuxiliaryPanel HorizontalAlignment="Right" />
+                <controls:AuxiliaryPanel HorizontalAlignment="Right" Width="60" />
                 <controls:NavigationPanel />
             </Grid>
         </DockPanel>        

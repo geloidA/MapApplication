@@ -90,35 +90,13 @@ namespace map_app.ViewModels
             }
         }
 
-        private void AddPoint() => AddShape(EditMode.AddPoint);
-
-        private void AddLine() => AddShape(EditMode.AddLine);
-
-        private void AddPolygon() => AddShape(EditMode.AddPolygon);
-
-        private void AddRectangle() => AddShape(EditMode.AddRectangle);
-
-        private void AddOrthodromeLine() => AddShape(EditMode.AddOrthodromeLine);
-
-        private void AddShape(EditMode mode)
-        {
-            SaveBuffer();
-            _editManager.EditMode = mode;
-        }
-
-        private void SaveBuffer()
-        {
-            var features = _targetLayer?.GetFeatures().Copy() ?? Array.Empty<IFeature>();
-            foreach (var feature in features)
-            {
-                feature.RenderedGeometry.Clear();
-            }
-            _tempFeatures = new List<IFeature>(features);
-        }
-
         private void Scale() => _editManager.EditMode = EditMode.Scale;
 
         private void Select() => _selectMode = !_selectMode;
+
+        private void Modify() => _editManager.EditMode = EditMode.Modify;
+
+        private void Rotate() => _editManager.EditMode = EditMode.Rotate;
 
         internal void MapControlOnPointerMoved(object? sender, PointerEventArgs args)
         {
@@ -189,20 +167,36 @@ namespace map_app.ViewModels
         private void InitializeEditSetup()
         {
             _editManager.Layer = (WritableLayer)MapControl.Map!.Layers.First(l => l.Name == "EditLayer");
-            _targetLayer = (WritableLayer)MapControl.Map.Layers.First(l => l.Name == "Layer 3");
-
-            // Load the polygon layer on startup so you can start modifying right away
-            _editManager.Layer.AddRange(_targetLayer.GetFeatures().Copy());
+            _targetLayer = (WritableLayer)MapControl.Map!.Layers.First(l => l.Name == "Target Layer");
             _targetLayer.Clear();
-
-            _editManager.EditMode = EditMode.Modify;
         }
 
-        private void Modify() => _editManager.EditMode = EditMode.Modify;
+        private void EnablePointMode() => EnableDrawingMode(EditMode.AddPoint);
 
-        private void Rotate() => _editManager.EditMode = EditMode.Rotate;
+        private void EnablePolygonMode() => EnableDrawingMode(EditMode.AddPolygon);
 
-        private void AddGridReference()
+        private void EnableRectangleMode() => EnableDrawingMode(EditMode.AddRectangle);
+
+        private void EnableOrthodromeMode() => EnableDrawingMode(EditMode.AddOrthodromeLine);
+
+        private void EnableDrawingMode(EditMode mode)
+        {
+            ClearAllFeatureRenders();
+            _editManager.EditMode = mode;
+        }
+
+        private void ClearAllFeatureRenders()
+        {
+            var features = _targetLayer?.GetFeatures().Copy() ?? Array.Empty<IFeature>();
+            foreach (var feature in features)
+            {
+                feature.RenderedGeometry.Clear();
+            }
+            _tempFeatures = new List<IFeature>(features);
+        }
+
+        #region AuxiliaryPanel Commands
+        private void ShowGridReference()
         {
             if (_gridIsActive)
             {
@@ -217,5 +211,21 @@ namespace map_app.ViewModels
             MapControl.RefreshGraphics();
             _gridIsActive = true;
         }
+
+        private void EnableRuler()
+        {
+
+        }
+
+        private void ZoomIn()
+        {
+
+        }
+
+        private void ZoomOut()
+        {
+
+        }
+        #endregion
     }
 }

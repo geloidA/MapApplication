@@ -1,0 +1,30 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        MaxHeight="200"
+        MaxWidth="450"
+        x:Class="map_app.Views.LayersManageView"
+        Title="LayersManageView">
+  <Grid ColumnDefinitions="2*,1*" >
+      <Grid RowDefinitions="2*,1*" >
+        <ListBox Items="{Binding Layers}" SelectedItem="{Binding SelectedLayer}" >
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding Name}" />
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" >
+          <Button Content="Добавить" Command="{Binding AddLayer}" />
+          <Button Content="Удалить" Command="{Binding RemoveLayer}" />
+        </StackPanel>
+      </Grid>
+      <StackPanel Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" >
+        <Button Content="ОК" Command="{Binding SaveChanges}" />
+        <Button Content="Отмена" Command="{Binding CancelManage}" />
+        <Button Content="Изменить" Command="{Binding ChangeLayer}" />
+      </StackPanel>
+  </Grid>
+</Window>

@@ -22,7 +22,7 @@
             Margin="30"
             CornerRadius="15"
             Height="35" >
-            <Grid ColumnDefinitions="Auto,Auto">
+            <Grid ColumnDefinitions="Auto,0.1*">
                 <StackPanel Orientation="Horizontal">
                     <Button CornerRadius="15" Content="{StaticResource rectangle}" Command="{Binding EnableRectangleMode}" Background="White" ToolTip.Tip="Квадрат" />
                     <Button CornerRadius="15" Content="{StaticResource orthodrome}" Command="{Binding EnableOrthodromeMode}" Background="White" ToolTip.Tip="Ортодромия" />
@@ -32,7 +32,7 @@
 
                 <Button Grid.Column="1" CornerRadius="15" Content="{StaticResource angle-up}" HorizontalAlignment="Right" Background="White" ToolTip.Tip="Разное" >
                     <Button.Flyout>
-                        <MenuFlyout Placement="Top">
+                        <MenuFlyout Placement="Top" >
                             <MenuItem Header="Сохранить" Command="{Binding SaveDrawingChanges}" />
                             <MenuItem Header="Отмена" Command="{Binding CancelDrawingChanges}" />
                             <MenuItem Header="Изменить" Command="{Binding ChangeDrawing}" />
