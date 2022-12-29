@@ -24,18 +24,18 @@
             Height="35" >
             <Grid ColumnDefinitions="Auto,Auto">
                 <StackPanel Orientation="Horizontal">
-                    <Button CornerRadius="15" Content="{StaticResource rectangle}" Command="{Binding AddRectangle}" Background="White" />
-                    <Button CornerRadius="15" Content="{StaticResource orthodrome}" Command="{Binding AddOrthodromeLine}" Background="White" />
-                    <Button CornerRadius="15" Content="{StaticResource polygon}" Command="{Binding AddPolygon}" Background="White" />
-                    <Button CornerRadius="15" Content="{StaticResource point}" Command="{Binding AddPoint}" Background="White" />
+                    <Button CornerRadius="15" Content="{StaticResource rectangle}" Command="{Binding EnableRectangleMode}" Background="White" ToolTip.Tip="Квадрат" />
+                    <Button CornerRadius="15" Content="{StaticResource orthodrome}" Command="{Binding EnableOrthodromeMode}" Background="White" ToolTip.Tip="Ортодромия" />
+                    <Button CornerRadius="15" Content="{StaticResource polygon}" Command="{Binding EnablePolygonMode}" Background="White" ToolTip.Tip="Полигон" />
+                    <Button CornerRadius="15" Content="{StaticResource point}" Command="{Binding EnablePointMode}" Background="White" ToolTip.Tip="Точка" />
                 </StackPanel>
 
-                <Button Grid.Column="1" CornerRadius="15" Content="{StaticResource angle-up}" HorizontalAlignment="Right" Background="White" >
+                <Button Grid.Column="1" CornerRadius="15" Content="{StaticResource angle-up}" HorizontalAlignment="Right" Background="White" ToolTip.Tip="Разное" >
                     <Button.Flyout>
                         <MenuFlyout Placement="Top">
-                            <MenuItem Header="Save" Command="{Binding Save}" />
-                            <MenuItem Header="Cancel" Command="{Binding Cancel}" />
-                            <MenuItem Header="Load" Command="{Binding Load}" />
+                            <MenuItem Header="Сохранить" Command="{Binding SaveDrawingChanges}" />
+                            <MenuItem Header="Отмена" Command="{Binding CancelDrawingChanges}" />
+                            <MenuItem Header="Изменить" Command="{Binding ChangeDrawing}" />
                         </MenuFlyout>
                     </Button.Flyout>
                 </Button>

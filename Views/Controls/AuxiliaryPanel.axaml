@@ -22,27 +22,27 @@
         Width="35"
         Height="60" >
             <Grid HorizontalAlignment="Center" VerticalAlignment="Center" RowDefinitions="Auto,Auto">
-                <Button Content="{StaticResource plus}" Background="White"
+                <Button Content="{StaticResource plus}" Background="White" Command="{Binding ZoomIn}" ToolTip.Tip="Увеличить"
                     HorizontalAlignment="Center" VerticalAlignment="Top"/>
-                <Button Grid.Row="1" Content="{StaticResource minus}" Background="White"
+                <Button Grid.Row="1" Content="{StaticResource minus}" Background="White" Command="{Binding ZoomOut}" ToolTip.Tip="Уменьшить"
                     HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
             </Grid>
         </Border>
 
         <Border BoxShadow="0 3 8 0 Black" Background="White" CornerRadius="3" Margin="0 80 10 0" 
-            VerticalAlignment="Top"
+            VerticalAlignment="Top" ToolTip.Tip="Сетка"
             Width="35"
             Height="35"
                 >
-            <Button Content="{StaticResource grid}" Background="White" Command="{Binding AddGridReference}" />
+            <Button Content="{StaticResource grid}" Background="White" Command="{Binding ShowGridReference}" />
         </Border>
 
         <Border BoxShadow="0 3 8 0 Black" Background="White" CornerRadius="3" Margin="0 125 10 0" 
-            VerticalAlignment="Top"
+            VerticalAlignment="Top" ToolTip.Tip="Линейка"
             Width="35"
             Height="35"
                 >
-            <Button Content="{StaticResource ruler}" Background="White" />
+            <Button Content="{StaticResource ruler}" Background="White" Command="{Binding EnableRuler}" />
         </Border>
   </Grid>
 </UserControl>
