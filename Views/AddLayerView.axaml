@@ -19,8 +19,8 @@
       </StackPanel>
     </UniformGrid>
     <Grid ColumnDefinitions="1*,1*" Grid.Row="1">
-      <Button Content="ОК" HorizontalAlignment="Center" Command="{Binding ConfirmChangeLayer}" />
-      <Button Grid.Column="1" HorizontalAlignment="Center" Content="Отмена" Command="{Binding CancelChangeLayer}" />
+      <Button Classes="dialog" Content="ОК" HorizontalAlignment="Center" Command="{Binding ConfirmChangeLayer}" />
+      <Button Classes="dialog" Grid.Column="1" HorizontalAlignment="Center" Content="Отмена" Command="{Binding CancelChangeLayer}" />
     </Grid>
   </Grid>
 </Window>
