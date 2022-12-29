@@ -4,12 +4,13 @@ using Mapsui;
 using Mapsui.Extensions;
 using Mapsui.Layers;
 using Mapsui.UI.Avalonia;
+using map_app.Services;
 using map_app.Editing;
 using System.Linq;
 using Avalonia.Input;
 using Mapsui.UI.Avalonia.Extensions;
 
-namespace map_app
+namespace map_app.ViewModels
 {    
     public class MainWindowViewModel
     {

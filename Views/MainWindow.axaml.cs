@@ -1,10 +1,11 @@
 using Avalonia.Controls;
 using Mapsui.UI.Avalonia;
+using map_app.ViewModels;
 
-namespace map_app;
+namespace map_app.Views;
 
 public partial class MainWindow : Window
-{    
+{
     public MainWindow()
     {
         InitializeComponent();

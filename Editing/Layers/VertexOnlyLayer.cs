@@ -7,7 +7,7 @@ using Mapsui.Styles;
 using NetTopologySuite.Geometries;
 using map_app.Editing.Extensions;
 
-namespace map_app
+namespace map_app.Editing.Layers
 {
     public class VertexOnlyLayer : BaseLayer
     {

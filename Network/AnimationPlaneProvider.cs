@@ -10,7 +10,7 @@ using Mapsui.Projections;
 using Mapsui.Providers;
 using Mapsui.Utilities;
 
-namespace map_app
+namespace map_app.Network
 {
     public class AnimationAircraftsProvider : MemoryProvider, IDynamic
     {

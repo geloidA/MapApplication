@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using BruTile.Predefined;
 using BruTile.Web;
 using Mapsui;
@@ -6,15 +5,15 @@ using Mapsui.Extensions;
 using Mapsui.Layers;
 using Mapsui.Layers.AnimatedLayers;
 using Mapsui.Nts;
-using Mapsui.Projections;
-using Mapsui.Providers;
 using Mapsui.Styles;
 using Mapsui.Styles.Thematics;
 using Mapsui.Tiling.Layers;
-using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
+using map_app.Views;
+using map_app.Editing.Layers;
+using map_app.Network;
 
-namespace map_app
+namespace map_app.Services
 {
     public class MapCreator
     {

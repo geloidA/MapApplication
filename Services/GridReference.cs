@@ -6,7 +6,7 @@ using Mapsui.Projections;
 using Mapsui.Styles;
 using NetTopologySuite.Geometries;
 
-namespace map_app
+namespace map_app.Services
 {
     public static class GridReference
     {
