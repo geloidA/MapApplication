@@ -9,10 +9,14 @@
         x:Class="map_app.Views.MainWindow"
         Title="Подготовка полётного задания">
     <Grid>
-        <avalonia:MapControl x:Name="MapControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
-        
-        <controls:AuxiliaryPanel HorizontalAlignment="Right" />
+        <DockPanel>
+            <controls:MenuPanel DockPanel.Dock="Top"/>
 
-        <controls:NavigationPanel />
+            <Grid DockPanel.Dock="Bottom">
+                <avalonia:MapControl x:Name="MapControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />            
+                <controls:AuxiliaryPanel HorizontalAlignment="Right" />
+                <controls:NavigationPanel />
+            </Grid>
+        </DockPanel>        
     </Grid>    
 </Window>
