@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Mapsui.Fetcher;
 using System.Linq;
-using map_app.Network;
 using map_app.Models;
 
 namespace map_app.Network
