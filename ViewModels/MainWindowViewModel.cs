@@ -9,10 +9,11 @@ using map_app.Editing;
 using System.Linq;
 using Avalonia.Input;
 using Mapsui.UI.Avalonia.Extensions;
+using ReactiveUI;
 
 namespace map_app.ViewModels
-{    
-    public class MainWindowViewModel
+{
+    public class MainWindowViewModel : ReactiveObject, IActivatableViewModel
     {
         private WritableLayer? _targetLayer;
         private IEnumerable<IFeature>? _tempFeatures;
@@ -24,8 +25,12 @@ namespace map_app.ViewModels
 
         private readonly MapControl MapControl;
 
+        public ViewModelActivator Activator { get; }
+
         public MainWindowViewModel(MapControl mapControl)
         {
+            Activator = new ViewModelActivator();
+
             MapControl = mapControl;
             MapControl.Map = MapCreator.Create();
             InitializeEditSetup();
