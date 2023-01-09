@@ -6,14 +6,17 @@ using Mapsui.Layers;
 using Mapsui.UI.Avalonia;
 using map_app.Services;
 using map_app.Editing;
+using System.Reactive.Linq;
 using System.Linq;
+using System.Windows.Input;
 using Avalonia.Input;
 using Mapsui.UI.Avalonia.Extensions;
 using ReactiveUI;
+using map_app.Views;
 
 namespace map_app.ViewModels
 {
-    public class MainWindowViewModel : ReactiveObject, IActivatableViewModel
+    public class MainWindowViewModel : ViewModelBase
     {
         private WritableLayer? _targetLayer;
         private IEnumerable<IFeature>? _tempFeatures;
@@ -22,18 +25,37 @@ namespace map_app.ViewModels
         private bool _selectMode;
         private bool _gridIsActive = true;
         private bool _leftWasPressed;
-
-        private readonly MapControl MapControl;
-
-        public ViewModelActivator Activator { get; }
+        private readonly MapControl _mapControl;
 
         public MainWindowViewModel(MapControl mapControl)
         {
-            Activator = new ViewModelActivator();
-
-            MapControl = mapControl;
-            MapControl.Map = MapCreator.Create();
+            _mapControl = mapControl;
+            _mapControl.Map = MapCreator.Create();
             InitializeEditSetup();
+            EnablePointMode = ReactiveCommand.Create(() => EnableDrawingMode(EditMode.AddPoint));
+            EnablePolygonMode = ReactiveCommand.Create(() => EnableDrawingMode(EditMode.AddPolygon));
+            EnableOrthodromeMode = ReactiveCommand.Create(() => EnableDrawingMode(EditMode.AddOrthodromeLine));
+            EnableRectangleMode = ReactiveCommand.Create(() => EnableDrawingMode(EditMode.AddRectangle));
+            ShowDialog = new Interaction<LayersManageViewModel, MainWindowViewModel>();
+            OpenLayersManageView = ReactiveCommand.CreateFromTask(async () =>
+            {
+                var manager = new LayersManageViewModel(_mapControl.Map);
+                var result = await ShowDialog.Handle(manager);
+            });
+        }
+
+        public ICommand EnablePointMode { get; }
+        public ICommand EnablePolygonMode { get; }
+        public ICommand EnableOrthodromeMode { get; }
+        public ICommand EnableRectangleMode { get; }
+        public ICommand OpenLayersManageView { get; }
+        public Interaction<LayersManageViewModel, MainWindowViewModel> ShowDialog { get; }
+
+        private void InitializeEditSetup()
+        {
+            _editManager.Layer = (WritableLayer)_mapControl.Map!.Layers.First(l => l.Name == "EditLayer");
+            _targetLayer = (WritableLayer)_mapControl.Map!.Layers.First(l => l.Name == "Target Layer");
+            _targetLayer.Clear();
         }
 
         private void Cancel()
@@ -42,12 +64,12 @@ namespace map_app.ViewModels
             {
                 _targetLayer.Clear(); 
                 _targetLayer.AddRange(_tempFeatures.Copy());
-                MapControl.RefreshGraphics();
+                _mapControl.RefreshGraphics();
             }
 
             _editManager.Layer?.Clear();
 
-            MapControl.RefreshGraphics();
+            _mapControl.RefreshGraphics();
 
             _editManager.EditMode = EditMode.None;
 
@@ -68,7 +90,7 @@ namespace map_app.ViewModels
             _editManager.Layer?.AddRange(features);
             _targetLayer?.Clear();
 
-            MapControl.RefreshGraphics();
+            _mapControl.RefreshGraphics();
         }
 
         private void Save()
@@ -76,7 +98,7 @@ namespace map_app.ViewModels
             _targetLayer?.AddRange(_editManager.Layer?.GetFeatures().Copy() ?? new List<IFeature>());
             _editManager.Layer?.Clear();
 
-            MapControl.RefreshGraphics();
+            _mapControl.RefreshGraphics();
         }
 
         private void None() => _editManager.EditMode = EditMode.None;
@@ -91,7 +113,7 @@ namespace map_app.ViewModels
                 {
                     _editManager.Layer?.TryRemove(selectedFeature);
                 }
-                MapControl.RefreshGraphics();
+                _mapControl.RefreshGraphics();
             }
         }
 
@@ -105,36 +127,36 @@ namespace map_app.ViewModels
 
         internal void MapControlOnPointerMoved(object? sender, PointerEventArgs args)
         {
-            var point = args.GetCurrentPoint(MapControl);
-            var screenPosition = args.GetPosition(MapControl).ToMapsui();
-            var worldPosition = MapControl.Viewport.ScreenToWorld(screenPosition);
+            var point = args.GetCurrentPoint(_mapControl);
+            var screenPosition = args.GetPosition(_mapControl).ToMapsui();
+            var worldPosition = _mapControl.Viewport.ScreenToWorld(screenPosition);
 
             if (point.Properties.IsLeftButtonPressed)
             {
                 _editManipulation.Manipulate(MouseState.Dragging, screenPosition,
-                    _editManager, MapControl);
+                    _editManager, _mapControl);
             }
             else
             {
                 _editManipulation.Manipulate(MouseState.Moving, screenPosition,
-                    _editManager, MapControl);
+                    _editManager, _mapControl);
             }
         }
 
         internal void MapControlOnPointerReleased(object? sender, PointerReleasedEventArgs args)
         {
-            var point = args.GetCurrentPoint(MapControl);
+            var point = args.GetCurrentPoint(_mapControl);
 
             if (!_leftWasPressed)
                 return;
 
-            if (MapControl.Map != null)
-                MapControl.Map.PanLock = _editManipulation.Manipulate(MouseState.Up,
-                    args.GetPosition(MapControl).ToMapsui(), _editManager, MapControl);
+            if (_mapControl.Map != null)
+                _mapControl.Map.PanLock = _editManipulation.Manipulate(MouseState.Up,
+                    args.GetPosition(_mapControl).ToMapsui(), _editManager, _mapControl);
 
             if (_selectMode)
             {
-                var infoArgs = MapControl.GetMapInfo(args.GetPosition(MapControl).ToMapsui());
+                var infoArgs = _mapControl.GetMapInfo(args.GetPosition(_mapControl).ToMapsui());
                 if (infoArgs?.Feature != null)
                 {
                     var currentValue = (bool?)infoArgs.Feature["Selected"] == true;
@@ -145,7 +167,7 @@ namespace map_app.ViewModels
 
         internal void MapControlOnPointerPressed(object? sender, PointerPressedEventArgs args)
         {
-            var point = args.GetCurrentPoint(MapControl);
+            var point = args.GetCurrentPoint(_mapControl);
 
             if (!point.Properties.IsLeftButtonPressed)
             {
@@ -153,36 +175,21 @@ namespace map_app.ViewModels
                 return;
             }
             _leftWasPressed = true;
-            if (MapControl.Map == null)
+            if (_mapControl.Map == null)
                 return;
 
             if (args.ClickCount > 1)
             {
-                MapControl.Map.PanLock = _editManipulation.Manipulate(MouseState.DoubleClick,
-                    args.GetPosition(MapControl).ToMapsui(), _editManager, MapControl);
+                _mapControl.Map.PanLock = _editManipulation.Manipulate(MouseState.DoubleClick,
+                    args.GetPosition(_mapControl).ToMapsui(), _editManager, _mapControl);
                 args.Handled = true;
             }
             else
             {
-                MapControl.Map.PanLock = _editManipulation.Manipulate(MouseState.Down,
-                    args.GetPosition(MapControl).ToMapsui(), _editManager, MapControl);
+                _mapControl.Map.PanLock = _editManipulation.Manipulate(MouseState.Down,
+                    args.GetPosition(_mapControl).ToMapsui(), _editManager, _mapControl);
             }
         }
-
-        private void InitializeEditSetup()
-        {
-            _editManager.Layer = (WritableLayer)MapControl.Map!.Layers.First(l => l.Name == "EditLayer");
-            _targetLayer = (WritableLayer)MapControl.Map!.Layers.First(l => l.Name == "Target Layer");
-            _targetLayer.Clear();
-        }
-
-        private void EnablePointMode() => EnableDrawingMode(EditMode.AddPoint);
-
-        private void EnablePolygonMode() => EnableDrawingMode(EditMode.AddPolygon);
-
-        private void EnableRectangleMode() => EnableDrawingMode(EditMode.AddRectangle);
-
-        private void EnableOrthodromeMode() => EnableDrawingMode(EditMode.AddOrthodromeLine);
 
         private void EnableDrawingMode(EditMode mode)
         {
@@ -206,14 +213,14 @@ namespace map_app.ViewModels
             if (_gridIsActive)
             {
 
-                MapControl.Map!.Layers.Add(GridReference.Grid);
+                _mapControl.Map!.Layers.Add(GridReference.Grid);
                 _gridIsActive = false;
-                MapControl.RefreshGraphics();
+                _mapControl.RefreshGraphics();
                 return;
             }
 
-            MapControl.Map!.Layers.Remove(GridReference.Grid);
-            MapControl.RefreshGraphics();
+            _mapControl.Map!.Layers.Remove(GridReference.Grid);
+            _mapControl.RefreshGraphics();
             _gridIsActive = true;
         }
 
@@ -222,15 +229,10 @@ namespace map_app.ViewModels
 
         }
 
-        private void ZoomIn()
-        {
+        private void ZoomIn() => _mapControl!.Navigator!.ZoomIn(200);
 
-        }
+        private void ZoomOut() => _mapControl!.Navigator!.ZoomOut(200);
 
-        private void ZoomOut()
-        {
-
-        }
         #endregion
     }
 }

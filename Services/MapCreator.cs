@@ -31,7 +31,7 @@ namespace map_app.Services
         public static Map Create()
         {
             var map = new Map();
-            map.Layers.Add(new TileLayer(KnownTileSources.Create(KnownTileSource.OpenStreetMap)));
+            map.Layers.Add(new TileLayer(KnownTileSources.Create(KnownTileSource.OpenStreetMap)){ Name = "UserMain"});
             //map.Layers.Add(CreateAnimatedAircraftsLayer());
             map.Layers.Add(CreatePointLayer());
             map.Layers.Add(CreateLineLayer());

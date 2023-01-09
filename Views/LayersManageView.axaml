@@ -4,26 +4,27 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         MaxHeight="200"
+        WindowStartupLocation="CenterScreen"
         MaxWidth="450"
         x:Class="map_app.Views.LayersManageView"
         Title="LayersManageView">
   <Grid ColumnDefinitions="2*,1*" >
-      <Grid RowDefinitions="2*,1*" >
-        <ListBox Items="{Binding Layers}" SelectedItem="{Binding SelectedLayer}" >
-          <ListBox.ItemTemplate>
-            <DataTemplate>
-              <TextBlock Text="{Binding Name}" />
-            </DataTemplate>
-          </ListBox.ItemTemplate>
-        </ListBox>
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" >
-          <Button Classes="dialog" Content="Добавить" Command="{Binding AddLayer}" />
-          <Button Classes="dialog" Content="Удалить" Command="{Binding RemoveLayer}" />
-        </StackPanel>
+      <Grid RowDefinitions="140,1*" >
+      	<DataGrid Name="MyDataGrid" Items="{Binding Layers}" Width="300" SelectedItem="{Binding SelectedLayer}" AutoGenerateColumns="False" >
+	    <DataGrid.Columns>
+	      <DataGridTextColumn Header="Имя" Binding="{Binding Name}"/>
+	      <DataGridTextColumn Header="Прозрачность" Binding="{Binding Opacity}"/>
+	      <DataGridTextColumn Header="Источник" Binding="{Binding Attribution.Url}"/>
+	    </DataGrid.Columns>
+  	</DataGrid>
+	<StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" >
+	  <Button Classes="dialog" Content="Добавить" Command="{Binding AddLayer}" />
+	  <Button Classes="dialog" Content="Удалить" Command="{Binding RemoveLayer}" />
+	</StackPanel>
       </Grid>
       <StackPanel Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" >
-        <Button Classes="dialog" Content="ОК" Command="{Binding SaveChanges}" />
-        <Button Classes="dialog" Content="Отмена" Command="{Binding CancelManage}" />
+        <Button Classes="dialog" Content="ОК" Command="{Binding SaveAndClose}" />
+        <Button Classes="dialog" Content="Отмена" Command="{Binding UndoChanges}" />
         <Button Classes="dialog" Content="Изменить" Command="{Binding ChangeLayer}" />
       </StackPanel>
   </Grid>
