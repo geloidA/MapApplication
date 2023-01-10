@@ -28,44 +28,30 @@ namespace map_app.ViewModels
                 .ToCollection()
                 .Select(items => items.Any())
                 .ToPropertyEx(this, x => x.CanUndo); // need for observe changes in observable collection
-
+            UndoChanges = ReactiveCommand.Create(() => _undoStack.Pop()(), this.WhenAnyValue(x => x.CanUndo));
+            
+            SaveAndClose = ReactiveCommand.Create<ICloseable>(CommonFunctionality.CloseView);
             Layers = new ObservableCollection<ILayer>(map.Layers.Where(l => l.Name.StartsWith("User")));
-            _map.DataChanged += (s, e) => // todo: call from invalid thread
-            {
-                Layers.Clear();
-                Layers.AddRange(map.Layers.Where(l => l.Name.StartsWith("User")));
-            };
+            _map.Layers.Changed += (s, e) => { Layers.Clear(); Layers.AddRange(map.Layers.Where(l => l.Name.StartsWith("User"))); };
 
             #region Commands init
 
             ShowAddDialog = new Interaction<AddLayerViewModel, LayersManageViewModel>();
 
-            AddLayer = ReactiveCommand.CreateFromTask(async () => 
+            OpenAddLayerView = ReactiveCommand.CreateFromTask(async () => 
             {
-                var addView = new AddLayerViewModel(_map);
+                var addView = new AddLayerViewModel(_map, _undoStack);
                 var result = await ShowAddDialog.Handle(addView);
-                _undoStack.Push(() => 
-                {
-                    _map.Layers.Remove(_map.Layers.ElementAt(_map.Layers.Count - 1));
-                });
             });
 
             var canExecute = this.WhenAnyValue(x => x.SelectedLayer, x => IsNotNull(x));
 
             ShowChangeDialog = new Interaction<ChangeLayerViewModel, LayersManageViewModel>();
 
-            ChangeLayer = ReactiveCommand.CreateFromTask(async () =>
+            OpenChangeLayerView = ReactiveCommand.CreateFromTask(async () =>
             {
-                var previosState = CopyLayer(SelectedLayer!);
-                var pointer = SelectedLayer!;
-                var changeView = new ChangeLayerViewModel(_map, SelectedLayer!);
-                var result = await ShowChangeDialog.Handle(changeView);
-                _undoStack.Push(() => 
-                {
-                    pointer.Name = previosState.Name;
-                    pointer.Opacity = previosState.Opacity;
-                    pointer.Attribution.Url = previosState.Attribution.Url; // todo: will doesn't work because _map.Layer don't refresh 
-                });
+                var changeView = new ChangeLayerViewModel(_map, SelectedLayer!, _undoStack);
+                var result = await ShowChangeDialog.Handle(changeView);                
             },
             canExecute);
 
@@ -82,10 +68,6 @@ namespace map_app.ViewModels
             },
             canExecute);
 
-            UndoChanges = ReactiveCommand.Create(() => _undoStack.Pop()(), this.WhenAnyValue(x => x.CanUndo));
-
-            SaveAndClose = ReactiveCommand.Create<ICloseable>(CommonFunctionality.CloseView);
-
             #endregion
         }
 
@@ -100,9 +82,9 @@ namespace map_app.ViewModels
         public Interaction<AddLayerViewModel, LayersManageViewModel> ShowAddDialog { get; }
         public Interaction<ChangeLayerViewModel, LayersManageViewModel> ShowChangeDialog { get; }
 
-        public ICommand AddLayer { get; }
+        public ICommand OpenAddLayerView { get; }
         public ICommand SaveAndClose { get; }
-        public ICommand ChangeLayer { get; }
+        public ICommand OpenChangeLayerView { get; }
         public ICommand UndoChanges { get; }
         public ICommand RemoveLayer { get; }
 

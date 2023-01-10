@@ -17,13 +17,15 @@ namespace map_app.ViewModels
     {
         private readonly Map _map;
 
-        public AddLayerViewModel(Map map)
+        public AddLayerViewModel(Map map, ObservableStack<Action> undoStack)
         {
             _map = map;
             Cancel = ReactiveCommand.Create<ICloseable>(CommonFunctionality.CloseView);
-            Confirm = ReactiveCommand.Create(() => 
+            Confirm = ReactiveCommand.Create<ICloseable>(wnd => 
             {
                 _map.Layers.Add(new Layer { Name = "User" + this.Name!, Opacity = this.Opacity }); // todo: think how get data source
+                undoStack.Push(() => _map.Layers.Remove(_map.Layers.ElementAt(_map.Layers.Count - 1)));
+                CommonFunctionality.CloseView(wnd);
             }
             , this.WhenAnyValue(
                 x => x.Name, x => x.Opacity, 

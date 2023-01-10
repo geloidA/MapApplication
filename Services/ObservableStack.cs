@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace map_app.Services
 {
 
-    public class ObservableStack<T> : ObservableCollection<T>
+    public class ObservableStack<T> : ObservableCollection<T> //todo: make limited
     {
         public ObservableStack()
         {

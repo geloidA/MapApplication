@@ -3,6 +3,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        MinHeight="200"
+        MinWidth="300"
+        MaxHeight="200"
+        MaxWidth="300"
         x:Class="map_app.Views.AddLayerView"
         x:Name="LayerAddView"
         Title="AddLayerView">
@@ -20,7 +24,7 @@
       </StackPanel>
     </UniformGrid>
     <Grid ColumnDefinitions="1*,1*" Grid.Row="1">
-      <Button Classes="dialog" Content="ОК" HorizontalAlignment="Center" Command="{Binding Confirm}" />
+      <Button Classes="dialog" Content="ОК" HorizontalAlignment="Center" Command="{Binding Confirm}" CommandParameter="{Binding ElementName=LayerAddView}" />
       <Button Classes="dialog" Grid.Column="1" HorizontalAlignment="Center" Content="Отмена" Command="{Binding Cancel}" CommandParameter="{Binding ElementName=LayerAddView}" />
     </Grid>
   </Grid>
