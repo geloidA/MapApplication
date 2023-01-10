@@ -3,8 +3,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        MinHeight="200"
+        MinWidth="300"
+        MaxHeight="200"
+        MaxWidth="300"
+        x:Name="LayerChangeView"
         x:Class="map_app.Views.ChangeLayerView"
-        Title="ChangeLayerView">
+        Title="Изменение слоя">
   <Grid RowDefinitions="1*,0.2*">
     <UniformGrid Columns="2" VerticalAlignment="Center">
       <StackPanel VerticalAlignment="Center" HorizontalAlignment="Right">
@@ -14,13 +19,13 @@
       </StackPanel>
       <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left">
         <TextBox Text="{Binding Name}" />
-        <Slider Value="{Binding Opacity}" Width="100" ></Slider>
+        <Slider Value="{Binding Opacity}" Width="100" Minimum="0" Maximum="1" ></Slider>
         <!-- Источник данных? -->
       </StackPanel>
     </UniformGrid>
     <Grid ColumnDefinitions="1*,1*" Grid.Row="1">
-      <Button Classes="dialog" Content="ОК" HorizontalAlignment="Center" Command="{Binding ConfirmChangeLayer}" />
-      <Button Classes="dialog" Grid.Column="1" HorizontalAlignment="Center" Content="Отмена" Command="{Binding CancelChangeLayer}" />
+      <Button Classes="dialog" Content="ОК" HorizontalAlignment="Center" Command="{Binding Confirm}" CommandParameter="{Binding ElementName=LayerChangeView}" />
+      <Button Classes="dialog" Grid.Column="1" HorizontalAlignment="Center" Content="Отмена" Command="{Binding Cancel}" CommandParameter="{Binding ElementName=LayerChangeView}" />
     </Grid>
   </Grid>
 </Window>

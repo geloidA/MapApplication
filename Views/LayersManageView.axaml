@@ -4,11 +4,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         MaxHeight="200"
+        MinHeight="200"
         WindowStartupLocation="CenterOwner"
+        MinWidth="450"
         MaxWidth="450"
         x:Name="LayersView"
         x:Class="map_app.Views.LayersManageView"
-        Title="LayersManageView">
+        Title="Менеджер слоев">
   <Grid ColumnDefinitions="2*,1*" >
       <Grid RowDefinitions="140,1*" >
       	<DataGrid Name="MyDataGrid" Items="{Binding Layers}" Width="300" SelectedItem="{Binding SelectedLayer}" AutoGenerateColumns="False" IsReadOnly="True" >

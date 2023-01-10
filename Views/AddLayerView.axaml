@@ -9,7 +9,7 @@
         MaxWidth="300"
         x:Class="map_app.Views.AddLayerView"
         x:Name="LayerAddView"
-        Title="AddLayerView">
+        Title="Добавление слоя">
   <Grid RowDefinitions="1*,0.2*">
     <UniformGrid Columns="2" VerticalAlignment="Center">
       <StackPanel VerticalAlignment="Center" HorizontalAlignment="Right">

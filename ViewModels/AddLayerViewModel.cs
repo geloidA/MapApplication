@@ -1,12 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Mapsui;
 using System.Windows.Input;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using Avalonia.Controls;
 using Avalonia.Input;
 using map_app.Services;
 using Mapsui.Layers;
@@ -26,11 +23,11 @@ namespace map_app.ViewModels
                 _map.Layers.Add(new Layer { Name = "User" + this.Name!, Opacity = this.Opacity }); // todo: think how get data source
                 undoStack.Push(() => _map.Layers.Remove(_map.Layers.ElementAt(_map.Layers.Count - 1)));
                 CommonFunctionality.CloseView(wnd);
-            }
-            , this.WhenAnyValue(
+            }, 
+            this.WhenAnyValue(
                 x => x.Name, x => x.Opacity, 
                 (name, opacity) => 
-                    !string.IsNullOrEmpty(name) && opacity >= 0 && opacity <= 1));
+                    !string.IsNullOrEmpty(name) && opacity >= 0.0 && opacity <= 1.0));
         }
 
         [Reactive]
