@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
@@ -7,7 +9,8 @@ using System.Threading.Tasks;
 
 namespace map_app.Services
 {
-    public class ObservableStack<T> : Stack<T>, INotifyCollectionChanged, INotifyPropertyChanged
+
+    public class ObservableStack<T> : ObservableCollection<T>
     {
         public ObservableStack()
         {
@@ -16,70 +19,25 @@ namespace map_app.Services
         public ObservableStack(IEnumerable<T> collection)
         {
             foreach (var item in collection)
-                base.Push(item);
+                Push(item);
         }
 
         public ObservableStack(List<T> list)
         {
             foreach (var item in list)
-                base.Push(item);
+                Push(item);
         }
 
-
-        public new virtual void Clear()
+        public T Pop()
         {
-            base.Clear();
-            this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-        }
-
-        public new virtual T Pop()
-        {
-            var item = base.Pop();
-            this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
+            var item = base[base.Count - 1];
+            base.RemoveAt(base.Count - 1);
             return item;
         }
 
-        public new virtual void Push(T item)
+        public void Push(T item)
         {
-            base.Push(item);
-            this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
-        }
-
-
-        public virtual event NotifyCollectionChangedEventHandler? CollectionChanged;
-
-
-        protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
-        {
-            this.RaiseCollectionChanged(e);
-        }
-
-        protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
-        {
-            this.RaisePropertyChanged(e);
-        }
-
-
-        protected virtual event PropertyChangedEventHandler PropertyChanged;
-
-
-        private void RaiseCollectionChanged(NotifyCollectionChangedEventArgs e)
-        {
-            if (this.CollectionChanged != null)
-                this.CollectionChanged(this, e);
-        }
-
-        private void RaisePropertyChanged(PropertyChangedEventArgs e)
-        {
-            if (this.PropertyChanged != null)
-                this.PropertyChanged(this, e);
-        }
-
-
-        event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged
-        {
-            add { this.PropertyChanged += value; }
-            remove { this.PropertyChanged -= value; }
+            base.Add(item);
         }
     }
 }

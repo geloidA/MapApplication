@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="map_app.Views.AddLayerView"
+        x:Name="LayerAddView"
         Title="AddLayerView">
   <Grid RowDefinitions="1*,0.2*">
     <UniformGrid Columns="2" VerticalAlignment="Center">
@@ -14,13 +15,13 @@
       </StackPanel>
       <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left">
         <TextBox Text="{Binding Name}" />
-        <Slider Value="{Binding Opacity}" Width="100" ></Slider>
+        <Slider Value="{Binding Opacity}" Width="100" Minimum="0" Maximum="1" ></Slider>
         <!-- Источник данных? -->
       </StackPanel>
     </UniformGrid>
     <Grid ColumnDefinitions="1*,1*" Grid.Row="1">
-      <Button Classes="dialog" Content="ОК" HorizontalAlignment="Center" Command="{Binding ConfirmChangeLayer}" />
-      <Button Classes="dialog" Grid.Column="1" HorizontalAlignment="Center" Content="Отмена" Command="{Binding CancelChangeLayer}" />
+      <Button Classes="dialog" Content="ОК" HorizontalAlignment="Center" Command="{Binding Confirm}" />
+      <Button Classes="dialog" Grid.Column="1" HorizontalAlignment="Center" Content="Отмена" Command="{Binding Cancel}" CommandParameter="{Binding ElementName=LayerAddView}" />
     </Grid>
   </Grid>
 </Window>
