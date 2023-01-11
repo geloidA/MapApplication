@@ -14,18 +14,25 @@ namespace map_app.Services
             {"www.openstreetmap.org", KnownTileSource.OpenStreetMap }
         };
 
-        public static HttpTileSource CreateViaDomen(string domen)
+        public static HttpTileSource Create(string s)
         {
-            if (!domenMasks.ContainsKey(domen))
-                throw new NotSupportedException($"domen is not supported");
+            return domenMasks.ContainsKey(s)
+                ? CreateViaDomen(s)
+                : CreateViaMask(s);
+        }
+
+        private static HttpTileSource CreateViaDomen(string domen)
+        {
             var httpSourse = KnownTileSources.Create(domenMasks[domen]);
             httpSourse.Attribution = new BruTile.Attribution(url: domen);
             return httpSourse;
         }
 
-        public static HttpTileSource CreateViaMask(string mask)
+        private static HttpTileSource CreateViaMask(string mask)
         {
-            return new HttpTileSource(new GlobalSphericalMercator(), mask);
+            var sourse = new HttpTileSource(new GlobalSphericalMercator(), mask);
+            sourse.Attribution = new BruTile.Attribution(url: mask);
+            return sourse;
         }
     }
 }

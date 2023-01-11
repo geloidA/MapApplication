@@ -1,42 +1,43 @@
 using System;
 using System.Windows.Input;
 using Avalonia.Input;
-using BruTile.Web;
 using map_app.Services;
 using Mapsui;
+using DynamicData;
 using Mapsui.Layers;
-using Mapsui.Tiling.Layers;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
 namespace map_app.ViewModels
 {
-    public class ChangeLayerViewModel : ViewModelBase
+    public class ChangeLayerViewModel : LayerCreationViewModel
     {
         private readonly Map _map;
         private readonly ILayer _toChange;
+        private readonly ObservableStack<Action> _undoStack;
 
         public ChangeLayerViewModel(Map map, ILayer toChange, ObservableStack<Action> undoStack)
         {
             _map = map;
             _toChange = toChange;
+            _undoStack = undoStack;
+
             Name = toChange.Name;
             Opacity = toChange.Opacity;
+            Address = toChange.Attribution.Url;
             
-            Cancel = ReactiveCommand.Create<ICloseable>(CommonFunctionality.CloseView);
+            Cancel = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
             Confirm = ReactiveCommand.Create<ICloseable>(wnd =>
             {
-                var copy = Tuple.Create(_toChange.Name, _toChange.Opacity);
-                _toChange.Name = Name;
-                _toChange.Opacity = Opacity;
-                undoStack.Push(() =>
-                {
-                    _toChange.Name = copy.Item1;
-                    _toChange.Opacity = copy.Item2;
-                });
-                CommonFunctionality.CloseView(wnd);
+                if (_toChange.Attribution.Url == Address)
+                    ChangeLayerNameOpacity();
+                else
+                    CreateNewLayer();
+                WindowCloser.Close(wnd);
             },
-            this.WhenAnyValue(x => x.Name, n => !string.IsNullOrEmpty(n)));
+            this.WhenAnyValue(x => x.Name, x => x.Opacity, x=> x.Address,
+                (name, opacity, address) => 
+                    !string.IsNullOrEmpty(name) && opacity >= 0.0 && opacity <= 1.0 && !string.IsNullOrEmpty(address)));
         }
 
         [Reactive]
@@ -50,5 +51,31 @@ namespace map_app.ViewModels
 
         public ICommand Confirm { get; }
         public ICommand Cancel { get; }
+
+        private void CreateNewLayer()
+        {
+            var changed = CreateLayer(Address!, Name!, Opacity);
+            var index = _map.Layers.IndexOf(_toChange);
+            _map.Layers.Remove(_toChange);
+            _map.Layers.Insert(index, changed);
+            _undoStack.Push(() =>
+            {
+                _map.Layers.Remove(changed);
+                _map.Layers.Insert(index, _toChange);
+                changed.Dispose();
+            });
+        }
+
+        private void ChangeLayerNameOpacity()
+        {
+            var copy = Tuple.Create(_toChange.Name, _toChange.Opacity);
+            _toChange.Name = Name;
+            _toChange.Opacity = Opacity;
+            _undoStack.Push(() =>
+            {
+                _toChange.Name = copy.Item1;
+                _toChange.Opacity = copy.Item2;
+            });
+        }
     }
 }

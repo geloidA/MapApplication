@@ -4,28 +4,31 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         MinHeight="200"
-        MinWidth="300"
+        MinWidth="400"
         MaxHeight="200"
-        MaxWidth="300"
+        MaxWidth="400"
         x:Name="LayerChangeView"
         x:Class="map_app.Views.ChangeLayerView"
         Title="Изменение слоя">
-  <Grid RowDefinitions="1*,0.2*">
-    <UniformGrid Columns="2" VerticalAlignment="Center">
-      <StackPanel VerticalAlignment="Center" HorizontalAlignment="Right">
-        <TextBlock Text="Наименование" />
-        <TextBlock Text="Прозрачность" />
-        <TextBlock Text="Источник данных" />
-      </StackPanel>
-      <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left">
-        <TextBox Text="{Binding Name}" />
-        <Slider Value="{Binding Opacity}" Width="100" Minimum="0" Maximum="1" ></Slider>
-        <!-- Источник данных? -->
-      </StackPanel>
-    </UniformGrid>
-    <Grid ColumnDefinitions="1*,1*" Grid.Row="1">
+  <UniformGrid Rows="4" >
+    <Grid ColumnDefinitions="1*,1*">
+      <TextBlock Text="Наименование" Margin="50 4 0 10" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+      <TextBox Text="{Binding Name}" Height="20" Width="120" Grid.Column="1"
+        HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    </Grid>
+    <Grid ColumnDefinitions="1*,1*">
+      <TextBlock Text="Прозрачность" Margin="50 4 0 10" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+      <Slider Value="{Binding Opacity}" Width="120" Minimum="0" Maximum="1" Grid.Column="1"
+        HorizontalAlignment="Center" VerticalAlignment="Center" />
+    </Grid>
+    <Grid ColumnDefinitions="1*,1*">
+      <TextBlock Text="Источник данных" Margin="50 4 0 10" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+      <TextBox Text="{Binding Address}" Height="20" Width="120" Grid.Column="1"
+        HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    </Grid>
+    <Grid ColumnDefinitions="1*,1*">
       <Button Classes="dialog" Content="ОК" HorizontalAlignment="Center" Command="{Binding Confirm}" CommandParameter="{Binding ElementName=LayerChangeView}" />
       <Button Classes="dialog" Grid.Column="1" HorizontalAlignment="Center" Content="Отмена" Command="{Binding Cancel}" CommandParameter="{Binding ElementName=LayerChangeView}" />
     </Grid>
-  </Grid>
+  </UniformGrid>
 </Window>

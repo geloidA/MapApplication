@@ -30,7 +30,7 @@ namespace map_app.ViewModels
                 .ToPropertyEx(this, x => x.CanUndo); // need for observe changes in observable collection
             UndoChanges = ReactiveCommand.Create(() => _undoStack.Pop()(), this.WhenAnyValue(x => x.CanUndo));
             
-            SaveAndClose = ReactiveCommand.Create<ICloseable>(CommonFunctionality.CloseView);
+            SaveAndClose = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
             Layers = new ObservableCollection<ILayer>(map.Layers.Where(l => l.Name.StartsWith("User")));
             _map.Layers.Changed += (s, e) => { Layers.Clear(); Layers.AddRange(map.Layers.Where(l => l.Name.StartsWith("User"))); };
 
