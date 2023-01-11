@@ -69,7 +69,7 @@ namespace map_app.ViewModels
         private void ChangeLayerNameOpacity()
         {
             var copy = Tuple.Create(_toChange.Name, _toChange.Opacity);
-            _toChange.Name = Name;
+            _toChange.Name = Name!;
             _toChange.Opacity = Opacity;
             _undoStack.Push(() =>
             {

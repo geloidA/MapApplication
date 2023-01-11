@@ -24,7 +24,6 @@ namespace map_app.ViewModels
         private readonly EditManipulation _editManipulation = new();
         private bool _selectMode;
         private bool _gridIsActive = true;
-        private bool _leftWasPressed;
         private readonly MapControl _mapControl;
 
         public MainWindowViewModel(MapControl mapControl)
@@ -147,16 +146,13 @@ namespace map_app.ViewModels
         {
             var point = args.GetCurrentPoint(_mapControl);
 
-            if (!_leftWasPressed)
-                return;
-
             if (_mapControl.Map != null)
                 _mapControl.Map.PanLock = _editManipulation.Manipulate(MouseState.Up,
                     args.GetPosition(_mapControl).ToMapsui(), _editManager, _mapControl);
 
             if (_selectMode)
             {
-                var infoArgs = _mapControl.GetMapInfo(args.GetPosition(_mapControl).ToMapsui());
+                var infoArgs = _mapControl.GetMapInfo(args.GetPosition(_mapControl).ToMapsui());                
                 if (infoArgs?.Feature != null)
                 {
                     var currentValue = (bool?)infoArgs.Feature["Selected"] == true;
@@ -169,14 +165,14 @@ namespace map_app.ViewModels
         {
             var point = args.GetCurrentPoint(_mapControl);
 
-            if (!point.Properties.IsLeftButtonPressed)
-            {
-                _leftWasPressed = false;
-                return;
-            }
-            _leftWasPressed = true;
             if (_mapControl.Map == null)
                 return;
+
+            if (point.Properties.IsRightButtonPressed)
+            {
+                // todo: make appear GraphicContextMenu
+                return;
+            }
 
             if (args.ClickCount > 1)
             {
@@ -215,18 +211,16 @@ namespace map_app.ViewModels
 
                 _mapControl.Map!.Layers.Add(GridReference.Grid);
                 _gridIsActive = false;
-                _mapControl.RefreshGraphics();
                 return;
             }
 
             _mapControl.Map!.Layers.Remove(GridReference.Grid);
-            _mapControl.RefreshGraphics();
             _gridIsActive = true;
         }
 
         private void EnableRuler()
         {
-
+            
         }
 
         private void ZoomIn() => _mapControl!.Navigator!.ZoomIn(200);
