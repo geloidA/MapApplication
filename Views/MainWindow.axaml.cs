@@ -12,11 +12,12 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     public MainWindow()
     {
         InitializeComponent();
-        var dataContext = new MainWindowViewModel(MapControl); // todo: remove mapcontrol dependency
-        DataContext = dataContext;
-        MapControl.PointerMoved += dataContext.MapControlOnPointerMoved;
-        MapControl.PointerPressed += dataContext.MapControlOnPointerPressed;
-        MapControl.PointerReleased += dataContext.MapControlOnPointerReleased;
+        var vm = new MainWindowViewModel(MapControl); // todo: remove mapcontrol dependency
+        DataContext = vm;
+        MapControl.PointerMoved += vm.MapControlOnPointerMoved;
+        MapControl.PointerPressed += vm.MapControlOnPointerPressed;
+        MapControl.PointerReleased += vm.MapControlOnPointerReleased;
+        GraphicCotxtMenu.ContextMenuOpening += vm.AccessOnlyGraphic;
         this.WhenActivated(d => d(ViewModel!.ShowDialog.RegisterHandler(DoShowDialogAsync)));
     }
 

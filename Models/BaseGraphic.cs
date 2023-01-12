@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Mapsui.Styles;
 using map_app.Editing.Extensions;
 using NetTopologySuite.Geometries;
+using ReactiveUI.Fody.Helpers;
 
 namespace map_app.Models
 {
@@ -39,7 +40,7 @@ namespace map_app.Models
         public IReadOnlyList<GeoPoint> GeoPoints => _coordinates.Select(x => x.ToGeoPoint()).ToList();
 
         [JsonProperty]
-        public IReadOnlyCollection<LinearPoint> LinearPoints => _coordinates.Select(x => x.ToLinearPoint()).ToList();
+        public IReadOnlyList<LinearPoint> LinearPoints => _coordinates.Select(x => x.ToLinearPoint()).ToList();
 
         /// <summary>
         /// Recalculation Geometry property when set method is called

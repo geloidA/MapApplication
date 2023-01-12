@@ -14,7 +14,14 @@
             <controls:MenuPanel DockPanel.Dock="Top"/>
 
             <Grid DockPanel.Dock="Bottom">
-                <avalonia:MapControl x:Name="MapControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />            
+                <avalonia:MapControl x:Name="MapControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                    <avalonia:MapControl.ContextMenu>
+                        <ContextMenu Name="GraphicCotxtMenu" >
+                            <MenuItem Header="Обзор" Command="{Binding OpenGraphicEditingView}" />
+                            <MenuItem Header="Удалить" Command="{Binding DeleteGraphic}" />
+                        </ContextMenu>
+                    </avalonia:MapControl.ContextMenu>
+                </avalonia:MapControl>            
                 <controls:AuxiliaryPanel HorizontalAlignment="Right" Width="60" />
                 <controls:NavigationPanel />
             </Grid>

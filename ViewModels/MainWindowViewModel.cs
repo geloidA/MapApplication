@@ -12,36 +12,66 @@ using System.Windows.Input;
 using Avalonia.Input;
 using Mapsui.UI.Avalonia.Extensions;
 using ReactiveUI;
-using map_app.Views;
+using map_app.Models;
+using ReactiveUI.Fody.Helpers;
+using System.ComponentModel;
 
 namespace map_app.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
+        #region Private members
+        private bool _gridIsActive = true;
+        private bool _isRightWasPressed;
         private WritableLayer? _targetLayer;
         private IEnumerable<IFeature>? _tempFeatures;
+        private readonly MapControl _mapControl;
         private readonly EditManager _editManager = new();
         private readonly EditManipulation _editManipulation = new();
-        private bool _selectMode;
-        private bool _gridIsActive = true;
-        private readonly MapControl _mapControl;
+        private readonly ObservableAsPropertyHelper<bool> _isBaseGraphicUnder;
+        #endregion
+
+        public bool IsBaseGraphicUnder => _isBaseGraphicUnder.Value;
+
+        [Reactive]
+        private BaseGraphic? FeatureUnderPointer { get; set; }
 
         public MainWindowViewModel(MapControl mapControl)
         {
             _mapControl = mapControl;
             _mapControl.Map = MapCreator.Create();
             InitializeEditSetup();
-            EnablePointMode = ReactiveCommand.Create(() => EnableDrawingMode(EditMode.AddPoint));
-            EnablePolygonMode = ReactiveCommand.Create(() => EnableDrawingMode(EditMode.AddPolygon));
-            EnableOrthodromeMode = ReactiveCommand.Create(() => EnableDrawingMode(EditMode.AddOrthodromeLine));
-            EnableRectangleMode = ReactiveCommand.Create(() => EnableDrawingMode(EditMode.AddRectangle));
+            var canEdit = this.WhenAnyValue(x => x.IsEditMode);
+            EnablePointMode = ReactiveCommand.Create(() => EnableDrawingMode(EditMode.AddPoint), canEdit);
+            EnablePolygonMode = ReactiveCommand.Create(() => EnableDrawingMode(EditMode.AddPolygon), canEdit);
+            EnableOrthodromeMode = ReactiveCommand.Create(() => EnableDrawingMode(EditMode.AddOrthodromeLine), canEdit);
+            EnableRectangleMode = ReactiveCommand.Create(() => EnableDrawingMode(EditMode.AddRectangle), canEdit);
             ShowDialog = new Interaction<LayersManageViewModel, MainWindowViewModel>();
             OpenLayersManageView = ReactiveCommand.CreateFromTask(async () =>
             {
                 var manager = new LayersManageViewModel(_mapControl.Map);
                 var result = await ShowDialog.Handle(manager);
             });
+            _isBaseGraphicUnder = this
+                .WhenAnyValue(x => x.FeatureUnderPointer)
+                .Select(f => f as BaseGraphic != null)
+                .ToProperty(this, x => x.IsBaseGraphicUnder);
+
+            this.WhenAnyValue(x => x.IsEditMode)
+                .Subscribe(isEdit => 
+                {
+                    if (!isEdit)
+                    {
+                        None();
+                        Save();
+                    }
+                    else
+                        Load();
+                });
         }
+
+        [Reactive]
+        public bool IsEditMode { get; set; } = true;
 
         public ICommand EnablePointMode { get; }
         public ICommand EnablePolygonMode { get; }
@@ -49,6 +79,69 @@ namespace map_app.ViewModels
         public ICommand EnableRectangleMode { get; }
         public ICommand OpenLayersManageView { get; }
         public Interaction<LayersManageViewModel, MainWindowViewModel> ShowDialog { get; }
+
+        internal void AccessOnlyGraphic(object? sender, CancelEventArgs e) => e.Cancel = !IsEditMode || !IsBaseGraphicUnder;
+
+        internal void MapControlOnPointerMoved(object? sender, PointerEventArgs args)
+        {
+            var point = args.GetCurrentPoint(_mapControl);
+            var screenPosition = args.GetPosition(_mapControl).ToMapsui();
+            var worldPosition = _mapControl.Viewport.ScreenToWorld(screenPosition);
+
+            if (point.Properties.IsLeftButtonPressed)
+            {
+                _editManipulation.Manipulate(MouseState.Dragging, screenPosition,
+                    _editManager, _mapControl);
+            }
+            else
+            {
+                _editManipulation.Manipulate(MouseState.Moving, screenPosition,
+                    _editManager, _mapControl);
+            }
+        }
+
+        internal void MapControlOnPointerReleased(object? sender, PointerReleasedEventArgs args)
+        {
+            var point = args.GetCurrentPoint(_mapControl);
+
+            if (_isRightWasPressed) // need for escape drawing by right click
+            {
+                _isRightWasPressed = false;
+                return;
+            }
+
+            if (_mapControl.Map != null)
+                _mapControl.Map.PanLock = _editManipulation.Manipulate(MouseState.Up,
+                    args.GetPosition(_mapControl).ToMapsui(), _editManager, _mapControl);
+        }
+
+        internal void MapControlOnPointerPressed(object? sender, PointerPressedEventArgs args)
+        {
+            var point = args.GetCurrentPoint(_mapControl);
+
+            if (_mapControl.Map == null)
+                return;
+
+            if (point.Properties.IsRightButtonPressed)
+            {
+                _isRightWasPressed = true;
+                var infoArgs = _mapControl.GetMapInfo(args.GetPosition(_mapControl).ToMapsui());
+                FeatureUnderPointer = infoArgs?.Feature as BaseGraphic;
+                return;
+            }
+
+            if (args.ClickCount > 1)
+            {
+                _mapControl.Map.PanLock = _editManipulation.Manipulate(MouseState.DoubleClick,
+                    args.GetPosition(_mapControl).ToMapsui(), _editManager, _mapControl);
+                args.Handled = true;
+            }
+            else
+            {
+                _mapControl.Map.PanLock = _editManipulation.Manipulate(MouseState.Down,
+                    args.GetPosition(_mapControl).ToMapsui(), _editManager, _mapControl);
+            }
+        }
 
         private void InitializeEditSetup()
         {
@@ -102,89 +195,11 @@ namespace map_app.ViewModels
 
         private void None() => _editManager.EditMode = EditMode.None;
 
-        private void Delete()
+        private void DeleteGraphic()
         {
-            if (_selectMode)
-            {
-                var selectedFeatures = _editManager.Layer?.GetFeatures().Where(f => (bool?)f["Selected"] == true) ?? Array.Empty<IFeature>();
-
-                foreach (var selectedFeature in selectedFeatures)
-                {
-                    _editManager.Layer?.TryRemove(selectedFeature);
-                }
-                _mapControl.RefreshGraphics();
-            }
-        }
-
-        private void Scale() => _editManager.EditMode = EditMode.Scale;
-
-        private void Select() => _selectMode = !_selectMode;
-
-        private void Modify() => _editManager.EditMode = EditMode.Modify;
-
-        private void Rotate() => _editManager.EditMode = EditMode.Rotate;
-
-        internal void MapControlOnPointerMoved(object? sender, PointerEventArgs args)
-        {
-            var point = args.GetCurrentPoint(_mapControl);
-            var screenPosition = args.GetPosition(_mapControl).ToMapsui();
-            var worldPosition = _mapControl.Viewport.ScreenToWorld(screenPosition);
-
-            if (point.Properties.IsLeftButtonPressed)
-            {
-                _editManipulation.Manipulate(MouseState.Dragging, screenPosition,
-                    _editManager, _mapControl);
-            }
-            else
-            {
-                _editManipulation.Manipulate(MouseState.Moving, screenPosition,
-                    _editManager, _mapControl);
-            }
-        }
-
-        internal void MapControlOnPointerReleased(object? sender, PointerReleasedEventArgs args)
-        {
-            var point = args.GetCurrentPoint(_mapControl);
-
-            if (_mapControl.Map != null)
-                _mapControl.Map.PanLock = _editManipulation.Manipulate(MouseState.Up,
-                    args.GetPosition(_mapControl).ToMapsui(), _editManager, _mapControl);
-
-            if (_selectMode)
-            {
-                var infoArgs = _mapControl.GetMapInfo(args.GetPosition(_mapControl).ToMapsui());                
-                if (infoArgs?.Feature != null)
-                {
-                    var currentValue = (bool?)infoArgs.Feature["Selected"] == true;
-                    infoArgs.Feature["Selected"] = !currentValue; // invert current value
-                }
-            }
-        }
-
-        internal void MapControlOnPointerPressed(object? sender, PointerPressedEventArgs args)
-        {
-            var point = args.GetCurrentPoint(_mapControl);
-
-            if (_mapControl.Map == null)
-                return;
-
-            if (point.Properties.IsRightButtonPressed)
-            {
-                // todo: make appear GraphicContextMenu
-                return;
-            }
-
-            if (args.ClickCount > 1)
-            {
-                _mapControl.Map.PanLock = _editManipulation.Manipulate(MouseState.DoubleClick,
-                    args.GetPosition(_mapControl).ToMapsui(), _editManager, _mapControl);
-                args.Handled = true;
-            }
-            else
-            {
-                _mapControl.Map.PanLock = _editManipulation.Manipulate(MouseState.Down,
-                    args.GetPosition(_mapControl).ToMapsui(), _editManager, _mapControl);
-            }
+            if (FeatureUnderPointer is null)
+                throw new NullReferenceException("Graphic was null");
+            _editManager?.Layer?.TryRemove(FeatureUnderPointer);
         }
 
         private void EnableDrawingMode(EditMode mode)
@@ -208,7 +223,6 @@ namespace map_app.ViewModels
         {
             if (_gridIsActive)
             {
-
                 _mapControl.Map!.Layers.Add(GridReference.Grid);
                 _gridIsActive = false;
                 return;
@@ -226,7 +240,6 @@ namespace map_app.ViewModels
         private void ZoomIn() => _mapControl!.Navigator!.ZoomIn(200);
 
         private void ZoomOut() => _mapControl!.Navigator!.ZoomOut(200);
-
         #endregion
     }
 }

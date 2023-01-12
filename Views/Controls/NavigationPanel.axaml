@@ -33,9 +33,8 @@
                 <Button Grid.Column="1" CornerRadius="15" Content="{StaticResource angle-up}" HorizontalAlignment="Right" Background="White" ToolTip.Tip="Разное" >
                     <Button.Flyout>
                         <MenuFlyout Placement="Top" >
-                            <MenuItem Header="Сохранить" Command="{Binding SaveDrawingChanges}" />
                             <MenuItem Header="Отмена" Command="{Binding CancelDrawingChanges}" />
-                            <MenuItem Header="Изменить" Command="{Binding ChangeDrawing}" />
+                            <CheckBox IsChecked="{Binding IsEditMode}" Content="Редактирование" />
                         </MenuFlyout>
                     </Button.Flyout>
                 </Button>
