@@ -1,4 +1,3 @@
-using Avalonia.Controls;
 using Mapsui.UI.Avalonia;
 using map_app.ViewModels;
 using Avalonia.ReactiveUI;
@@ -7,12 +6,12 @@ using ReactiveUI;
 
 namespace map_app.Views;
 
-public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
+public partial class MainView : ReactiveWindow<MainViewModel>
 {
-    public MainWindow()
+    public MainView()
     {
         InitializeComponent();
-        var vm = new MainWindowViewModel(MapControl); // todo: remove mapcontrol dependency
+        var vm = new MainViewModel(MapControl); // todo: remove mapcontrol dependency
         DataContext = vm;
         MapControl.PointerMoved += vm.MapControlOnPointerMoved;
         MapControl.PointerPressed += vm.MapControlOnPointerPressed;
@@ -21,12 +20,12 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         this.WhenActivated(d => d(ViewModel!.ShowDialog.RegisterHandler(DoShowDialogAsync)));
     }
 
-    private async Task DoShowDialogAsync(InteractionContext<LayersManageViewModel, MainWindowViewModel> interaction)
+    private async Task DoShowDialogAsync(InteractionContext<LayersManageViewModel, MainViewModel> interaction)
     {
         var dialog = new LayersManageView();
         dialog.DataContext = interaction.Input;
 
-        var result = await dialog.ShowDialog<MainWindowViewModel>(this);
+        var result = await dialog.ShowDialog<MainViewModel>(this);
         interaction.SetOutput(result);
     }
 }

@@ -8,13 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Assets\plane.svg" />
-    <EmbeddedResource Include="Resources\Assets\aircraft.png" />
-    <EmbeddedResource Include="Resources\Assets\minus.svg" />
-    <EmbeddedResource Include="Resources\Assets\plus.svg" />
-  </ItemGroup>  
-
-  <ItemGroup>
     <AvaloniaResource Include="Resources\Assets\*" />
   </ItemGroup>
 

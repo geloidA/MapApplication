@@ -61,7 +61,7 @@ namespace map_app.Services
 
         private static IStyle CreateSvgArrowStyle(string embeddedResourcePath, double scale, IFeature feature)
         {
-            var bitmapId = typeof(MainWindow).LoadBitmapId(embeddedResourcePath);
+            var bitmapId = typeof(MainView).LoadBitmapId(embeddedResourcePath);
             return new SymbolStyle
             {
                 BitmapId = bitmapId,
@@ -145,7 +145,7 @@ namespace map_app.Services
 
         private static WritableLayer CreateTargetWritableLayer()
         {
-            var layer = new WritableLayer
+            var layer = new OwnWritableLayer
             {
                 Name = "Target Layer",
                 Style = CreateLineStyle()

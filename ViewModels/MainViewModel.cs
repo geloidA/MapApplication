@@ -15,28 +15,53 @@ using ReactiveUI;
 using map_app.Models;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
+using Avalonia.Svg;
+using Avalonia.Controls;
+using DynamicData;
+using System.Collections.ObjectModel;
 
 namespace map_app.ViewModels
 {
-    public class MainWindowViewModel : ViewModelBase
+    public class MainViewModel : ViewModelBase
     {
+        private static Image _arrowRight = new Image
+        {
+            Source = new SvgImage
+            {
+                Source = SvgSource.Load("Resources/Assets/triangle-right-small.svg", null)
+            },
+            Width = 15,
+            Height = 15
+        };
+        private static Image _arrowLeft = new Image
+        {
+            Source = new SvgImage
+            {
+                Source = SvgSource.Load("Resources/Assets/triangle-left-small.svg", null)
+            },
+            Width = 15,
+            Height = 15
+        };
+
         #region Private members
         private bool _gridIsActive = true;
         private bool _isRightWasPressed;
-        private WritableLayer? _targetLayer;
+        private OwnWritableLayer? _savedGraphicLayer; // todo: remove command
         private IEnumerable<IFeature>? _tempFeatures;
         private readonly MapControl _mapControl;
         private readonly EditManager _editManager = new();
         private readonly EditManipulation _editManipulation = new();
         private readonly ObservableAsPropertyHelper<bool> _isBaseGraphicUnder;
+        private readonly ObservableAsPropertyHelper<Image> _popupArrow;
         #endregion
 
         public bool IsBaseGraphicUnder => _isBaseGraphicUnder.Value;
+        public Image PopupArrow => _popupArrow.Value;
 
         [Reactive]
         private BaseGraphic? FeatureUnderPointer { get; set; }
 
-        public MainWindowViewModel(MapControl mapControl)
+        public MainViewModel(MapControl mapControl)
         {
             _mapControl = mapControl;
             _mapControl.Map = MapCreator.Create();
@@ -46,18 +71,25 @@ namespace map_app.ViewModels
             EnablePolygonMode = ReactiveCommand.Create(() => EnableDrawingMode(EditMode.AddPolygon), canEdit);
             EnableOrthodromeMode = ReactiveCommand.Create(() => EnableDrawingMode(EditMode.AddOrthodromeLine), canEdit);
             EnableRectangleMode = ReactiveCommand.Create(() => EnableDrawingMode(EditMode.AddRectangle), canEdit);
-            ShowDialog = new Interaction<LayersManageViewModel, MainWindowViewModel>();
+            IsGraphicsListPressed = ReactiveCommand.Create(() => IsGraphicsListOpen ^= true);
+            ShowDialog = new Interaction<LayersManageViewModel, MainViewModel>();
             OpenLayersManageView = ReactiveCommand.CreateFromTask(async () =>
             {
                 var manager = new LayersManageViewModel(_mapControl.Map);
                 var result = await ShowDialog.Handle(manager);
             });
+
             _isBaseGraphicUnder = this
                 .WhenAnyValue(x => x.FeatureUnderPointer)
                 .Select(f => f as BaseGraphic != null)
                 .ToProperty(this, x => x.IsBaseGraphicUnder);
 
-            this.WhenAnyValue(x => x.IsEditMode)
+            _popupArrow = this
+                .WhenAnyValue(x => x.IsGraphicsListOpen)
+                .Select(isOpen => isOpen ? _arrowLeft : _arrowRight)
+                .ToProperty(this, x => x.PopupArrow);
+
+            this.WhenAnyValue(x => x.IsEditMode) // comboBox for edit mode
                 .Subscribe(isEdit => 
                 {
                     if (!isEdit)
@@ -68,17 +100,30 @@ namespace map_app.ViewModels
                     else
                         Load();
                 });
+            Graphics = new ObservableCollection<BaseGraphic>(GetSavedGraphics);
+            _savedGraphicLayer!.LayersFeatureChanged += (s, e) => 
+            {
+                Graphics.Clear();
+                Graphics?.AddRange(GetSavedGraphics);
+            };
         }
+
+        public ObservableCollection<BaseGraphic> Graphics { get; }
 
         [Reactive]
         public bool IsEditMode { get; set; } = true;
 
+        [Reactive]
+        public bool IsGraphicsListOpen { get; set; }
+
+        public ICommand IsGraphicsListPressed { get; }
+        public ICommand RemoveGraphic { get; }
         public ICommand EnablePointMode { get; }
         public ICommand EnablePolygonMode { get; }
         public ICommand EnableOrthodromeMode { get; }
         public ICommand EnableRectangleMode { get; }
         public ICommand OpenLayersManageView { get; }
-        public Interaction<LayersManageViewModel, MainWindowViewModel> ShowDialog { get; }
+        public Interaction<LayersManageViewModel, MainViewModel> ShowDialog { get; }
 
         internal void AccessOnlyGraphic(object? sender, CancelEventArgs e) => e.Cancel = !IsEditMode || !IsBaseGraphicUnder;
 
@@ -146,31 +191,31 @@ namespace map_app.ViewModels
         private void InitializeEditSetup()
         {
             _editManager.Layer = (WritableLayer)_mapControl.Map!.Layers.First(l => l.Name == "EditLayer");
-            _targetLayer = (WritableLayer)_mapControl.Map!.Layers.First(l => l.Name == "Target Layer");
-            _targetLayer.Clear();
+            _savedGraphicLayer = (OwnWritableLayer)_mapControl.Map!.Layers.First(l => l.Name == "Target Layer");
+            _savedGraphicLayer.Clear();
         }
+
+        private IEnumerable<BaseGraphic> GetSavedGraphics => _savedGraphicLayer!
+                .GetFeatures()
+                .Cast<BaseGraphic>();
 
         private void Cancel()
         {
-            if (_targetLayer != null && _tempFeatures != null)
+            if (_savedGraphicLayer != null && _tempFeatures != null)
             {
-                _targetLayer.Clear(); 
-                _targetLayer.AddRange(_tempFeatures.Copy());
+                _savedGraphicLayer.Clear(); 
+                _savedGraphicLayer.AddRange(_tempFeatures.Copy());
                 _mapControl.RefreshGraphics();
             }
-
             _editManager.Layer?.Clear();
-
             _mapControl.RefreshGraphics();
-
             _editManager.EditMode = EditMode.None;
-
             _tempFeatures = null;
         }
 
         private void Load()
         {
-            var features = _targetLayer?.GetFeatures().Copy() ?? Array.Empty<IFeature>();
+            var features = _savedGraphicLayer?.GetFeatures().Copy() ?? Array.Empty<IFeature>();
 
             foreach (var feature in features)
             {
@@ -180,14 +225,14 @@ namespace map_app.ViewModels
             _tempFeatures = new List<IFeature>(features);
 
             _editManager.Layer?.AddRange(features);
-            _targetLayer?.Clear();
+            _savedGraphicLayer?.Clear();
 
             _mapControl.RefreshGraphics();
         }
 
         private void Save()
         {
-            _targetLayer?.AddRange(_editManager.Layer?.GetFeatures().Copy() ?? new List<IFeature>());
+            _savedGraphicLayer?.AddRange(_editManager.Layer?.GetFeatures().Copy() ?? new List<IFeature>());
             _editManager.Layer?.Clear();
 
             _mapControl.RefreshGraphics();
@@ -210,7 +255,7 @@ namespace map_app.ViewModels
 
         private void ClearAllFeatureRenders()
         {
-            var features = _targetLayer?.GetFeatures().Copy() ?? Array.Empty<IFeature>();
+            var features = _savedGraphicLayer?.GetFeatures().Copy() ?? Array.Empty<IFeature>();
             foreach (var feature in features)
             {
                 feature.RenderedGeometry.Clear();

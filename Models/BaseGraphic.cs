@@ -7,6 +7,7 @@ using Mapsui.Styles;
 using map_app.Editing.Extensions;
 using NetTopologySuite.Geometries;
 using ReactiveUI.Fody.Helpers;
+using Mapsui;
 
 namespace map_app.Models
 {

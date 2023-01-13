@@ -1,4 +1,5 @@
 <Window xmlns="https://github.com/avaloniaui"
+        xmlns:svg="clr-namespace:Avalonia.Svg;assembly=Avalonia.Svg"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:controls="clr-namespace:map_app.Views.Controls;assembly=map_app"
@@ -7,13 +8,13 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         FontFamily="Ubuntu"
         WindowStartupLocation="CenterScreen"
-        x:Class="map_app.Views.MainWindow"
+        x:Class="map_app.Views.MainView"
         Title="Подготовка полётного задания">
     <Grid>
         <DockPanel>
             <controls:MenuPanel DockPanel.Dock="Top"/>
 
-            <Grid DockPanel.Dock="Bottom">
+            <Grid DockPanel.Dock="Bottom" Name="MainGrid">
                 <avalonia:MapControl x:Name="MapControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                     <avalonia:MapControl.ContextMenu>
                         <ContextMenu Name="GraphicCotxtMenu" >
@@ -21,10 +22,11 @@
                             <MenuItem Header="Удалить" Command="{Binding DeleteGraphic}" />
                         </ContextMenu>
                     </avalonia:MapControl.ContextMenu>
-                </avalonia:MapControl>            
+                </avalonia:MapControl>                
+                <controls:GraphicsPopup />
                 <controls:AuxiliaryPanel HorizontalAlignment="Right" Width="60" />
                 <controls:NavigationPanel />
             </Grid>
-        </DockPanel>        
-    </Grid>    
+        </DockPanel>
+    </Grid>
 </Window>
