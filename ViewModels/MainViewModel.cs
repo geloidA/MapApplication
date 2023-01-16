@@ -12,6 +12,7 @@ using ReactiveUI;
 using map_app.Models;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
+using map_app.ViewModels.Controls;
 
 namespace map_app.ViewModels
 {
@@ -32,13 +33,13 @@ namespace map_app.ViewModels
         private BaseGraphic? FeatureUnderPointer { get; set; }
 
         [Reactive]
-        private GraphicsPopupViewModel GraphicsPopupViewModel { get; set; }
+        internal GraphicsPopupViewModel GraphicsPopupViewModel { get; set; }
 
         [Reactive]
-        private NavigationPanelViewModel NavigationPanelViewModel { get; set; }
+        internal NavigationPanelViewModel NavigationPanelViewModel { get; set; }
 
         [Reactive]
-        public AuxiliaryPanelViewModel AuxiliaryPanelViewModel { get; set; }
+        internal AuxiliaryPanelViewModel AuxiliaryPanelViewModel { get; set; }
 
         public MainViewModel(MapControl mapControl)
         {
@@ -48,11 +49,11 @@ namespace map_app.ViewModels
             GraphicsPopupViewModel = new GraphicsPopupViewModel(_savedGraphicLayer!);
             NavigationPanelViewModel = new NavigationPanelViewModel(mapControl, _editManager, _savedGraphicLayer!);
             AuxiliaryPanelViewModel = new AuxiliaryPanelViewModel(mapControl);
-            ShowDialog = new Interaction<LayersManageViewModel, MainViewModel>();
+            ShowLayersManageDialog = new Interaction<LayersManageViewModel, MainViewModel>();
             OpenLayersManageView = ReactiveCommand.CreateFromTask(async () =>
             {
                 var manager = new LayersManageViewModel(_mapControl.Map);
-                var result = await ShowDialog.Handle(manager);
+                var result = await ShowLayersManageDialog.Handle(manager);
             });
 
             _isBaseGraphicUnderPointer = this
@@ -63,7 +64,7 @@ namespace map_app.ViewModels
 
         public ICommand OpenLayersManageView { get; }
 
-        public Interaction<LayersManageViewModel, MainViewModel> ShowDialog { get; }
+        public Interaction<LayersManageViewModel, MainViewModel> ShowLayersManageDialog { get; }
 
         internal void AccessOnlyGraphic(object? sender, CancelEventArgs e) => e.Cancel = !NavigationPanelViewModel.IsEditMode || !IsBaseGraphicUnderPointer;
 

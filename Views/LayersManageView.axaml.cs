@@ -27,7 +27,7 @@ public partial class LayersManageView : ReactiveWindow<LayersManageViewModel>
         interaction.SetOutput(result);
     }
 
-    private async Task DoShowChangeDialogAsync(InteractionContext<ChangeLayerViewModel, LayersManageViewModel> interaction)
+    private async Task DoShowChangeDialogAsync(InteractionContext<EditLayerViewModel, LayersManageViewModel> interaction)
     {
         var dialog = new ChangeLayerView();
         dialog.DataContext = interaction.Input;

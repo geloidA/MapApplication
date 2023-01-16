@@ -11,7 +11,7 @@ using map_app.Services;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace map_app.ViewModels
+namespace map_app.ViewModels.Controls
 {
     internal class GraphicsPopupViewModel : ViewModelBase
     {
@@ -62,11 +62,29 @@ namespace map_app.ViewModels
                 Graphics.Clear();
                 Graphics?.AddRange(GetSavedGraphics);
             };
+
+            ShowEditGraphicDialog = new Interaction<EditGraphicViewModel, GraphicsPopupViewModel>();
+            OpenEditGraphicView = ReactiveCommand.CreateFromTask(async () =>
+            {
+                var manager = new EditGraphicViewModel(SelectedGraphic!);
+                var result = await ShowEditGraphicDialog.Handle(manager);
+            }, canExecute);
+
+            ShowAddGraphicDialog = new Interaction<AddGraphicViewModel, GraphicsPopupViewModel>();
+            OpenAddGraphicView = ReactiveCommand.CreateFromTask(async () =>
+            {
+                var manager = new AddGraphicViewModel(_savedGraphicLayer);
+                var result = await ShowAddGraphicDialog.Handle(manager);
+            });
         }
 
-        public ObservableCollection<BaseGraphic> Graphics { get; }
+        public Interaction<EditGraphicViewModel, GraphicsPopupViewModel> ShowEditGraphicDialog { get; }
+
+        public Interaction<AddGraphicViewModel, GraphicsPopupViewModel> ShowAddGraphicDialog { get; }
 
         public Image ArrowImage => _arrowImage.Value;
+
+        public ObservableCollection<BaseGraphic> Graphics { get; }
 
         [Reactive]
         public BaseGraphic? SelectedGraphic { get; set; }
@@ -77,6 +95,10 @@ namespace map_app.ViewModels
         public ICommand IsGraphicsListPressed { get; }
 
         public ICommand RemoveGraphic { get; }
+
+        public ICommand OpenEditGraphicView { get; }
+
+        public ICommand OpenAddGraphicView { get; }
 
         private IEnumerable<BaseGraphic> GetSavedGraphics => _savedGraphicLayer!
                 .GetFeatures()

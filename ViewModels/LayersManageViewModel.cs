@@ -46,11 +46,11 @@ namespace map_app.ViewModels
 
             var canExecute = this.WhenAnyValue(x => x.SelectedLayer, x => IsNotNull(x));
 
-            ShowChangeDialog = new Interaction<ChangeLayerViewModel, LayersManageViewModel>();
+            ShowChangeDialog = new Interaction<EditLayerViewModel, LayersManageViewModel>();
 
             OpenChangeLayerView = ReactiveCommand.CreateFromTask(async () =>
             {
-                var changeView = new ChangeLayerViewModel(_map, SelectedLayer!, _undoStack);
+                var changeView = new EditLayerViewModel(_map, SelectedLayer!, _undoStack);
                 var result = await ShowChangeDialog.Handle(changeView);                
             },
             canExecute);
@@ -80,7 +80,7 @@ namespace map_app.ViewModels
         public bool CanUndo { get; }
 
         public Interaction<AddLayerViewModel, LayersManageViewModel> ShowAddDialog { get; }
-        public Interaction<ChangeLayerViewModel, LayersManageViewModel> ShowChangeDialog { get; }
+        public Interaction<EditLayerViewModel, LayersManageViewModel> ShowChangeDialog { get; }
 
         public ICommand OpenAddLayerView { get; }
         public ICommand SaveAndClose { get; }

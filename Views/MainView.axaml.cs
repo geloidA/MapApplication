@@ -3,6 +3,7 @@ using map_app.ViewModels;
 using Avalonia.ReactiveUI;
 using System.Threading.Tasks;
 using ReactiveUI;
+using map_app.ViewModels.Controls;
 
 namespace map_app.Views;
 
@@ -17,7 +18,9 @@ public partial class MainView : ReactiveWindow<MainViewModel>
         MapControl.PointerPressed += vm.MapControlOnPointerPressed;
         MapControl.PointerReleased += vm.MapControlOnPointerReleased;
         GraphicCotxtMenu.ContextMenuOpening += vm.AccessOnlyGraphic;
-        this.WhenActivated(d => d(ViewModel!.ShowDialog.RegisterHandler(DoShowDialogAsync)));
+        this.WhenActivated(d => d(ViewModel!.ShowLayersManageDialog.RegisterHandler(DoShowDialogAsync)));
+        this.WhenActivated(d => d(ViewModel!.GraphicsPopupViewModel.ShowEditGraphicDialog.RegisterHandler(DoShowEditGraphicDialogAsync)));
+        this.WhenActivated(d => d(ViewModel!.GraphicsPopupViewModel.ShowAddGraphicDialog.RegisterHandler(DoShowAddGraphicDialogAsync)));
     }
 
     private async Task DoShowDialogAsync(InteractionContext<LayersManageViewModel, MainViewModel> interaction)
@@ -26,6 +29,24 @@ public partial class MainView : ReactiveWindow<MainViewModel>
         dialog.DataContext = interaction.Input;
 
         var result = await dialog.ShowDialog<MainViewModel>(this);
+        interaction.SetOutput(result);
+    }
+
+    private async Task DoShowEditGraphicDialogAsync(InteractionContext<EditGraphicViewModel, GraphicsPopupViewModel> interaction)
+    {
+        var dialog = new EditGraphicView();
+        dialog.DataContext = interaction.Input;
+
+        var result = await dialog.ShowDialog<GraphicsPopupViewModel>(this);
+        interaction.SetOutput(result);
+    }
+
+    private async Task DoShowAddGraphicDialogAsync(InteractionContext<AddGraphicViewModel, GraphicsPopupViewModel> interaction)
+    {
+        var dialog = new AddGraphicView();
+        dialog.DataContext = interaction.Input;
+
+        var result = await dialog.ShowDialog<GraphicsPopupViewModel>(this);
         interaction.SetOutput(result);
     }
 }

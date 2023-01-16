@@ -46,9 +46,9 @@
                   </DataTemplate>
               </ListBox.ItemTemplate>
               <ListBox.ContextMenu>
-                <ContextMenu>
-                  <MenuItem Header="Добавить" Command="{Binding AddGraphic}" />
-                  <MenuItem Header="Редактировать" Command="{Binding EditGraphic}" />
+                <ContextMenu Name="GraphicPopupContxtMenu">
+                  <MenuItem Header="Добавить" Command="{Binding OpenAddGraphicView}" />
+                  <MenuItem Header="Редактировать" Command="{Binding OpenEditGraphicView}" />
                   <MenuItem Header="Удалить" Command="{Binding RemoveGraphic}" />
                 </ContextMenu>
               </ListBox.ContextMenu>

@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Windows.Input;
 using map_app.Editing;
 using map_app.Services;
+using map_app.ViewModels;
 using Mapsui;
 using Mapsui.Extensions;
 using Mapsui.UI.Avalonia;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace map_app.ViewModels
+namespace map_app.ViewModels.Controls
 {
     internal class NavigationPanelViewModel : ViewModelBase
     {

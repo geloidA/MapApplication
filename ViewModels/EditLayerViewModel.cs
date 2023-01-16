@@ -10,13 +10,13 @@ using ReactiveUI.Fody.Helpers;
 
 namespace map_app.ViewModels
 {
-    public class ChangeLayerViewModel : LayerCreationViewModel
+    public class EditLayerViewModel : LayerCreationViewModel
     {
         private readonly Map _map;
         private readonly ILayer _toChange;
         private readonly ObservableStack<Action> _undoStack;
 
-        public ChangeLayerViewModel(Map map, ILayer toChange, ObservableStack<Action> undoStack)
+        public EditLayerViewModel(Map map, ILayer toChange, ObservableStack<Action> undoStack)
         {
             _map = map;
             _toChange = toChange;
@@ -30,7 +30,7 @@ namespace map_app.ViewModels
             Confirm = ReactiveCommand.Create<ICloseable>(wnd =>
             {
                 if (_toChange.Attribution.Url == Address)
-                    ChangeLayerNameOpacity();
+                    EditLayerNameOpacity();
                 else
                     CreateNewLayer();
                 WindowCloser.Close(wnd);
@@ -66,7 +66,7 @@ namespace map_app.ViewModels
             });
         }
 
-        private void ChangeLayerNameOpacity()
+        private void EditLayerNameOpacity()
         {
             var copy = Tuple.Create(_toChange.Name, _toChange.Opacity);
             _toChange.Name = Name!;

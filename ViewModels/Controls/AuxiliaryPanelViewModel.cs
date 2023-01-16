@@ -1,7 +1,8 @@
 using map_app.Services;
+using map_app.ViewModels;
 using Mapsui.UI.Avalonia;
 
-namespace map_app.ViewModels
+namespace map_app.ViewModels.Controls
 {
     public class AuxiliaryPanelViewModel : ViewModelBase
     {
