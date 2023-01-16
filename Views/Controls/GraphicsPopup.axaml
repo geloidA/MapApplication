@@ -39,7 +39,7 @@
         <Grid RowDefinitions="30,1*" >
           <Label Content="Готовые объекты" HorizontalAlignment="Center"/>
           <Grid Grid.Row="1" >
-            <ListBox Items="{Binding Graphics}">
+            <ListBox Items="{Binding Graphics}" SelectedItem="{Binding SelectedGraphic}">
               <ListBox.ItemTemplate>
                   <DataTemplate>
                       <TextBlock Text="{Binding Type}" />
@@ -58,7 +58,7 @@
         <Button 
             Height="50"
             Width="15"
-            Content="{Binding PopupArrow}" 
+            Content="{Binding ArrowImage}" 
             Name="GraphicsPopupButton"
             HorizontalAlignment="Right" 
             VerticalAlignment="Center" 
