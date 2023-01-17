@@ -100,13 +100,9 @@ namespace map_app.Services
             };
         }
 
-        private static StyleCollection CreateEditLayerStyle()
+        private static IStyle CreateEditLayerStyle()
         {
-            return new StyleCollection
-            {
-                CreateEditLayerBasicStyle(),
-                CreateSelectedStyle()
-            };
+            return CreateEditLayerBasicStyle();
         }
 
         private static IStyle CreateEditLayerBasicStyle()

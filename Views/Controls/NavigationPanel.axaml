@@ -2,11 +2,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:svg="clr-namespace:Avalonia.Svg;assembly=Avalonia.Svg"
+             xmlns:c="clr-namespace:map_app.Services.Converters;assembly=map_app"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="map_app.Views.Controls.NavigationPanel">
              
     <UserControl.Resources>
+        <c:ColorToImmutableSolidColorBrushConverter x:Key="myConverter" />
         <svg:Svg x:Key="point" Path="Resources/Assets/point.svg" Width="20" Height="20" />
         <svg:Svg x:Key="polygon" Path="Resources/Assets/polygon.svg" Width="20" Height="20" />
         <svg:Svg x:Key="rectangle" Path="Resources/Assets/rectangle.svg" Width="20" Height="20" />
@@ -28,6 +30,18 @@
                     <Button CornerRadius="15" Content="{StaticResource orthodrome}" Command="{Binding EnableOrthodromeMode}" Background="White" ToolTip.Tip="Ортодромия" />
                     <Button CornerRadius="15" Content="{StaticResource polygon}" Command="{Binding EnablePolygonMode}" Background="White" ToolTip.Tip="Полигон" />
                     <Button CornerRadius="15" Content="{StaticResource point}" Command="{Binding EnablePointMode}" Background="White" ToolTip.Tip="Точка" />
+                    <Button Background="{Binding CurrentColor, Converter={StaticResource myConverter}}" Margin="35 0 0 0">
+                        <Button.Flyout>
+                            <MenuFlyout Placement="Top">
+                                <MenuItem Background="yellow" Command="{Binding ChooseColor}"
+                                    CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Background}"/>
+                                <MenuItem Background="orange" Command="{Binding ChooseColor}" 
+                                    CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Background}"/>
+                                <MenuItem Background="blue" Command="{Binding ChooseColor}" 
+                                    CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Background}"/>
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
                 </StackPanel>
 
                 <Button Grid.Column="1" CornerRadius="15" Content="{StaticResource angle-up}" HorizontalAlignment="Right" Background="White" ToolTip.Tip="Разное" >

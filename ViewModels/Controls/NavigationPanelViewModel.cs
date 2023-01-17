@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Windows.Input;
+using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using map_app.Editing;
 using map_app.Services;
 using map_app.ViewModels;
@@ -43,10 +45,17 @@ namespace map_app.ViewModels.Controls
                     else
                         Load();
                 });
+
+            ChooseColor = ReactiveCommand.Create<ImmutableSolidColorBrush>(brush => CurrentColor = brush.Color, canEdit);
+            this.WhenAnyValue(x => x.CurrentColor)
+                .Subscribe(c => _editManager.CurrentColor = new Mapsui.Styles.Color(c.R, c.G, c.B, c.A));
         }
 
         [Reactive]
         public bool IsEditMode { get; set; } = true;
+
+        [Reactive]
+        public Color CurrentColor { get; set; } = Colors.Gray;
 
 
         public ICommand EnablePointMode { get; }
@@ -56,6 +65,8 @@ namespace map_app.ViewModels.Controls
         public ICommand EnableOrthodromeMode { get; }
 
         public ICommand EnableRectangleMode { get; }
+
+        public ICommand ChooseColor { get; }
 
         private void Load()
         {
