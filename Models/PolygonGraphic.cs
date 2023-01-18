@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using map_app.Editing.Extensions;
 using Mapsui.Nts;
 using NetTopologySuite.Geometries;
 
@@ -17,7 +18,7 @@ namespace map_app.Models
         public void AddLinearPoint(Coordinate worldPoint)
         {
             _coordinates.Add(worldPoint);
-            Geometry = RenderGeomerty(_coordinates);
+            Geometry = RenderGeometry(_coordinates);
         }
 
         public void AddRangeLinearPoints(IEnumerable<Coordinate> worldPoints)
@@ -26,7 +27,7 @@ namespace map_app.Models
             {
                 _coordinates.Add(point);
             }
-            Geometry = RenderGeomerty(_coordinates);
+            Geometry = RenderGeometry(_coordinates);
         }
 
         public Geometry RenderStepGeometry(Coordinate worldPosition)
@@ -34,7 +35,7 @@ namespace map_app.Models
             throw new NotImplementedException();
         }
 
-        protected override Geometry RenderGeomerty(List<Coordinate> points)
+        protected override Geometry RenderGeometry(List<Coordinate> points)
         {
             var linearRing = points.ToList();
             linearRing.Add(points[0].Copy()); // Add first coordinate at end to close the ring.

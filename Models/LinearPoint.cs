@@ -20,7 +20,7 @@ namespace map_app.Models
 
         public Coordinate ToCoordinate()
         {
-            return new Coordinate(X, Y);
+            return new Coordinate3D(X, Y, Z);
         }
 
         public override string ToString()

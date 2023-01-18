@@ -280,7 +280,8 @@ namespace map_app.Editing
                 var vertices = geometryFeature.Geometry.MainCoordinates();
                 if (EditHelper.ShouldInsert(mapInfo.WorldPosition, mapInfo.Resolution, vertices, VertexRadius, out var segment))
                 {
-                    geometryFeature.Geometry = geometryFeature.Geometry.InsertCoordinate(mapInfo.WorldPosition.ToCoordinate(), segment);
+                    geometryFeature.Geometry = geometryFeature.Geometry.InsertCoordinate(mapInfo.WorldPosition.ToCoordinate3D() 
+                        ?? throw new NullReferenceException("Inserted mapInfo was null"), segment);
                     geometryFeature.RenderedGeometry.Clear();
                     Layer?.DataHasChanged();
                 }

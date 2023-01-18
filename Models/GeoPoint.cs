@@ -31,17 +31,13 @@ namespace map_app.Models
         public Point ToPoint()
         {
             var point = SphericalMercator.FromLonLat(Longtitude, Latitude);
-            return new Point(point.x, point.y);
-        }
-
-        public Coordinate ToGeoCoordinate()
-        {
-            return new Coordinate(Longtitude, Latitude);
+            return new Point(point.x, point.y, Altitude);
         }
 
         public Coordinate ToWorldPosition()
         {
-            return SphericalMercator.FromLonLat(Longtitude, Latitude).ToCoordinate();
+            var coordinate = SphericalMercator.FromLonLat(Longtitude, Latitude);
+            return new Coordinate3D(coordinate.x, coordinate.y, Altitude);
         }
 
         public GeoPoint Copy()

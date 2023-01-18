@@ -28,10 +28,15 @@ namespace map_app.Editing.Extensions
             target.Y = source.Y;
         }
 
+        public static Coordinate3D ToCoordinate3D(this Coordinate source) 
+            => new Coordinate3D(source.X, source.Y, 0);
+
         public static GeoPoint ToGeoPoint(this Coordinate target)
         {
             var lonLat = SphericalMercator.ToLonLat(target.X, target.Y);
-            return new GeoPoint(lonLat.lon, lonLat.lat);
+            return target is Coordinate3D c 
+                ? new GeoPoint(lonLat.lon, lonLat.lat, c.Z)
+                : new GeoPoint(lonLat.lon, lonLat.lat);
         }
 
         public static LinearPoint ToLinearPoint(this Coordinate target)

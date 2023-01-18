@@ -40,7 +40,7 @@ namespace map_app.Models
             }
             last.Next = new Orthodrome(last.End, worldCoordinate.ToGeoPoint());
             _coordinates.Add(worldCoordinate);
-            Geometry = RenderGeomerty(_coordinates);
+            Geometry = RenderGeometry(_coordinates);
         }
 
         public void AddRangeLinearPoints(IEnumerable<Coordinate> worldCoordinates)
@@ -58,7 +58,7 @@ namespace map_app.Models
                 _coordinates.Add(point);
                 last = last.Next;
             }
-            Geometry = RenderGeomerty(_coordinates);
+            Geometry = RenderGeometry(_coordinates);
         }
 
         public Geometry RenderStepGeometry(Coordinate worldPosition)
@@ -66,7 +66,7 @@ namespace map_app.Models
             throw new System.NotImplementedException();
         }
 
-        protected override Geometry RenderGeomerty(List<Coordinate> points)
+        protected override Geometry RenderGeometry(List<Coordinate> points)
         {
             var last = points.Last();
             var result = new List<GeoPoint>();

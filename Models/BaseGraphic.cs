@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Mapsui.Styles;
 using map_app.Editing.Extensions;
 using NetTopologySuite.Geometries;
+using map_app.Models.Extensions;
 
 namespace map_app.Models
 {
@@ -16,10 +17,16 @@ namespace map_app.Models
         private double _opacity;
         protected List<Coordinate> _coordinates = new();
 
+        public BaseGraphic(List<LinearPoint> points) : base()
+        {
+            _coordinates = points.ToCoordinates().ToList();
+            Geometry = RenderGeometry(_coordinates);
+        }
+
         public BaseGraphic(List<Coordinate> points) : base() 
-        { 
+        {
             _coordinates = points;
-            Geometry = RenderGeomerty(points);
+            Geometry = RenderGeometry(points);
         }
 
         public BaseGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
@@ -76,7 +83,7 @@ namespace map_app.Models
                     throw new ArgumentNullException();
                 
                 _coordinates = value.ToList();
-                Geometry = RenderGeomerty(_coordinates);
+                Geometry = RenderGeometry(_coordinates);
             }
         }
         
@@ -86,11 +93,11 @@ namespace map_app.Models
             protected set => base.Geometry = value;
         }
 
-        protected abstract Geometry RenderGeomerty(List<Coordinate> points);
+        protected abstract Geometry RenderGeometry(List<Coordinate> points);
         
         public void RerenderGeometry()
         {
-            Geometry = RenderGeomerty(_coordinates);
+            Geometry = RenderGeometry(_coordinates);
         }
     }
 }

@@ -130,8 +130,7 @@ namespace map_app.Services
         {
             var lineLayer = new WritableLayer
             {
-                Name = "Layer 2",
-                Style = CreateLineStyle()
+                Name = "Layer 2"
             };
 
             // todo: add data
@@ -143,8 +142,7 @@ namespace map_app.Services
         {
             var layer = new OwnWritableLayer
             {
-                Name = "Target Layer",
-                Style = CreateLineStyle()
+                Name = "Target Layer"
             };
             return layer;
         }

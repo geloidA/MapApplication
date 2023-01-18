@@ -1,4 +1,5 @@
 using System;
+using map_app.Editing.Extensions;
 using Mapsui;
 using Mapsui.Nts.Extensions;
 using Mapsui.UI.Avalonia;
@@ -47,7 +48,8 @@ namespace map_app.Editing
                             return editManager.TryInsertCoordinate(
                                 mapControl.GetMapInfo(screenPosition, editManager.VertexRadius));
                         }
-                        return editManager.AddVertex(mapControl.Viewport.ScreenToWorld(screenPosition).ToCoordinate());
+                        return editManager.AddVertex(mapControl.Viewport.ScreenToWorld(screenPosition).ToCoordinate3D()
+                            ?? throw new NullReferenceException("ScreenPosition was null"));
                     }
                     return false;
                 case MouseState.Down:

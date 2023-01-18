@@ -18,7 +18,7 @@ namespace map_app.Models
 
         public override GraphicType Type => GraphicType.Rectangle;
 
-        protected override Geometry RenderGeomerty(List<Coordinate> points)
+        protected override Geometry RenderGeometry(List<Coordinate> points)
         {
             var startPos = points[0];
             var currentPos = points[1];
