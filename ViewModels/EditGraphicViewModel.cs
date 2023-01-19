@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using map_app.Models;
-using map_app.ViewModels;
 
-namespace map_app.ViewModels.Controls
+namespace map_app.ViewModels
 {
     public class EditGraphicViewModel : ViewModelBase
     {

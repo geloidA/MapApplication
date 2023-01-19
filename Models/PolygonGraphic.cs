@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using map_app.Editing.Extensions;
 using Mapsui.Nts;
 using NetTopologySuite.Geometries;
 
@@ -9,7 +8,12 @@ namespace map_app.Models
 {
     public class PolygonGraphic : BaseGraphic, IStepByStepGraphic
     {
-        public PolygonGraphic(List<Coordinate> points) : base(points) { }
+        public PolygonGraphic(List<Coordinate> points) : base(points) 
+        {
+            if (points.Count < 2)
+                throw new ArgumentException("Points length can't be less then 2");
+        }
+
         public PolygonGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
         public PolygonGraphic(Geometry? geometry) : base(geometry) { }
 

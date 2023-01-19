@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:controls="clr-namespace:map_app.Views.Controls;assembly=map_app"
         MinHeight="450"
         MinWidth="500"
         MaxHeight="450"
@@ -11,14 +12,14 @@
         Title="AddGraphicView" >
     <Grid RowDefinitions="0.9*,0.2*">
         <StackPanel Margin="10" HorizontalAlignment="Center" Width="200" VerticalAlignment="Center" >
-            <ComboBox Items="{Binding GraphicTypes}" Width="200" Margin="0 15 0 15" />
+            <ComboBox Items="{Binding GraphicTypes}" SelectedItem="{Binding CurrentGraphicType}" Name="GraphicTypesComboBox" Width="200" Margin="0 15 0 15" />
             <StackPanel Margin="0 15 0 15" HorizontalAlignment="Right" >
                 <TextBlock Text="Прозрачность" HorizontalAlignment="Right" />
                 <TextBox Text="{Binding Opacity}" />
             </StackPanel>
             <StackPanel Margin="0 15 0 15" Orientation="Horizontal" HorizontalAlignment="Right" >
                 <TextBlock Text="Цвет" Margin="0 0 10 0" VerticalAlignment="Center" />
-                <Rectangle Width="25" Height="25" Fill="green" />
+                <controls:SimpleColorPicker Height="25" Width="25" />
             </StackPanel>
             <Grid ColumnDefinitions="150,60" >
                 <StackPanel>
@@ -27,6 +28,7 @@
                 </StackPanel>
                 <CheckBox IsChecked="{Binding IsGeoCoordinates}" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
             </Grid>
+            <TextBlock Text="{Binding ErrorMessage}" />
         </StackPanel>
         <Button Grid.Row="1" Command="{Binding AddGraphicObject}" Classes="dialog" Content="Добавить" HorizontalAlignment="Center" />
     </Grid>

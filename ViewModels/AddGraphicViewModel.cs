@@ -11,34 +11,71 @@ using ReactiveUI.Validation.Extensions;
 using map_app.Models.Extensions;
 using ReactiveUI.Validation.Helpers;
 using NetTopologySuite.Geometries;
+using ReactiveUI.Validation.States;
+using Avalonia.Media.Immutable;
 
-namespace map_app.ViewModels.Controls
+namespace map_app.ViewModels
 {
     public class AddGraphicViewModel : ReactiveValidationObject
     {
         private OwnWritableLayer _graphicsPool;
 
-        public AddGraphicViewModel(OwnWritableLayer target)
+        public AddGraphicViewModel(OwnWritableLayer target) // todo: change to CoordinateParser.TryParse
         {
             _graphicsPool = target;
             GraphicTypes = Enum.GetValues(typeof(GraphicType))
                 .Cast<GraphicType>();
 
+            var canExecute = this.IsValid();
+
             AddGraphicObject = ReactiveCommand.Create(() => 
             {
-                var graphic = CreateGraphic(CurrentGraphicType, ParseCoordinates(Coordinates));
-                graphic.Color = new Mapsui.Styles.Color(Color.R, Color.G, Color.B, Color.A);
+                BaseGraphic graphic;
+                try
+                {
+                    graphic = CreateGraphic(CurrentGraphicType, ParseCoordinates(Coordinates));
+                    ErrorMessage = string.Empty;
+                }
+                catch (ArgumentException ex)
+                {
+                    ErrorMessage = ex.Message;
+                    return;
+                }
+                graphic.Color = new Mapsui.Styles.Color(CurrentColor.R, CurrentColor.G, CurrentColor.B, CurrentColor.A);
                 graphic.Opacity = Opacity;
                 _graphicsPool.Add(graphic);
-            });
+                _graphicsPool.DataHasChanged();
+            }, canExecute);
 
             this.ValidationRule(
                 vm => vm.Opacity,
                 o => o >= 0 && o <= 1,
                 "Прозрачность должна быть в пределах от 0 до 1");
+
+            var userNuberPointsCorrect = 
+                this.WhenAnyValue(
+                    x => x.Coordinates, 
+                    x => x.CurrentGraphicType,
+                    (c, t) => 
+                    {
+                        var canParsed = t switch
+                        {
+                            GraphicType.Orthodrome => CoordinateParser.CanDataParsed(c, l => l >= 2),
+                            GraphicType.Point => CoordinateParser.CanDataParsed(c, l => l == 1),
+                            GraphicType.Polygon => CoordinateParser.CanDataParsed(c, l => l >= 2),
+                            GraphicType.Rectangle => CoordinateParser.CanDataParsed(c, l => l == 2),
+                            _ => throw new NotImplementedException()
+                        };
+                        return canParsed ? ValidationState.Valid : new ValidationState(false, "Неправильное количество точек");
+                    });
+
+            this.ValidationRule(x => x.Coordinates, userNuberPointsCorrect);
+            ChooseColor = ReactiveCommand.Create<ImmutableSolidColorBrush>(brush => CurrentColor = brush.Color);
         }
 
         public ICommand AddGraphicObject { get; set; }
+
+        public ICommand ChooseColor { get; }
 
         public IEnumerable<GraphicType> GraphicTypes { get; set; }
 
@@ -46,13 +83,16 @@ namespace map_app.ViewModels.Controls
         public GraphicType CurrentGraphicType { get; set; }
 
         [Reactive]
-        public Color Color { get; set; }
+        public Color CurrentColor { get; set; }
 
         [Reactive]
-        public double Opacity { get; set; } // todo: make own text for invalid string exception
+        public string? ErrorMessage { get; set; }
 
         [Reactive]
-        public string? Coordinates { get; set; }
+        public double Opacity { get; set; }
+
+        [Reactive]
+        public string? Coordinates { get; set; } = string.Empty;
 
         [Reactive]
         public bool IsGeoCoordinates { get; set; }

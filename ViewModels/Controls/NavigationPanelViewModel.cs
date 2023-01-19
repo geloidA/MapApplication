@@ -5,7 +5,6 @@ using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using map_app.Editing;
 using map_app.Services;
-using map_app.ViewModels;
 using Mapsui;
 using Mapsui.Extensions;
 using Mapsui.UI.Avalonia;
@@ -56,7 +55,6 @@ namespace map_app.ViewModels.Controls
 
         [Reactive]
         public Color CurrentColor { get; set; } = Colors.Gray;
-
 
         public ICommand EnablePointMode { get; }
 

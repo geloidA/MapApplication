@@ -30,6 +30,8 @@ namespace map_app.Services
             return success;
         }
 
+        public void LayersFeatureHasChanged() => OnLayersFeatureChanged();
+
         public event DataChangedEventHandler? LayersFeatureChanged;
 
         private void OnLayersFeatureChanged()
