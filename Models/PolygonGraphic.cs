@@ -8,7 +8,9 @@ namespace map_app.Models
 {
     public class PolygonGraphic : BaseGraphic, IStepByStepGraphic
     {
-        public PolygonGraphic(List<Coordinate> points) : base(points) 
+        private PolygonGraphic(PolygonGraphic source) : base(source) { }
+
+        public PolygonGraphic(List<Coordinate> points) : base(points)
         {
             if (points.Count < 2)
                 throw new ArgumentException("Points length can't be less then 2");
@@ -32,6 +34,11 @@ namespace map_app.Models
                 _coordinates.Add(point);
             }
             Geometry = RenderGeometry(_coordinates);
+        }
+
+        public override BaseGraphic LightCopy()
+        {
+            return new PolygonGraphic(this);
         }
 
         public Geometry RenderStepGeometry(Coordinate worldPosition)

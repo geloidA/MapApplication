@@ -12,6 +12,11 @@ namespace map_app.Models
     {
         private Orthodrome? _orthodrome;
 
+        private OrthodromeGraphic(OrthodromeGraphic source) : base(source)
+        {
+            _orthodrome = source._orthodrome;
+        }
+
         public OrthodromeGraphic(List<Coordinate> points) : base(points)
         {
             var firstPoints = points.Take(2).ToArray();
@@ -59,6 +64,11 @@ namespace map_app.Models
                 last = last.Next;
             }
             Geometry = RenderGeometry(_coordinates);
+        }
+
+        public override BaseGraphic LightCopy()
+        {
+            return new OrthodromeGraphic(this);
         }
 
         public Geometry RenderStepGeometry(Coordinate worldPosition)

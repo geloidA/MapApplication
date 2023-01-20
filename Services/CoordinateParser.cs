@@ -61,7 +61,7 @@ namespace map_app.Services
             return data.Select(x => 
             {
                 double result;
-                if (double.TryParse(x, NumberStyles.AllowCurrencySymbol, CultureInfo.InvariantCulture, out result))
+                if (double.TryParse(x, out result))
                     return result;
                 throw new ArgumentException($"{x} не число");
             });

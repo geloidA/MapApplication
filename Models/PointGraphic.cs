@@ -12,6 +12,11 @@ namespace map_app.Models
         [JsonProperty]
         public string? Image { get; set; }
 
+        private PointGraphic(PointGraphic source) : base(source)
+        {
+            Image = source.Image;
+        }
+
         public override GraphicType Type => GraphicType.Point;
 
         public PointGraphic(List<Coordinate> points) : base(points) { }
@@ -24,6 +29,11 @@ namespace map_app.Models
                 throw new ArgumentException($"List need contain one point, but was {points.Count}");
             var coordinate = points[0] ?? throw new NullReferenceException("Point was null");
             return coordinate.ToPoint();
+        }
+
+        public override BaseGraphic LightCopy()
+        {
+            return new PointGraphic(this);
         }
     }
 }

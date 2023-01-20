@@ -20,7 +20,7 @@ namespace map_app.ViewModels
     {
         #region Private members
         private bool _isRightWasPressed;
-        private OwnWritableLayer? _savedGraphicLayer;
+        private readonly OwnWritableLayer? _savedGraphicLayer;
         private readonly MapControl _mapControl;
         private readonly EditManager _editManager = new();
         private readonly EditManipulation _editManipulation = new();
@@ -45,7 +45,9 @@ namespace map_app.ViewModels
         {
             _mapControl = mapControl;
             _mapControl.Map = MapCreator.Create();
-            InitializeEditSetup();
+            _savedGraphicLayer = (OwnWritableLayer)_mapControl.Map!.Layers.First(l => l.Name == "Target Layer");
+            _savedGraphicLayer.Clear();
+            _editManager.Layer = _savedGraphicLayer; // todo: change on one layer
             GraphicsPopupViewModel = new GraphicsPopupViewModel(_savedGraphicLayer!);
             NavigationPanelViewModel = new NavigationPanelViewModel(mapControl, _editManager, _savedGraphicLayer!);
             AuxiliaryPanelViewModel = new AuxiliaryPanelViewModel(mapControl);
@@ -129,17 +131,10 @@ namespace map_app.ViewModels
             }
         }
 
-        private void InitializeEditSetup()
-        {
-            _editManager.Layer = (WritableLayer)_mapControl.Map!.Layers.First(l => l.Name == "EditLayer");
-            _savedGraphicLayer = (OwnWritableLayer)_mapControl.Map!.Layers.First(l => l.Name == "Target Layer");
-            _savedGraphicLayer.Clear();
-        }
-
         private void DeleteGraphic()
         {
             if (FeatureUnderPointer is null)
-                throw new NullReferenceException("Graphic was null");
+                throw new NullReferenceException("Graphic was null");            
             _editManager?.Layer?.TryRemove(FeatureUnderPointer);
         }
     }

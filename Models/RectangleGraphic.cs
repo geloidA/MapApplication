@@ -7,6 +7,8 @@ namespace map_app.Models
 {
     public class RectangleGraphic : BaseGraphic
     {
+        private RectangleGraphic(RectangleGraphic source) : base(source) { }
+        
         public RectangleGraphic(List<Coordinate> points) : base(points)
         {            
             if (points.Count != 2)
@@ -17,6 +19,11 @@ namespace map_app.Models
         public RectangleGraphic(Geometry? geometry) : base(geometry) { }
 
         public override GraphicType Type => GraphicType.Rectangle;
+
+        public override BaseGraphic LightCopy()
+        {
+            return new RectangleGraphic(this);
+        }
 
         protected override Geometry RenderGeometry(List<Coordinate> points)
         {

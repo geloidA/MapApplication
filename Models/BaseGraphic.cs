@@ -15,22 +15,36 @@ namespace map_app.Models
     {
         private Color? _color;
         private double _opacity;
+        private VectorStyle? _style;
         protected List<Coordinate> _coordinates = new();
+
+        protected BaseGraphic(BaseGraphic source) 
+        {
+            _color = source._color;
+            _opacity = source._opacity;
+            UserTags = source.UserTags;
+            _style = source._style;
+            Styles = source.Styles;
+            _coordinates = source._coordinates;
+            Geometry = source.Geometry;
+        }
 
         public BaseGraphic(List<LinearPoint> points) : base()
         {
             _coordinates = points.ToCoordinates().ToList();
             Geometry = RenderGeometry(_coordinates);
+            InitializeGraphicStyle();
         }
 
         public BaseGraphic(List<Coordinate> points) : base() 
         {
             _coordinates = points;
             Geometry = RenderGeometry(points);
+            InitializeGraphicStyle();
         }
 
-        public BaseGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
-        public BaseGraphic(Geometry? geometry) : base(geometry) { }
+        public BaseGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { InitializeGraphicStyle(); }
+        public BaseGraphic(Geometry? geometry) : base(geometry) { InitializeGraphicStyle(); }
 
         [JsonProperty]
         public abstract GraphicType Type { get; }
@@ -47,13 +61,12 @@ namespace map_app.Models
                 if (value is null)
                     throw new NullReferenceException();
                 _color = value;
-                Styles.Clear();
-                Styles.Add(new VectorStyle { Fill = new Brush(value) });
+                _style!.Fill = new Brush(value);
             }
         }
 
         [JsonProperty]
-        public double Opacity 
+        public double Opacity
         {
             get => _opacity;
             set
@@ -61,7 +74,7 @@ namespace map_app.Models
                 if (value < 0 || value > 1)
                     throw new ArgumentOutOfRangeException();
                 _opacity = value;
-                Styles.First().Opacity = (float)_opacity;
+                _style!.Opacity = (float)_opacity;
             }
         }
 
@@ -94,10 +107,18 @@ namespace map_app.Models
         }
 
         protected abstract Geometry RenderGeometry(List<Coordinate> points);
+
+        public abstract BaseGraphic LightCopy();
         
         public void RerenderGeometry()
         {
             Geometry = RenderGeometry(_coordinates);
+        }
+
+        private void InitializeGraphicStyle()
+        {
+            _style = new VectorStyle();
+            Styles.Add(_style);
         }
     }
 }

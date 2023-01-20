@@ -19,7 +19,7 @@ namespace map_app.Editing.Layers
         {
             _source = source;
             _source.DataChanged += (_, args) => OnDataChanged(args);
-            Style = new SymbolStyle { SymbolScale = 0.5 };
+            Style = new SymbolStyle { SymbolScale = 0.3 };
         }
 
         public override IEnumerable<IFeature> GetFeatures(MRect box, double resolution)

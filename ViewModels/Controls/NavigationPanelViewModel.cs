@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Input;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using map_app.Editing;
+using map_app.Models;
 using map_app.Services;
+using map_app.Services.Extensions;
 using Mapsui;
-using Mapsui.Extensions;
 using Mapsui.UI.Avalonia;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -68,13 +70,8 @@ namespace map_app.ViewModels.Controls
 
         private void Load()
         {
-            var features = _savedGraphicLayer?.GetFeatures().Copy() ?? Array.Empty<IFeature>();
-
-            foreach (var feature in features)
-                feature.RenderedGeometry.Clear();
-
+            var features = GetClearedSavedFeatures();
             _tempFeatures = new List<IFeature>(features);
-
             _editManager.Layer?.AddRange(features);
             _savedGraphicLayer?.Clear();
 
@@ -83,7 +80,11 @@ namespace map_app.ViewModels.Controls
 
         private void Save()
         {
-            _savedGraphicLayer?.AddRange(_editManager.Layer?.GetFeatures().Copy() ?? new List<IFeature>());
+            var features = _editManager.Layer?.GetFeatures()
+                .Cast<BaseGraphic>()
+                .Copy() ?? new List<IFeature>();
+            _tempFeatures = new List<IFeature>(features);
+            _savedGraphicLayer?.AddRange(features);
             _editManager.Layer?.Clear();
 
             _mapControl.RefreshGraphics();
@@ -93,18 +94,18 @@ namespace map_app.ViewModels.Controls
 
         private void EnableDrawingMode(EditMode mode)
         {
-            ClearAllFeatureRenders();
+            GetClearedSavedFeatures();
             _editManager.EditMode = mode;
         }
 
-        private void ClearAllFeatureRenders()
+        private IEnumerable<IFeature> GetClearedSavedFeatures()
         {
-            var features = _savedGraphicLayer?.GetFeatures().Copy() ?? Array.Empty<IFeature>();
+            var features = _savedGraphicLayer?.GetFeatures()
+                .Cast<BaseGraphic>()
+                .Copy() ?? Array.Empty<IFeature>();
             foreach (var feature in features)
-            {
                 feature.RenderedGeometry.Clear();
-            }
-            _tempFeatures = new List<IFeature>(features);
+            return features;
         }
     }
 }
