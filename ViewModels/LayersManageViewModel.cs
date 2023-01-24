@@ -31,8 +31,8 @@ namespace map_app.ViewModels
             UndoChanges = ReactiveCommand.Create(() => _undoStack.Pop()(), this.WhenAnyValue(x => x.CanUndo));
             
             SaveAndClose = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
-            Layers = new ObservableCollection<ILayer>(map.Layers.Where(l => l.Name.StartsWith("User")));
-            _map.Layers.Changed += (s, e) => { Layers.Clear(); Layers.AddRange(map.Layers.Where(l => l.Name.StartsWith("User"))); };
+            Layers = new ObservableCollection<ILayer>(map.Layers.Where(l => l.Tag?.ToString() == "User"));
+            _map.Layers.Changed += (s, e) => { Layers.Clear(); Layers.AddRange(map.Layers.Where(l => l.Tag?.ToString() == "User")); };
 
             #region Commands init
 
@@ -89,18 +89,5 @@ namespace map_app.ViewModels
         public ICommand RemoveLayer { get; }
 
         public bool IsNotNull(ILayer? layer) => layer != null;
-
-        private ILayer CopyLayer(ILayer layer) // todo: find better way to copy layer
-        {
-            return new Layer 
-            { 
-                Opacity = SelectedLayer!.Opacity, 
-                Name = SelectedLayer!.Name, 
-                Attribution = new Mapsui.Widgets.Hyperlink 
-                { 
-                    Url = SelectedLayer!.Attribution.Url
-                }
-            };
-        }
     }
 }

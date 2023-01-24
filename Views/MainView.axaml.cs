@@ -18,14 +18,24 @@ public partial class MainView : ReactiveWindow<MainViewModel>
         MapControl.PointerPressed += vm.MapControlOnPointerPressed;
         MapControl.PointerReleased += vm.MapControlOnPointerReleased;
         GraphicCotxtMenu.ContextMenuOpening += vm.AccessOnlyGraphic;
-        this.WhenActivated(d => d(ViewModel!.ShowLayersManageDialog.RegisterHandler(DoShowDialogAsync)));
+        this.WhenActivated(d => d(ViewModel!.ShowLayersManageDialog.RegisterHandler(DoShowLayersManageDialogAsync)));
+        this.WhenActivated(d => d(ViewModel!.ShowGraphicEditingDialog.RegisterHandler(DoShowGraphicEditingDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.GraphicsPopupViewModel.ShowEditGraphicDialog.RegisterHandler(DoShowEditGraphicDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.GraphicsPopupViewModel.ShowAddGraphicDialog.RegisterHandler(DoShowAddGraphicDialogAsync)));
     }
 
-    private async Task DoShowDialogAsync(InteractionContext<LayersManageViewModel, MainViewModel> interaction)
+    private async Task DoShowLayersManageDialogAsync(InteractionContext<LayersManageViewModel, MainViewModel> interaction)
     {
         var dialog = new LayersManageView();
+        dialog.DataContext = interaction.Input;
+
+        var result = await dialog.ShowDialog<MainViewModel>(this);
+        interaction.SetOutput(result);
+    }
+
+    private async Task DoShowGraphicEditingDialogAsync(InteractionContext<GraphicEditingViewModel, MainViewModel> interaction)
+    {
+        var dialog = new GraphicEditingView();
         dialog.DataContext = interaction.Input;
 
         var result = await dialog.ShowDialog<MainViewModel>(this);

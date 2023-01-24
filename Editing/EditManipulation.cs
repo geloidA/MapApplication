@@ -60,7 +60,7 @@ namespace map_app.Editing
                         var mapInfo = mapControl.GetMapInfo(screenPosition, editManager.VertexRadius);
                         if (editManager.EditMode == EditMode.Modify && mapInfo?.Feature != null)
                         {
-                            return editManager.StartDragging(mapInfo, editManager.VertexRadius);
+                            return editManager.StartDraggingEntirely(mapInfo, editManager.VertexRadius);
                         }
                         if (editManager.EditMode == EditMode.Rotate && mapInfo?.Feature != null)
                         {
@@ -76,7 +76,7 @@ namespace map_app.Editing
                     {
                         var args = mapControl.GetMapInfo(screenPosition);
                         if (editManager.EditMode == EditMode.Modify)
-                            return editManager.Dragging(args?.WorldPosition?.ToPoint());
+                            return editManager.DraggingEntirely(args?.WorldPosition?.ToPoint());
                         if (editManager.EditMode == EditMode.Rotate)
                             return editManager.Rotating(args?.WorldPosition?.ToPoint());
                         if (editManager.EditMode == EditMode.Scale)

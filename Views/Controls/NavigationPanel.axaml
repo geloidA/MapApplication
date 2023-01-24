@@ -37,6 +37,7 @@
                     <Button.Flyout>
                         <MenuFlyout Placement="Top" >
                             <MenuItem Header="Отмена" Command="{Binding CancelDrawingChanges}" />
+                            <MenuItem Header="Modify" Command="{Binding OnModify}" />
                             <CheckBox IsChecked="{Binding IsEditMode}" Content="Редактирование" />
                         </MenuFlyout>
                     </Button.Flyout>

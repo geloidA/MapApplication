@@ -9,6 +9,7 @@ using map_app.Models;
 using NetTopologySuite.Geometries;
 using Mapsui.Styles;
 using map_app.Services;
+using Mapsui;
 
 namespace map_app.Editing
 {
@@ -63,7 +64,6 @@ namespace map_app.Editing
                 _addInfo.Vertex = null;
                 EditMode = EditMode.AddPolygon;
                 Layer?.LayersFeatureHasChanged();
-                Layer?.DataHasChanged();
             }
             else if (EditMode == EditMode.DrawingOrthodromeLine)
             {
@@ -82,7 +82,6 @@ namespace map_app.Editing
                 _addInfo.Feature = null;
                 _addInfo.Vertex = null;
                 EditMode = EditMode.AddRectangle;
-                Layer?.LayersFeatureHasChanged();
                 Layer?.DataHasChanged();
             }
 
@@ -107,7 +106,6 @@ namespace map_app.Editing
 #pragma warning disable IDISP004 // Don't ignore created IDisposable
                 Layer?.Add(new PointGraphic(new[] { worldPosition }.ToList()) { Color = CurrentColor, Opacity = CurrentOpacity });
                 Layer?.LayersFeatureHasChanged();
-                Layer?.DataHasChanged();
 #pragma warning restore IDISP004 // Don't ignore created IDisposable
             }
             else if (EditMode == EditMode.AddPolygon)
@@ -119,7 +117,7 @@ namespace map_app.Editing
                 _addInfo.Vertices = new List<Coordinate>(new[] { firstPoint, secondPoint });
                 _addInfo.Feature = new PolygonGraphic(_addInfo.Vertices.ToList()) { Color = CurrentColor, Opacity = CurrentOpacity };
                 Layer?.Add(_addInfo.Feature);
-                Layer?.DataHasChanged();
+                Layer?.LayersFeatureHasChanged();
                 EditMode = EditMode.DrawingPolygon;
             }
             else if (EditMode == EditMode.DrawingPolygon)
@@ -144,7 +142,7 @@ namespace map_app.Editing
                 _addInfo.Vertices = new List<Coordinate> { firstPoint, secondPoint };
                 _addInfo.Feature = new OrthodromeGraphic(_addInfo.Vertices.ToList()) { Color = CurrentColor, Opacity = CurrentOpacity };
                 Layer?.Add(_addInfo.Feature);
-                Layer?.DataHasChanged();
+                Layer?.LayersFeatureHasChanged();
                 EditMode = EditMode.DrawingOrthodromeLine;
             }
             else if (EditMode == EditMode.DrawingOrthodromeLine)
@@ -168,7 +166,7 @@ namespace map_app.Editing
                 _addInfo.Vertices = new List<Coordinate>(new[] { firstPoint, secondPoint });
                 _addInfo.Feature = new RectangleGraphic(_addInfo.Vertices.ToList()) { Color = CurrentColor, Opacity = CurrentOpacity };
                 Layer?.Add(_addInfo.Feature);
-                Layer?.DataHasChanged();
+                Layer?.LayersFeatureHasChanged();
                 EditMode = EditMode.DrawingRectangle;
             }
 
@@ -184,53 +182,42 @@ namespace map_app.Editing
                 .FirstOrDefault(v => v.Distance(mapInfo.WorldPosition.ToCoordinate()) < mapInfo.Resolution * screenDistance);
         }
 
-        public bool StartDragging(MapInfo mapInfo, double screenDistance)
+        public bool StartDraggingEntirely(MapInfo mapInfo, double screenDistance)
         {
             if (EditMode == EditMode.Modify)
             {
                 if (mapInfo.Feature != null)
                 {
-                    if (mapInfo.Feature is BaseGraphic geometryFeature)
+                    if (mapInfo.Feature is BaseGraphic geometryFeature && mapInfo.Feature is not OrthodromeGraphic)
                     {
-                        var vertexTouched = FindVertexTouched(mapInfo, geometryFeature.Geometry?.MainCoordinates() ?? new List<Coordinate>(), screenDistance);
-                        if (vertexTouched != null)
+                        _dragInfo.Feature = geometryFeature;
+                        _dragInfo.StartOffsetsToVertexes = new MPoint[_dragInfo.Feature.Coordinates.Count];
+                        if (mapInfo.WorldPosition != null)
                         {
-                            _dragInfo.Feature = geometryFeature;
-                            _dragInfo.Vertex = vertexTouched;
-                            if (mapInfo.WorldPosition != null && _dragInfo.Vertex != null)
+                            for (var i = 0; i < _dragInfo.Feature.Coordinates.Count; i++)
                             {
-                                _dragInfo.StartOffsetToVertex = mapInfo.WorldPosition - _dragInfo.Vertex.ToMPoint();
+                                _dragInfo.StartOffsetsToVertexes[i] = mapInfo.WorldPosition - _dragInfo.Feature.Coordinates[i].ToMPoint();
                             }
-
-                            return true; // to indicate start of drag
                         }
+                        return true;
                     }
                 }
             }
             return false;
         }
 
-        public bool Dragging(Point? worldPosition)
+        public bool DraggingEntirely(Point? worldPosition)
         {
-            if (EditMode != EditMode.Modify || _dragInfo.Feature == null || worldPosition == null || _dragInfo.StartOffsetToVertex == null) return false;
+            if (EditMode != EditMode.Modify || _dragInfo.Feature == null || worldPosition == null || _dragInfo.StartOffsetsToVertexes == null) return false;
 
-            _dragInfo.Vertex.SetXY(worldPosition.ToMPoint() - _dragInfo.StartOffsetToVertex);
-
-            if (_dragInfo.Feature.Geometry is Polygon polygon) // Not this only works correctly it the feature is in the outer ring.
+            var i = 0;
+            foreach (var coordinate in _dragInfo.Feature.Coordinates)
             {
-                var count = polygon.ExteriorRing?.Coordinates.Length ?? 0;
-                var vertices = polygon.ExteriorRing?.Coordinates ?? Array.Empty<Coordinate>();
-                var index = vertices.ToList().IndexOf(_dragInfo.Vertex!);
-                if (index >= 0)
-                    // It is a ring where the first should be the same as the last.
-                    // So if the first was removed than set the last to the value of the new first
-                    if (index == 0) vertices[count - 1].SetXY(vertices[0]);
-                    // If the last was removed then set the first to the value of the new last
-                    else if (index == vertices.Length) vertices[0].SetXY(vertices[count - 1]);
-            }
+                coordinate.SetXY(worldPosition.ToMPoint() - _dragInfo.StartOffsetsToVertexes[i]);
+                i++;
+            }            
+            _dragInfo.Feature.RerenderGeometry();
 
-            _dragInfo.Feature.RenderedGeometry.Clear();
-            Layer?.DataHasChanged();
             return true;
         }
 

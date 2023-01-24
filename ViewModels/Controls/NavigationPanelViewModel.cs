@@ -19,7 +19,6 @@ namespace map_app.ViewModels.Controls
     internal class NavigationPanelViewModel : ViewModelBase
     {
         private OwnWritableLayer? _savedGraphicLayer;
-        private IEnumerable<IFeature>? _tempFeatures;
         private readonly EditManager _editManager;
         private readonly MapControl _mapControl;
 
@@ -85,28 +84,6 @@ namespace map_app.ViewModels.Controls
             }
         }
 
-        private void Load()
-        {
-            var features = GetClearedSavedFeatures();
-            _tempFeatures = new List<IFeature>(features);
-            _editManager.Layer?.AddRange(features);
-            _savedGraphicLayer?.Clear();
-
-            _mapControl.RefreshGraphics();
-        }
-
-        private void Save()
-        {
-            var features = _editManager.Layer?.GetFeatures()
-                .Cast<BaseGraphic>()
-                .Copy() ?? new List<IFeature>();
-            _tempFeatures = new List<IFeature>(features);
-            _savedGraphicLayer?.AddRange(features);
-            _editManager.Layer?.Clear();
-
-            _mapControl.RefreshGraphics();
-        }
-
         private void None() => _editManager.EditMode = EditMode.None;
 
         private void EnableDrawingMode(EditMode mode)
@@ -123,6 +100,11 @@ namespace map_app.ViewModels.Controls
             foreach (var feature in features)
                 feature.RenderedGeometry.Clear();
             return features;
+        }
+        
+        private void OnModify()
+        {
+            _editManager.EditMode = EditMode.Modify;
         }
     }
 }

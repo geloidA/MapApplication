@@ -48,7 +48,14 @@ namespace map_app.Services
             return success;
         }
 
-        public void LayersFeatureHasChanged() => OnLayersFeatureChanged();
+        /// <summary>
+        ///  Include DataHasChanged call
+        /// </summary> 
+        public void LayersFeatureHasChanged()
+        {
+            OnLayersFeatureChanged();
+            base.DataHasChanged();
+        }
 
         public event DataChangedEventHandler? LayersFeatureChanged;
 

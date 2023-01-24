@@ -55,18 +55,30 @@ namespace map_app.ViewModels
             OpenLayersManageView = ReactiveCommand.CreateFromTask(async () =>
             {
                 var manager = new LayersManageViewModel(_mapControl.Map);
-                var result = await ShowLayersManageDialog.Handle(manager);
+                await ShowLayersManageDialog.Handle(manager);
             });
 
             _isBaseGraphicUnderPointer = this
                 .WhenAnyValue(x => x.FeatureUnderPointer)
                 .Select(f => f as BaseGraphic != null)
                 .ToProperty(this, x => x.IsBaseGraphicUnderPointer);
+
+            var canExecute = this.WhenAnyValue(x => x.IsBaseGraphicUnderPointer);
+            ShowGraphicEditingDialog = new Interaction<GraphicEditingViewModel, MainViewModel>();
+            OpenGraphicEditingView = ReactiveCommand.CreateFromTask(async () =>
+            {
+                var vm = new GraphicEditingViewModel(FeatureUnderPointer ?? throw new NullReferenceException());
+                await ShowGraphicEditingDialog.Handle(vm);
+            }, canExecute);
         }
 
         public ICommand OpenLayersManageView { get; }
 
+        public ICommand OpenGraphicEditingView { get; }
+
         public Interaction<LayersManageViewModel, MainViewModel> ShowLayersManageDialog { get; }
+
+        public Interaction<GraphicEditingViewModel, MainViewModel> ShowGraphicEditingDialog { get; }
 
         internal void AccessOnlyGraphic(object? sender, CancelEventArgs e) => e.Cancel = !NavigationPanelViewModel.IsEditMode || !IsBaseGraphicUnderPointer;
 

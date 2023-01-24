@@ -9,6 +9,8 @@ using Mapsui.Styles.Thematics;
 using Mapsui.Tiling.Layers;
 using map_app.Views;
 using map_app.Network;
+using Mapsui.Projections;
+using Mapsui.UI;
 
 namespace map_app.Services
 {
@@ -21,13 +23,31 @@ namespace map_app.Services
         public static Map Create()
         {
             var map = new Map();
-            map.Layers.Add(new TileLayer(DictKnownTileSources.Create("www.openstreetmap.org")){ Name = "UserMain"});
+            map.Limiter = new ViewportLimiterKeepWithin
+            {
+                PanLimits = GetLimitsOfWorld(),
+                ZoomLimits = new MinMax(2.5, 25000)
+            };
+            var layer = new TileLayer(DictKnownTileSources.Create("www.openstreetmap.org"))
+            { 
+                Name = "Основной",
+                Tag = "User"
+            };
+            map.Layers.Add(layer);
             //map.Layers.Add(CreateAnimatedAircraftsLayer());
-            map.Layers.Add(CreateTargetWritableLayer());
+            var graphicLayer = CreateTargetWritableLayer();
+            map.Layers.Add(graphicLayer);
             // var editLayer = CreateEditLayer();
             // map.Layers.Add(editLayer);
             // map.Layers.Add(new VertexOnlyLayer(editLayer) { Name = "VertexLayer" });
             return map;
+        }
+
+        private static MRect GetLimitsOfWorld()
+        {
+            var (minX, minY) = SphericalMercator.FromLonLat(-180, 85);
+            var (maxX, maxY) = SphericalMercator.FromLonLat(180, -85);
+            return new MRect(minX, minY, maxX, maxY);
         }
 
         private static ILayer CreateAnimatedAircraftsLayer()
@@ -85,7 +105,8 @@ namespace map_app.Services
             {
                 Name = "Target Layer",
                 Style = CreateTargetLayerStyle(),
-                IsMapInfoLayer = true
+                IsMapInfoLayer = true,
+                Tag = "Graphic"
             };
             return layer;
         }
