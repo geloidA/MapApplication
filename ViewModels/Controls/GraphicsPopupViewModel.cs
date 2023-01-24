@@ -8,6 +8,7 @@ using Avalonia.Svg;
 using DynamicData;
 using map_app.Models;
 using map_app.Services;
+using Mapsui.Layers;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 

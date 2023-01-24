@@ -8,7 +8,6 @@ using Mapsui.Styles;
 using Mapsui.Styles.Thematics;
 using Mapsui.Tiling.Layers;
 using map_app.Views;
-using map_app.Editing.Layers;
 using map_app.Network;
 
 namespace map_app.Services
@@ -25,9 +24,9 @@ namespace map_app.Services
             map.Layers.Add(new TileLayer(DictKnownTileSources.Create("www.openstreetmap.org")){ Name = "UserMain"});
             //map.Layers.Add(CreateAnimatedAircraftsLayer());
             map.Layers.Add(CreateTargetWritableLayer());
-            var editLayer = CreateEditLayer();
-            map.Layers.Add(editLayer);
-            map.Layers.Add(new VertexOnlyLayer(editLayer) { Name = "VertexLayer" });            
+            // var editLayer = CreateEditLayer();
+            // map.Layers.Add(editLayer);
+            // map.Layers.Add(new VertexOnlyLayer(editLayer) { Name = "VertexLayer" });
             return map;
         }
 
@@ -85,7 +84,8 @@ namespace map_app.Services
             var layer = new OwnWritableLayer
             {
                 Name = "Target Layer",
-                Style = CreateTargetLayerStyle()
+                Style = CreateTargetLayerStyle(),
+                IsMapInfoLayer = true
             };
             return layer;
         }

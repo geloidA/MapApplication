@@ -134,8 +134,8 @@ namespace map_app.ViewModels
         private void DeleteGraphic()
         {
             if (FeatureUnderPointer is null)
-                throw new NullReferenceException("Graphic was null");            
-            _editManager?.Layer?.TryRemove(FeatureUnderPointer);
+                throw new NullReferenceException("Graphic was null");
+            _editManager.Layer?.TryRemove(FeatureUnderPointer);
         }
     }
 }

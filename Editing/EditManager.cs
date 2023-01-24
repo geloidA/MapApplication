@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using map_app.Editing.Extensions;
-using Mapsui.Layers;
 using Mapsui.Nts;
 using Mapsui.Nts.Extensions;
 using Mapsui.UI;
 using map_app.Models;
 using NetTopologySuite.Geometries;
 using Mapsui.Styles;
+using map_app.Services;
 
 namespace map_app.Editing
 {
@@ -31,7 +31,7 @@ namespace map_app.Editing
 
     public class EditManager
     {
-        public WritableLayer? Layer { get; set; }
+        public OwnWritableLayer? Layer { get; set; }
         public double CurrentOpacity { get; set; } = 1;
         public Color? CurrentColor { get; set; }
 
@@ -50,16 +50,7 @@ namespace map_app.Editing
             if (_addInfo.Feature is null) return false;
             if (_addInfo.Vertices is null) return false;
 
-            if (EditMode == EditMode.DrawingLine)
-            {
-                _addInfo.Vertices.RemoveAt(_addInfo.Vertices.Count - 1); // Remove duplicate last element added by the final double click
-                //_addInfo.Feature.Geometry = new LineString(_addInfo.Vertices.ToArray()); // TODO: Bug when doubleclick immediately
-
-                _addInfo.Feature = null;
-                _addInfo.Vertex = null;
-                EditMode = EditMode.AddLine;
-            }
-            else if (EditMode == EditMode.DrawingPolygon)
+            if (EditMode == EditMode.DrawingPolygon)
             {
                 _addInfo.Vertices.RemoveAt(_addInfo.Vertices.Count - 1); // correct for double click
                 var polygon = _addInfo.Feature.Geometry as Polygon;
@@ -71,6 +62,7 @@ namespace map_app.Editing
                 _addInfo.Feature = null;
                 _addInfo.Vertex = null;
                 EditMode = EditMode.AddPolygon;
+                Layer?.LayersFeatureHasChanged();
                 Layer?.DataHasChanged();
             }
             else if (EditMode == EditMode.DrawingOrthodromeLine)
@@ -82,6 +74,7 @@ namespace map_app.Editing
                 _addInfo.Feature = null;
                 _addInfo.Vertex = null;
                 EditMode = EditMode.AddOrthodromeLine;
+                Layer?.LayersFeatureHasChanged();
             }
             else if (EditMode == EditMode.DrawingRectangle)
             {
@@ -89,6 +82,7 @@ namespace map_app.Editing
                 _addInfo.Feature = null;
                 _addInfo.Vertex = null;
                 EditMode = EditMode.AddRectangle;
+                Layer?.LayersFeatureHasChanged();
                 Layer?.DataHasChanged();
             }
 
@@ -112,6 +106,7 @@ namespace map_app.Editing
             {
 #pragma warning disable IDISP004 // Don't ignore created IDisposable
                 Layer?.Add(new PointGraphic(new[] { worldPosition }.ToList()) { Color = CurrentColor, Opacity = CurrentOpacity });
+                Layer?.LayersFeatureHasChanged();
                 Layer?.DataHasChanged();
 #pragma warning restore IDISP004 // Don't ignore created IDisposable
             }

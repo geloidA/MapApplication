@@ -9,6 +9,7 @@ using map_app.Models;
 using map_app.Services;
 using map_app.Services.Extensions;
 using Mapsui;
+using Mapsui.Styles;
 using Mapsui.UI.Avalonia;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -21,6 +22,9 @@ namespace map_app.ViewModels.Controls
         private IEnumerable<IFeature>? _tempFeatures;
         private readonly EditManager _editManager;
         private readonly MapControl _mapControl;
+
+        private readonly Mapsui.Styles.Pen EditOutlineStyle = new Mapsui.Styles.Pen(Mapsui.Styles.Color.Red, 3);
+        private readonly Mapsui.Styles.Pen EditLineStyle = new Mapsui.Styles.Pen(Mapsui.Styles.Color.Red, 3);
         
         public NavigationPanelViewModel(MapControl mapControl, 
             EditManager editManager, 
@@ -39,12 +43,8 @@ namespace map_app.ViewModels.Controls
                 .Subscribe(isEdit => 
                 {
                     if (!isEdit)
-                    {
                         None();
-                        Save();
-                    }
-                    else
-                        Load();
+                    ChangeFeaturesBorderLine();
                 });
 
             ChooseColor = ReactiveCommand.Create<ImmutableSolidColorBrush>(brush => CurrentColor = brush.Color, canEdit);
@@ -56,7 +56,7 @@ namespace map_app.ViewModels.Controls
         public bool IsEditMode { get; set; } = true;
 
         [Reactive]
-        public Color CurrentColor { get; set; } = Colors.Gray;
+        public Avalonia.Media.Color CurrentColor { get; set; } = Colors.Gray;
 
         public ICommand EnablePointMode { get; }
 
@@ -67,6 +67,23 @@ namespace map_app.ViewModels.Controls
         public ICommand EnableRectangleMode { get; }
 
         public ICommand ChooseColor { get; }
+
+        private void ChangeFeaturesBorderLine()
+        {
+            if (!(_savedGraphicLayer?.Style is VectorStyle style))
+                return;
+
+            if (IsEditMode)
+            {                
+                style.Outline = EditOutlineStyle;
+                style.Line = EditLineStyle;
+            }
+            else
+            {
+                style.Outline = null;
+                style.Line = null;
+            }
+        }
 
         private void Load()
         {
