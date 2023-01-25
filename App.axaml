@@ -1,5 +1,7 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:cp="clr-namespace:ThemeEditor.Controls.ColorPicker;assembly=ThemeEditor.Controls.ColorPicker"
+             xmlns:convrts="clr-namespace:map_app.Services.Converters;assembly=map_app"
              x:Class="map_app.App">
     <Application.Styles>
         <FluentTheme Mode="Light"/>
@@ -12,7 +14,9 @@
             <Setter Property="HorizontalContentAlignment" Value="Center" />
         </Style>
         <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseLight.xaml"/>
+        <StyleInclude Source="avares://ThemeEditor.Controls.ColorPicker/ColorPicker.axaml" />
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Default.xaml"/>
+        <StyleInclude Source="avares://map_app/Views/Controls/CustomColorPicker.axaml"/>
         <Style Selector="DataValidationErrors">
             <Setter Property="Template">
                 <ControlTemplate>
