@@ -52,9 +52,7 @@ namespace map_app.Models
 
         public override bool Equals(object? obj)
         {
-            var other = obj as GeoPoint;
-
-            if (other is null)
+            if (obj is not GeoPoint other)
                 return false;
 
             return Math.Abs(other.Longtitude - Longtitude) < Eps
@@ -64,7 +62,8 @@ namespace map_app.Models
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return (Longtitude.GetHashCode() * 31 + Latitude.GetHashCode()) 
+                * 31 + Altitude.GetHashCode();
         }
     }
 }

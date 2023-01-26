@@ -1,9 +1,12 @@
+using System;
 using NetTopologySuite.Geometries;
 
 namespace map_app.Models
 {
     public class LinearPoint
     {
+        private const double Eps = 1e-5;
+
         public double X { get; set; }
         public double Y { get; set; }
         public double Z { get; set; }
@@ -30,18 +33,17 @@ namespace map_app.Models
 
         public override bool Equals(object? obj)
         {
-            var other = obj as LinearPoint;
-            if (other == null)
+            if (obj is not LinearPoint other)
                 return false;
             
-            return X == other.X
-                && Y == other.Y
-                && Z == other.Z;
+            return Math.Abs(other.X - X) < Eps
+                && Math.Abs(other.Y - Y) < Eps
+                && Math.Abs(other.Z - Z) < Eps;
         }
 
         public override int GetHashCode()
         {
-            throw new System.NotImplementedException();
+            return (X.GetHashCode() * 31 + Y.GetHashCode()) * 31 + Z.GetHashCode();
         }
     }
 }

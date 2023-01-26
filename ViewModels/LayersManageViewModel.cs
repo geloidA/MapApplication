@@ -44,7 +44,7 @@ namespace map_app.ViewModels
                 var result = await ShowAddDialog.Handle(addView);
             });
 
-            var canExecute = this.WhenAnyValue(x => x.SelectedLayer, x => IsNotNull(x));
+            var canExecute = this.WhenAnyValue(x => x.SelectedLayer, IsNotNull);
 
             ShowChangeDialog = new Interaction<EditLayerViewModel, LayersManageViewModel>();
 
