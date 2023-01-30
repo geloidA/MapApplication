@@ -7,10 +7,13 @@
         xmlns:convrts="clr-namespace:map_app.Services.Converters;assembly=map_app"
         mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="500"
         MinWidth="600" MinHeight="600"
+        Width="600" Height="600"
+        Name="thisWindow"
         x:Class="map_app.Views.GraphicEditingView"
         Title="GraphicEditingView">
     <Window.Resources>
         <convrts:GraphicTypeToStringConverter x:Key="typeConverter"/>
+        <convrts:EnumDescriptionConverter x:Key="pointConverter" />
     </Window.Resources>
 
     <Window.Styles>
@@ -27,73 +30,63 @@
     </Window.Styles>
 
     <Grid >
-        <Grid RowDefinitions="*,*,*,*,*,0.75*">
+        <Grid RowDefinitions="75,50,*,*,0.45*,0.4*">
             <TextBlock VerticalAlignment="Top" HorizontalAlignment="Center"
                 FontSize="16"
-                Text="{Binding GraphicType, Converter={StaticResource typeConverter}}" Margin="0 10 0 0" />
+                Text="Точка" Margin="0 10 0 0" />
+                <!-- {Binding GraphicType, Converter={StaticResource typeConverter}} -->
 
             <StackPanel Margin="0 15 0 15" Orientation="Horizontal" HorizontalAlignment="Right"
                 VerticalAlignment="Center" >
                 <TextBlock Text="Цвет" Margin="0 0 10 0" />
-                <controls:PopupColorPicker Color="{Binding GraphicColor, Mode=TwoWay}"/>
+                <controls:PopupColorPicker Color="yellow"/>
+                <!-- {Binding GraphicColor, Mode=TwoWay} -->
             </StackPanel>
 
-            <DataGrid SelectedItem="{Binding SelectedLinearPoint}" Items="{Binding LinearPoints}" Grid.Row="1" 
-                CanUserReorderColumns="False" ColumnWidth="*" Margin="5"
-                CanUserSortColumns="False" CanUserResizeColumns="False" >
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="X" Binding="{Binding X}"/>
-                    <DataGridTextColumn Header="Y" Binding="{Binding Y}"/>
-                    <DataGridTextColumn Header="Z" Binding="{Binding Z}"/>
-                </DataGrid.Columns>
-            </DataGrid>
+            <ComboBox Items="{Binding PointTypes}" Grid.Row="1" 
+                SelectedItem="{Binding SelectedPointType, Mode=TwoWay, Converter={StaticResource pointConverter}}"
+                VerticalAlignment="Center" HorizontalAlignment="Left" 
+                Margin="5 0 0 0" Width="120"/>
 
-            <StackPanel Orientation="Horizontal" Grid.Row="1" Height="30"
-                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5" >
-                <Button Classes="dataGrid" Width="40" Height="40"
-                    Command="{Binding NewLinearPoint}">
-                    <Image Source="{svg:SvgImage Resources/Assets/datagridplus.svg}" />
-                </Button>
-                <Button Classes="dataGrid" Width="40" Height="40" 
-                    Command="{Binding RemoveSelectedLinearPoint}">
-                    <Image Source="{svg:SvgImage Resources/Assets/datagridminus.svg}" />
-                </Button>
-            </StackPanel>
+            <Grid Grid.Row="2" >
+                <StackPanel Orientation="Horizontal" Height="30"
+                    HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0 -25 0 0" >
+                    <Button Classes="dataGrid" Width="40" Height="40" Content="*"
+                        Command="{Binding AddPoint}">
+                        <!-- <Image Source="{svg:SvgImage Resources/Assets/datagridplus.svg}" /> -->
+                    </Button>
+                    <Button Classes="dataGrid" Width="40" Height="40" Content="*"
+                        Command="{Binding RemoveSelectedPoint}">
+                        <!-- <Image Source="{svg:SvgImage Resources/Assets/datagridminus.svg}" /> -->
+                    </Button>
+                </StackPanel>
 
-            <DataGrid SelectedItem="{Binding SelectedGeoPoint}" Items="{Binding GeoPoints}" Grid.Row="2" 
-                CanUserReorderColumns="False" ColumnWidth="*" Margin="5"
-                CanUserSortColumns="False" CanUserResizeColumns="False" >
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Долгота" Binding="{Binding Longtitude}" />
-                    <DataGridTextColumn Header="Широта" Binding="{Binding Latitude}" />
-                    <DataGridTextColumn Header="Высота" Binding="{Binding Altitude}" />
-                </DataGrid.Columns>
-            </DataGrid>
-
-            <StackPanel Orientation="Horizontal" Grid.Row="2" Height="30"
-                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5" >
-                <Button Classes="dataGrid" Width="40" Height="40"
-                    Command="{Binding NewGeoPoint}">
-                    <Image Source="{svg:SvgImage Resources/Assets/datagridplus.svg}" />
-                </Button>
-                <Button Classes="dataGrid" Width="40" Height="40" 
-                    Command="{Binding RemoveSelectedGeoPoint}">
-                    <Image Source="{svg:SvgImage Resources/Assets/datagridminus.svg}" />
-                </Button>
-            </StackPanel>
+                <controls:MyDataGrid SelectedIndex="{Binding SelectedIndex}" Items="{Binding Points}"
+                    CurrentCell="{Binding ChangedCell, Mode=TwoWay}"
+                    CanUserReorderColumns="False" ColumnWidth="*" Margin="5" Grid.Column="1"
+                    CanUserSortColumns="False" CanUserResizeColumns="False" >
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="{Binding $parent.DataContext.Header1}" Binding="{Binding First}"/>
+                        <DataGridTextColumn Header="{Binding $parent.DataContext.Header2}" Binding="{Binding Second}"/>
+                        <DataGridTextColumn Header="{Binding $parent.DataContext.Header3}" Binding="{Binding Third}"/>
+                    </DataGrid.Columns>
+                </controls:MyDataGrid>
+            </Grid>
 
             <ListBox Grid.Row="3" Margin="5"/>
 
-            <Grid HorizontalAlignment="Center" Grid.Row="4" ColumnDefinitions="*,*"
+            <Grid HorizontalAlignment="Center" Grid.Row="4" ColumnDefinitions="*,*,100"
                 VerticalAlignment="Center" >
-                <Slider Width="150" Minimum="0" Maximum="1" Value="{Binding Opacity}"
-                    Margin="5" TickFrequency="0.1" IsSnapToTickEnabled="True" TickPlacement="Outside" />
-                <TextBox Grid.Column="1" Height="10" Width="20" Margin="5" Text="{Binding Opacity, Mode=TwoWay}" TextAlignment="Center" />
+                <TextBlock Text="Прозрачность:" VerticalAlignment="Center" Margin="0 0 10 0" />
+                <Slider Width="150" Minimum="0" Grid.Column="1" Maximum="1" Value="{Binding Opacity}"
+                    Margin="5" TickFrequency="0.1" TickPlacement="Outside" />
+                <TextBox Name="opacityTextBox" CornerRadius="0" Grid.Column="2" HorizontalContentAlignment="Center" Height="10" Margin="10 5 0 0" 
+                        Text="{Binding Opacity, Mode=TwoWay}" TextAlignment="Center" />
             </Grid>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="5">
-                <Button Classes="dialog" Content="Ок" />
-                <Button Classes="dialog" Content="Отмена" />
+                <Button Classes="dialog" Content="Ок" Command="{Binding SaveChanges}" />
+                <Button Classes="dialog" Content="Отмена" Command="{Binding Cancel}" CommandParameter="{Binding ElementName=thisWindow}" />
             </StackPanel>
         </Grid>
     </Grid>

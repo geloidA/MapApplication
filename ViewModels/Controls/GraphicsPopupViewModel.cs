@@ -8,7 +8,6 @@ using Avalonia.Svg;
 using DynamicData;
 using map_app.Models;
 using map_app.Services;
-using Mapsui.Layers;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
@@ -70,6 +69,8 @@ namespace map_app.ViewModels.Controls
                 var manager = new EditGraphicViewModel(SelectedGraphic!);
                 var result = await ShowEditGraphicDialog.Handle(manager);
             }, canExecute);
+
+            
 
             ShowAddGraphicDialog = new Interaction<AddGraphicViewModel, GraphicsPopupViewModel>();
             OpenAddGraphicView = ReactiveCommand.CreateFromTask(async () =>

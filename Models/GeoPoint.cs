@@ -1,25 +1,26 @@
 using System;
-using Mapsui.Nts.Extensions;
 using Mapsui.Projections;
 using NetTopologySuite.Geometries;
 
 namespace map_app.Models
 {
-    public class GeoPoint
+    public class GeoPoint : IThreeDimensionalPoint
     {
         private const double Eps = 1e-5;
 
         public double Longtitude { get; set; }
+
         public double Latitude { get; set; }
+
         public double Altitude { get; set; }
+        
+        public double First  { get => Longtitude; set => Longtitude = value; }
+        public double Second { get => Latitude; set => Latitude = value; }
+        public double Third { get => Altitude; set => Altitude = value; }
 
-        public GeoPoint() : this(0, 0, 0)
-        {             
-        }
+        public GeoPoint() : this(0, 0, 0) { }
 
-        public GeoPoint(double lon, double lat) : this(lon, lat, 0)
-        {             
-        }
+        public GeoPoint(double lon, double lat) : this(lon, lat, 0) { }
 
         public GeoPoint(double lon, double lat, double alt)
         {
@@ -40,6 +41,16 @@ namespace map_app.Models
             return new Coordinate3D(coordinate.x, coordinate.y, Altitude);
         }
 
+        public LinearPoint ToLinearPoint()
+        {
+            var coordinate = this.ToWorldPosition();
+            return new LinearPoint(
+                coordinate.X,
+                coordinate.Y,
+                coordinate.Z
+            );
+        }
+
         public GeoPoint Copy()
         {
             return new GeoPoint(Longtitude, Latitude, Altitude);
@@ -52,8 +63,8 @@ namespace map_app.Models
 
         public override bool Equals(object? obj)
         {
-            if (obj is not GeoPoint other)
-                return false;
+            if (obj is not GeoPoint other) return false;
+            if (ReferenceEquals(this, other)) return true;
 
             return Math.Abs(other.Longtitude - Longtitude) < Eps
                 && Math.Abs(other.Latitude - Latitude) < Eps

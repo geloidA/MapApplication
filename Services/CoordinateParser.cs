@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -14,8 +13,13 @@ namespace map_app.Services
         {            
             if (data is null)
                 throw new NullReferenceException();
+            return AssertLength(Regex.Matches(data, _pattern), lengthPredicate);
+        }
 
-            var len = Regex.Matches(data, _pattern).Count();
+        public static bool AssertLength<T>(IEnumerable<T> data, Func<int, bool> lengthPredicate)
+        {
+
+            var len = data.Count();
             return lengthPredicate(len);
         }
 
