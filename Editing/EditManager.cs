@@ -35,10 +35,10 @@ namespace map_app.Editing
         public OwnWritableLayer? Layer { get; set; }
         public double CurrentOpacity { get; set; } = 1;
         public Color? CurrentColor { get; set; }
+        public MRect? Extent { get; set; }
 
         private readonly DragInfo _dragInfo = new();
         private readonly AddInfo _addInfo = new();
-        private Coordinate? _lastOrthodromeCoordinate = new();
         private readonly RotateInfo _rotateInfo = new();
         private readonly ScaleInfo _scaleInfo = new();
 
@@ -53,13 +53,8 @@ namespace map_app.Editing
 
             if (EditMode == EditMode.DrawingPolygon)
             {
-                _addInfo.Vertices.RemoveAt(_addInfo.Vertices.Count - 1); // correct for double click
-                var polygon = _addInfo.Feature.Geometry as Polygon;
-                if (polygon == null) return false;
+                (_addInfo.Feature as IStepByStepGraphic)?.AddPoint(_addInfo.Vertices[_addInfo.Vertices.Count - 1]);
 
-                _addInfo.Feature.Coordinates = _addInfo.Vertices.ToList();
-
-                _addInfo.Feature?.RenderedGeometry.Clear(); // You need to clear the cache to see changes.
                 _addInfo.Feature = null;
                 _addInfo.Vertex = null;
                 EditMode = EditMode.AddPolygon;
@@ -67,10 +62,8 @@ namespace map_app.Editing
             }
             else if (EditMode == EditMode.DrawingOrthodromeLine)
             {
-                _addInfo.Vertices.RemoveAt(_addInfo.Vertices.Count - 1);
-                _addInfo.Feature.Coordinates = _addInfo.Vertices.ToList();
+                (_addInfo.Feature as IStepByStepGraphic)?.AddPoint(_addInfo.Vertices[_addInfo.Vertices.Count - 1]);
 
-                _addInfo.Feature?.RenderedGeometry.Clear();
                 _addInfo.Feature = null;
                 _addInfo.Vertex = null;
                 EditMode = EditMode.AddOrthodromeLine;
@@ -78,11 +71,10 @@ namespace map_app.Editing
             }
             else if (EditMode == EditMode.DrawingRectangle)
             {
-                _addInfo.Feature?.RenderedGeometry.Clear();
                 _addInfo.Feature = null;
                 _addInfo.Vertex = null;
                 EditMode = EditMode.AddRectangle;
-                Layer?.DataHasChanged();
+                Layer?.LayersFeatureHasChanged();
             }
 
             return false;
@@ -101,6 +93,9 @@ namespace map_app.Editing
 
         public bool AddVertex(Coordinate worldPosition)
         {
+            if (!Extent?.Contains(worldPosition.ToMPoint()) ?? false)
+                return false;
+
             if (EditMode == EditMode.AddPoint)
             {
 #pragma warning disable IDISP004 // Don't ignore created IDisposable
@@ -129,7 +124,7 @@ namespace map_app.Editing
                 _addInfo.Vertex.SetXY(worldPosition);
                 _addInfo.Vertex = worldPosition.Copy(); // and create a new hover vertex
                 _addInfo.Vertices.Add(_addInfo.Vertex);
-                (_addInfo.Feature as PolygonGraphic)?.AddLinearPoint(_addInfo.Vertex);
+                (_addInfo.Feature as IStepByStepGraphic)?.AddPoint(_addInfo.Vertex);
 
                 _addInfo.Feature?.RenderedGeometry.Clear();
                 Layer?.DataHasChanged();
@@ -140,7 +135,7 @@ namespace map_app.Editing
                 var secondPoint = worldPosition.Copy();
                 _addInfo.Vertex = secondPoint;
                 _addInfo.Vertices = new List<Coordinate> { firstPoint, secondPoint };
-                _addInfo.Feature = new OrthodromeGraphic(_addInfo.Vertices.ToList()) { Color = CurrentColor, Opacity = CurrentOpacity };
+                _addInfo.Feature = new OrthodromeGraphic(_addInfo.Vertices.ToList()) { Color = CurrentColor, Opacity = CurrentOpacity }; // aayy
                 Layer?.Add(_addInfo.Feature);
                 Layer?.LayersFeatureHasChanged();
                 EditMode = EditMode.DrawingOrthodromeLine;
@@ -153,7 +148,7 @@ namespace map_app.Editing
                 _addInfo.Vertex.SetXY(worldPosition);
                 _addInfo.Vertex = worldPosition.Copy();
                 _addInfo.Vertices.Add(_addInfo.Vertex);
-                (_addInfo.Feature as OrthodromeGraphic)?.AddLinearPoint(_addInfo.Vertex);
+                (_addInfo.Feature as IStepByStepGraphic)?.AddPoint(_addInfo.Vertex);
                 _addInfo.Feature?.RenderedGeometry.Clear();
                 Layer?.DataHasChanged();
             }

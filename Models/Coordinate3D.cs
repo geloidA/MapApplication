@@ -5,9 +5,7 @@ namespace map_app.Models
 {
     public class Coordinate3D : Coordinate
     {
-        private double _z;
-
-        public override double Z { get => _z; set => _z = value; }
+        public override double Z { get; set; }
 
         public Coordinate3D()
         {

@@ -104,7 +104,6 @@ namespace map_app.Services
             var layer = new OwnWritableLayer
             {
                 Name = "Target Layer",
-                Style = CreateTargetLayerStyle(),
                 IsMapInfoLayer = true,
                 Tag = "Graphic"
             };

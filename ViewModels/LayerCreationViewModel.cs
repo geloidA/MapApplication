@@ -6,9 +6,9 @@ namespace map_app.ViewModels
 {
     public class LayerCreationViewModel : ViewModelBase
     {
-        protected ILayer CreateLayer(string address, string name, double opacity)
+        protected ILayer CreateUserLayer(string address, string name, double opacity)
         {
-            return new TileLayer(DictKnownTileSources.Create(address)) { Name = name, Opacity = opacity };
+            return new TileLayer(DictKnownTileSources.Create(address)) { Name = name, Opacity = opacity, Tag="User" };
         }
     }
 }

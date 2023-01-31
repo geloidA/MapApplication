@@ -39,6 +39,9 @@ namespace map_app.Editing.Extensions
                 : new GeoPoint(lonLat.lon, lonLat.lat);
         }
 
+        public static IEnumerable<GeoPoint> ToGeoPoints(this IEnumerable<Coordinate> target)
+            => target.Select(c => c.ToGeoPoint());
+
         public static LinearPoint ToLinearPoint(this Coordinate target)
         {
             return new LinearPoint(target.X, target.Y, target.Z);

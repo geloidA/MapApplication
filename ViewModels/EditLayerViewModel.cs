@@ -54,7 +54,7 @@ namespace map_app.ViewModels
 
         private void CreateNewLayer()
         {
-            var changed = CreateLayer(Address!, Name!, Opacity);
+            var changed = CreateUserLayer(Address!, Name!, Opacity);
             var index = _map.Layers.IndexOf(_toChange);
             _map.Layers.Remove(_toChange);
             _map.Layers.Insert(index, changed);

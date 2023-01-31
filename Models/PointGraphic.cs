@@ -23,15 +23,15 @@ namespace map_app.Models
         public PointGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
         public PointGraphic(Geometry? geometry) : base(geometry) { }
 
-        protected override Geometry RenderGeometry(List<Coordinate> points)
+        protected override Geometry RenderGeometry()
         {
-            if (points.Count != 1)
-                throw new ArgumentException($"List need contain one point, but was {points.Count}");
-            var coordinate = points[0] ?? throw new NullReferenceException("Point was null");
+            if (_coordinates.Count != 1)
+                throw new ArgumentException($"List need contain one point, but was {_coordinates.Count}");
+            var coordinate = _coordinates[0] ?? throw new NullReferenceException("Point was null");
             return coordinate.ToPoint();
         }
 
-        public override BaseGraphic LightCopy()
+        public override PointGraphic LightCopy()
         {
             return new PointGraphic(this);
         }

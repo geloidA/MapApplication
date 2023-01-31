@@ -21,22 +21,22 @@ namespace map_app.Models
 
         public override GraphicType Type => GraphicType.Polygon;
 
-        public void AddLinearPoint(Coordinate worldPoint)
+        public void AddPoint(Coordinate worldPoint)
         {
             _coordinates.Add(worldPoint);
-            Geometry = RenderGeometry(_coordinates);
+            Geometry = RenderGeometry();
         }
 
-        public void AddRangeLinearPoints(IEnumerable<Coordinate> worldPoints)
+        public void AddRangePoints(IEnumerable<Coordinate> worldPoints)
         {
             foreach(var point in worldPoints)
             {
                 _coordinates.Add(point);
             }
-            Geometry = RenderGeometry(_coordinates);
+            Geometry = RenderGeometry();
         }
 
-        public override BaseGraphic LightCopy()
+        public override PolygonGraphic LightCopy()
         {
             return new PolygonGraphic(this);
         }
@@ -46,10 +46,10 @@ namespace map_app.Models
             throw new NotImplementedException();
         }
 
-        protected override Geometry RenderGeometry(List<Coordinate> points)
+        protected override Geometry RenderGeometry()
         {
-            var linearRing = points.ToList();
-            linearRing.Add(points[0].Copy()); // Add first coordinate at end to close the ring.
+            var linearRing = _coordinates.ToList();
+            linearRing.Add(_coordinates[0].Copy()); // Add first coordinate at end to close the ring.
             return new Polygon(new LinearRing(linearRing.ToArray()));
         }
     }

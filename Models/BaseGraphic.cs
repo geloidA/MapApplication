@@ -32,14 +32,14 @@ namespace map_app.Models
         public BaseGraphic(List<LinearPoint> points) : base()
         {
             _coordinates = points.ToCoordinates().ToList();
-            Geometry = RenderGeometry(_coordinates);
+            Geometry = RenderGeometry();
             InitializeGraphicStyle();
         }
 
         public BaseGraphic(List<Coordinate> points) : base() 
         {
             _coordinates = points;
-            Geometry = RenderGeometry(points);
+            Geometry = RenderGeometry();
             InitializeGraphicStyle();
         }
 
@@ -87,7 +87,7 @@ namespace map_app.Models
         /// <summary>
         /// Recalculation Geometry property when set method is called
         /// </summary>
-        public IReadOnlyList<Coordinate> Coordinates
+        public virtual IReadOnlyList<Coordinate> Coordinates
         {
             get => _coordinates;
             set
@@ -96,7 +96,7 @@ namespace map_app.Models
                     throw new ArgumentNullException();
                 
                 _coordinates = value.ToList();
-                Geometry = RenderGeometry(_coordinates);
+                Geometry = RenderGeometry();
             }
         }
         
@@ -106,13 +106,13 @@ namespace map_app.Models
             protected set => base.Geometry = value;
         }
 
-        protected abstract Geometry RenderGeometry(List<Coordinate> points);
+        protected abstract Geometry RenderGeometry();
 
         public abstract BaseGraphic LightCopy();
         
         public void RerenderGeometry()
         {
-            Geometry = RenderGeometry(_coordinates);
+            Geometry = RenderGeometry();
         }
 
         private void InitializeGraphicStyle()

@@ -24,7 +24,7 @@ namespace map_app.Models
                 throw new ArgumentException("length can't be less 2");
 
             _orthodrome = new Orthodrome(firstPoints[0].ToGeoPoint(), firstPoints[1].ToGeoPoint());
-            AddRangeLinearPoints(points.Skip(2));
+            AddRangePoints(points.Skip(2));
         }
 
         public OrthodromeGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
@@ -32,12 +32,22 @@ namespace map_app.Models
 
         public override GraphicType Type => GraphicType.Orthodrome;
 
-        public void AddLinearPoint(Coordinate worldCoordinate)
+        public override IReadOnlyList<Coordinate> Coordinates 
+        { 
+            get => base.Coordinates; 
+            set 
+            {
+                _orthodrome = Orthodrome.Create(value.ToGeoPoints().ToList());
+                base.Coordinates = value;
+            } 
+        }
+
+        public void AddPoint(Coordinate worldCoordinate)
         {
             if (_orthodrome is null)
                 return;
 
-            var last = _orthodrome;           
+            var last = _orthodrome;
                 
             while(last.Next != null)
             {
@@ -45,28 +55,29 @@ namespace map_app.Models
             }
             last.Next = new Orthodrome(last.End, worldCoordinate.ToGeoPoint());
             _coordinates.Add(worldCoordinate);
-            Geometry = RenderGeometry(_coordinates);
+            Geometry = RenderGeometry();
         }
 
-        public void AddRangeLinearPoints(IEnumerable<Coordinate> worldCoordinates)
+        public void AddRangePoints(IEnumerable<Coordinate> worldCoordinates)
         {
             if (_orthodrome is null)
                 return;
-                
+
             var last = _orthodrome;
-            
+
             while(last.Next != null)
-                last = last.Next;                
+                last = last.Next;
+
             foreach (var point in worldCoordinates)
             {
                 last.Next = new Orthodrome(last.End, point.ToGeoPoint());
                 _coordinates.Add(point);
                 last = last.Next;
             }
-            Geometry = RenderGeometry(_coordinates);
+            Geometry = RenderGeometry();
         }
 
-        public override BaseGraphic LightCopy()
+        public override OrthodromeGraphic LightCopy()
         {
             return new OrthodromeGraphic(this);
         }
@@ -76,21 +87,21 @@ namespace map_app.Models
             throw new System.NotImplementedException();
         }
 
-        protected override Geometry RenderGeometry(List<Coordinate> points)
+        protected override Geometry RenderGeometry()
         {
-            var last = points.Last();
+            var last = _coordinates.Last();
             var result = new List<GeoPoint>();
             var next = _orthodrome;
             while(next != null)
             {
-                if (next.Next is null) // change last point while mouse moving
+                if (next.Next is null) // change last orthodrome point while mouse moving
                 {
                     next.End = last.ToGeoPoint();
                 }
                 result.AddRange(next.Path);
                 next = next.Next;
-            }            
-            return new LineString(result.ToWorldPositions().ToArray());
+            }
+            return new LineString(result.ToWorldPositions().ToArray());            
         }
     }
 }

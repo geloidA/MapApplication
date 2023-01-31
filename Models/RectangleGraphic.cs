@@ -20,15 +20,15 @@ namespace map_app.Models
 
         public override GraphicType Type => GraphicType.Rectangle;
 
-        public override BaseGraphic LightCopy()
+        public override RectangleGraphic LightCopy()
         {
             return new RectangleGraphic(this);
         }
 
-        protected override Geometry RenderGeometry(List<Coordinate> points)
+        protected override Geometry RenderGeometry()
         {
-            var startPos = points[0];
-            var currentPos = points[1];
+            var startPos = _coordinates[0];
+            var currentPos = _coordinates[1];
 
             return new Polygon(new LinearRing(new[] 
             {

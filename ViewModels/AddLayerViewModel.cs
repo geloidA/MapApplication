@@ -19,10 +19,10 @@ namespace map_app.ViewModels
             Cancel = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
             Confirm = ReactiveCommand.Create<ICloseable>(wnd => 
             {
-                var layer = CreateLayer(Address!, "User" + Name!, Opacity);
+                var layer = CreateUserLayer(Address!, Name!, Opacity);
                 _map.Layers.Add(layer); // todo: think how get data source
                 undoStack.Push(() => _map.Layers.Remove(_map.Layers.ElementAt(_map.Layers.Count - 1)));
-                WindowCloser.Close(wnd);
+                Cancel.Execute(wnd);
             }, 
             this.WhenAnyValue(
                 x => x.Name, x => x.Opacity, x=> x.Address,

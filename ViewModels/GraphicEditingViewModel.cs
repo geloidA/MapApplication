@@ -11,10 +11,14 @@ using System;
 using AvaloniaEdit.Utils;
 using Mapsui.Projections;
 using System.Reactive.Linq;
+using ReactiveUI.Validation.Helpers;
+using ReactiveUI.Validation.Extensions;
+using System.Linq;
+using map_app.Models.Extensions;
 
 namespace map_app.ViewModels
 {
-    public class GraphicEditingViewModel : ViewModelBase
+    public class GraphicEditingViewModel : ReactiveValidationObject
     {
         private BaseGraphic _editGraphic;
         private List<LinearPoint> _linear;
@@ -51,6 +55,23 @@ namespace map_app.ViewModels
                 Points.RemoveAt(SelectedIndex);
             }, canRemove);
 
+            var canSave = this.IsValid();
+
+            SaveChanges = ReactiveCommand.Create(() =>
+            {
+                if (!IsCorrectCoordinateNumber())
+                {
+                    ShowMessageIncorrectData("Некорректное количество координат ");
+                    return;
+                }
+                if (IsCoordinatesIncorrect)
+                {
+                    ShowMessageIncorrectData("Некорректные координаты ");
+                    return;
+                }
+                _editGraphic.Coordinates = _linear.ToCoordinates().ToList();
+            }, canSave);
+            
             this.WhenAnyValue(x => x.SelectedPointType)
                 .Subscribe(SwapPoints);
                 
@@ -112,12 +133,43 @@ namespace map_app.ViewModels
 
         public ICommand RemoveSelectedPoint { get; }
 
-        private void SaveChanges()
-        {
-            
-        }
+        public ICommand SaveChanges { get; }
+
+        /* 
+            Проверить корректность координат
+            -180 > Долгота < 180
+            -90 > Широта < 90
+            Не давать нажимать кнопку, пока некорректна прозрачность
+
+            Метки - контекстное меню добавить/удалить
+        */       
 
         private void Cancel(Avalonia.Input.ICloseable window) => WindowCloser.Close(window);
+
+        private bool IsCoordinatesIncorrect 
+            => _geo.Where(g=> IsCoordinateIncorrect(g))
+                .Any();
+
+        private bool IsCoordinateIncorrect(GeoPoint point) // z and altitude
+        {
+            return point.Longtitude < -180 
+                || point.Longtitude > 180
+                || point.Latitude < -85
+                || point.Latitude > 85;
+        }
+
+        private bool IsCorrectCoordinateNumber()
+        {
+            if (_editGraphic is PointGraphic)
+                return _geo.Count == 1;
+            if (_editGraphic is RectangleGraphic)
+                return _geo.Count == 2;
+            if (_editGraphic is PolygonGraphic)
+                return _geo.Count >= 2;
+            if (_editGraphic is OrthodromeGraphic)
+                return _geo.Count >= 2;
+            throw new NotImplementedException();
+        }
 
         private void SwapPoints(PointType type)
         {
@@ -180,7 +232,7 @@ namespace map_app.ViewModels
         {
             var messageBoxStandardWindow = MessageBoxManager.GetMessageBoxStandardWindow(
                 "Некорректные данные",
-                message);
+                message);            
             messageBoxStandardWindow.Show();
         }
 

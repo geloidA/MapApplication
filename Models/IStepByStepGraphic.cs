@@ -8,8 +8,8 @@ namespace map_app.Models
 {
     public interface IStepByStepGraphic
     {
-        void AddLinearPoint(Coordinate worldCoordinate);
-        void AddRangeLinearPoints(IEnumerable<Coordinate> worldCoordinates);
+        void AddPoint(Coordinate worldCoordinate);
+        void AddRangePoints(IEnumerable<Coordinate> worldCoordinates);
         Geometry RenderStepGeometry(Coordinate worldPosition);
     }
 }

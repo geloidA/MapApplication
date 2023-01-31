@@ -21,6 +21,7 @@ namespace map_app.ViewModels
         #region Private members
         private bool _isRightWasPressed;
         private readonly OwnWritableLayer? _savedGraphicLayer;
+        private const double LeftBorderMap = -20037494;
         private readonly MapControl _mapControl;
         private readonly EditManager _editManager = new();
         private readonly EditManipulation _editManipulation = new();
@@ -45,6 +46,7 @@ namespace map_app.ViewModels
         {
             _mapControl = mapControl;
             _mapControl.Map = MapCreator.Create();
+            _editManager.Extent = new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap);
             _savedGraphicLayer = (OwnWritableLayer)_mapControl.Map!.Layers.First(l => l.Name == "Target Layer");
             _savedGraphicLayer.Clear();
             _editManager.Layer = _savedGraphicLayer; // todo: change on one layer
