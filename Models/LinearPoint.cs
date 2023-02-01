@@ -1,15 +1,22 @@
 using System;
 using Mapsui.Projections;
 using NetTopologySuite.Geometries;
+using Newtonsoft.Json;
 
 namespace map_app.Models
 {
+    [JsonObject(MemberSerialization.OptIn)]
     public class LinearPoint : IThreeDimensionalPoint
     {
         private const double Eps = 1e-5;
 
+        [JsonProperty]
         public double X { get; set; }
+
+        [JsonProperty]
         public double Y { get; set; }
+
+        [JsonProperty]
         public double Z { get; set; }
 
         public double First { get => X; set => X = value; }

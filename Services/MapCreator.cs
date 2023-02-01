@@ -11,6 +11,8 @@ using map_app.Views;
 using map_app.Network;
 using Mapsui.Projections;
 using Mapsui.UI;
+using map_app.Models;
+using System.Linq;
 
 namespace map_app.Services
 {
@@ -105,7 +107,8 @@ namespace map_app.Services
             {
                 Name = "Target Layer",
                 IsMapInfoLayer = true,
-                Tag = "Graphic"
+                Tag = "Graphic",
+                Style = CreateTargetLayerStyle()
             };
             return layer;
         }
@@ -114,7 +117,9 @@ namespace map_app.Services
         {
             return new VectorStyle
             {
-                Fill = new Brush(EditModeColor)
+                Fill = null,
+                Outline = new Pen(EditModeColor, 3),
+                Line = new Pen(EditModeColor, 3)
             };
         }
     

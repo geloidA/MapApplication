@@ -1,17 +1,22 @@
 using System;
 using Mapsui.Projections;
 using NetTopologySuite.Geometries;
+using Newtonsoft.Json;
 
 namespace map_app.Models
 {
+    [JsonObject(MemberSerialization.OptIn)]
     public class GeoPoint : IThreeDimensionalPoint
     {
         private const double Eps = 1e-5;
 
+        [JsonProperty]
         public double Longtitude { get; set; }
 
+        [JsonProperty]
         public double Latitude { get; set; }
 
+        [JsonProperty]
         public double Altitude { get; set; }
         
         public double First  { get => Longtitude; set => Longtitude = value; }

@@ -8,6 +8,7 @@ namespace map_app.Models
 {
     public class PolygonGraphic : BaseGraphic, IStepByStepGraphic
     {
+        private Coordinate? _hoverVertex;
         private PolygonGraphic(PolygonGraphic source) : base(source) { }
 
         public PolygonGraphic(List<Coordinate> points) : base(points)
@@ -21,9 +22,10 @@ namespace map_app.Models
 
         public override GraphicType Type => GraphicType.Polygon;
 
-        public void AddPoint(Coordinate worldPoint)
+        public void AddPoint(Coordinate worldCoordinate)
         {
-            _coordinates.Add(worldPoint);
+            _coordinates.Add(worldCoordinate);
+            _hoverVertex = worldCoordinate;
             Geometry = RenderGeometry();
         }
 
@@ -41,16 +43,22 @@ namespace map_app.Models
             return new PolygonGraphic(this);
         }
 
-        public Geometry RenderStepGeometry(Coordinate worldPosition)
-        {
-            throw new NotImplementedException();
-        }
-
         protected override Geometry RenderGeometry()
         {
             var linearRing = _coordinates.ToList();
             linearRing.Add(_coordinates[0].Copy()); // Add first coordinate at end to close the ring.
             return new Polygon(new LinearRing(linearRing.ToArray()));
+        }
+
+        public bool RemoveHoverVertex()
+        {
+            if (_hoverVertex is null)
+                return false;
+            if (!ReferenceEquals(_hoverVertex, _coordinates[_coordinates.Count - 1]))
+                return false;
+            _coordinates.RemoveAt(_coordinates.Count - 1);
+            _hoverVertex = null;
+            return true;
         }
     }
 }

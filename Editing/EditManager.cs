@@ -13,23 +13,6 @@ using Mapsui;
 
 namespace map_app.Editing
 {
-    public enum EditMode
-    {
-        None,
-        AddPoint,
-        AddLine,
-        DrawingLine,
-        AddPolygon,
-        DrawingPolygon,
-        Modify,
-        Rotate,
-        Scale,
-        AddOrthodromeLine,
-        DrawingOrthodromeLine,
-        AddRectangle,
-        DrawingRectangle
-    }
-
     public class EditManager
     {
         public OwnWritableLayer? Layer { get; set; }
@@ -50,33 +33,24 @@ namespace map_app.Editing
         {
             if (_addInfo.Feature is null) return false;
             if (_addInfo.Vertices is null) return false;
+            if (_addInfo.Feature is IStepByStepGraphic feature)
+                feature.RemoveHoverVertex();
 
-            if (EditMode == EditMode.DrawingPolygon)
+            return EditMode switch
             {
-                (_addInfo.Feature as IStepByStepGraphic)?.AddPoint(_addInfo.Vertices[_addInfo.Vertices.Count - 1]);
+                EditMode.DrawingOrthodromeLine => EndEdit(EditMode.AddOrthodromeLine),
+                EditMode.DrawingPolygon => EndEdit(EditMode.AddPolygon),
+                EditMode.DrawingRectangle => EndEdit(EditMode.AddRectangle),
+                _ => false
+            };
+        }
 
-                _addInfo.Feature = null;
-                _addInfo.Vertex = null;
-                EditMode = EditMode.AddPolygon;
-                Layer?.LayersFeatureHasChanged();
-            }
-            else if (EditMode == EditMode.DrawingOrthodromeLine)
-            {
-                (_addInfo.Feature as IStepByStepGraphic)?.AddPoint(_addInfo.Vertices[_addInfo.Vertices.Count - 1]);
-
-                _addInfo.Feature = null;
-                _addInfo.Vertex = null;
-                EditMode = EditMode.AddOrthodromeLine;
-                Layer?.LayersFeatureHasChanged();
-            }
-            else if (EditMode == EditMode.DrawingRectangle)
-            {
-                _addInfo.Feature = null;
-                _addInfo.Vertex = null;
-                EditMode = EditMode.AddRectangle;
-                Layer?.LayersFeatureHasChanged();
-            }
-
+        private bool EndEdit(EditMode nextMode)
+        {
+            _addInfo.Feature = null;
+            _addInfo.Vertex = null;
+            EditMode = nextMode;
+            Layer?.LayersFeatureHasChanged();
             return false;
         }
 
@@ -98,74 +72,56 @@ namespace map_app.Editing
 
             if (EditMode == EditMode.AddPoint)
             {
-#pragma warning disable IDISP004 // Don't ignore created IDisposable
                 Layer?.Add(new PointGraphic(new[] { worldPosition }.ToList()) { Color = CurrentColor, Opacity = CurrentOpacity });
                 Layer?.LayersFeatureHasChanged();
-#pragma warning restore IDISP004 // Don't ignore created IDisposable
             }
             else if (EditMode == EditMode.AddPolygon)
-            {
-                var firstPoint = worldPosition.Copy();
-                // Add a second point right away. The second one will be the 'hover' vertex
-                var secondPoint = worldPosition.Copy();
-                _addInfo.Vertex = secondPoint;
-                _addInfo.Vertices = new List<Coordinate>(new[] { firstPoint, secondPoint });
-                _addInfo.Feature = new PolygonGraphic(_addInfo.Vertices.ToList()) { Color = CurrentColor, Opacity = CurrentOpacity };
-                Layer?.Add(_addInfo.Feature);
-                Layer?.LayersFeatureHasChanged();
-                EditMode = EditMode.DrawingPolygon;
-            }
-            else if (EditMode == EditMode.DrawingPolygon)
-            {
-                if (_addInfo.Feature is null) return false;
-                if (_addInfo.Vertices is null) return false;
-
-                // Set the final position of the 'hover' vertex (that was already part of the geometry)
-                _addInfo.Vertex.SetXY(worldPosition);
-                _addInfo.Vertex = worldPosition.Copy(); // and create a new hover vertex
-                _addInfo.Vertices.Add(_addInfo.Vertex);
-                (_addInfo.Feature as IStepByStepGraphic)?.AddPoint(_addInfo.Vertex);
-
-                _addInfo.Feature?.RenderedGeometry.Clear();
-                Layer?.DataHasChanged();
-            }
+                AddGraphic(worldPosition, typeof(PolygonGraphic), EditMode.DrawingPolygon);
+            else if (EditMode == EditMode.DrawingPolygon || EditMode == EditMode.DrawingOrthodromeLine)
+                AddNewStepPoint(worldPosition, _addInfo.Feature as IStepByStepGraphic);
             else if (EditMode == EditMode.AddOrthodromeLine)
-            {
-                var firstPoint = worldPosition.Copy();
-                var secondPoint = worldPosition.Copy();
-                _addInfo.Vertex = secondPoint;
-                _addInfo.Vertices = new List<Coordinate> { firstPoint, secondPoint };
-                _addInfo.Feature = new OrthodromeGraphic(_addInfo.Vertices.ToList()) { Color = CurrentColor, Opacity = CurrentOpacity }; // aayy
-                Layer?.Add(_addInfo.Feature);
-                Layer?.LayersFeatureHasChanged();
-                EditMode = EditMode.DrawingOrthodromeLine;
-            }
-            else if (EditMode == EditMode.DrawingOrthodromeLine)
-            {
-                if (_addInfo.Feature is null) return false;
-                if (_addInfo.Vertices is null) return false;
-
-                _addInfo.Vertex.SetXY(worldPosition);
-                _addInfo.Vertex = worldPosition.Copy();
-                _addInfo.Vertices.Add(_addInfo.Vertex);
-                (_addInfo.Feature as IStepByStepGraphic)?.AddPoint(_addInfo.Vertex);
-                _addInfo.Feature?.RenderedGeometry.Clear();
-                Layer?.DataHasChanged();
-            }
+                AddGraphic(worldPosition, typeof(OrthodromeGraphic), EditMode.DrawingOrthodromeLine);
             else if (EditMode == EditMode.AddRectangle)
-            {
-                var firstPoint = worldPosition.Copy();
-                // Add a second point right away. The second one will be the 'hover' vertex
-                var secondPoint = worldPosition.Copy();
-                _addInfo.Vertex = secondPoint;
-                _addInfo.Vertices = new List<Coordinate>(new[] { firstPoint, secondPoint });
-                _addInfo.Feature = new RectangleGraphic(_addInfo.Vertices.ToList()) { Color = CurrentColor, Opacity = CurrentOpacity };
-                Layer?.Add(_addInfo.Feature);
-                Layer?.LayersFeatureHasChanged();
-                EditMode = EditMode.DrawingRectangle;
-            }
+                AddGraphic(worldPosition, typeof(RectangleGraphic), EditMode.DrawingRectangle);
 
             return false;
+        }
+
+        private void AddGraphic(Coordinate worldPosition, Type graphicType, EditMode drawingMode)
+        {
+            var firstPoint = worldPosition.Copy();
+            // Add a second point right away. The second one will be the 'hover' vertex
+            var secondPoint = worldPosition.Copy();
+            _addInfo.Vertex = secondPoint;
+            _addInfo.Vertices = new List<Coordinate>(new[] { firstPoint, secondPoint });
+            _addInfo.Feature = CreateGraphic(graphicType);
+            Layer?.Add(_addInfo.Feature);
+            Layer?.LayersFeatureHasChanged();
+            EditMode = drawingMode;
+        }
+
+        private BaseGraphic CreateGraphic(Type graphicType)
+        {
+            var graphic = (BaseGraphic?)Activator.CreateInstance(graphicType, _addInfo.Vertices!.ToList())
+                ?? throw new Exception($"Activator can not create instance of type \"{graphicType}\"");
+            graphic.Color = CurrentColor;
+            graphic.Opacity = CurrentOpacity;
+            return graphic;
+        }
+
+        private void AddNewStepPoint(Coordinate worldPosition, IStepByStepGraphic? target)
+        {
+            if (target is null) return;
+            if (_addInfo.Vertices is null) return;
+
+            // Set the final position of the 'hover' vertex (that was already part of the geometry)
+            _addInfo.Vertex.SetXY(worldPosition);
+            _addInfo.Vertex = worldPosition.Copy(); // and create a new hover vertex
+            _addInfo.Vertices.Add(_addInfo.Vertex);
+            target.AddPoint(_addInfo.Vertex);
+
+            _addInfo.Feature?.RenderedGeometry.Clear();
+            Layer?.DataHasChanged();
         }
 
         private static Coordinate? FindVertexTouched(MapInfo mapInfo, IEnumerable<Coordinate> vertices, double screenDistance)
@@ -179,26 +135,18 @@ namespace map_app.Editing
 
         public bool StartDraggingEntirely(MapInfo mapInfo, double screenDistance)
         {
-            if (EditMode == EditMode.Modify)
-            {
-                if (mapInfo.Feature != null)
-                {
-                    if (mapInfo.Feature is BaseGraphic geometryFeature && mapInfo.Feature is not OrthodromeGraphic)
-                    {
-                        _dragInfo.Feature = geometryFeature;
-                        _dragInfo.StartOffsetsToVertexes = new MPoint[_dragInfo.Feature.Coordinates.Count];
-                        if (mapInfo.WorldPosition != null)
-                        {
-                            for (var i = 0; i < _dragInfo.Feature.Coordinates.Count; i++)
-                            {
-                                _dragInfo.StartOffsetsToVertexes[i] = mapInfo.WorldPosition - _dragInfo.Feature.Coordinates[i].ToMPoint();
-                            }
-                        }
-                        return true;
-                    }
-                }
-            }
-            return false;
+            if (EditMode != EditMode.Modify) return false;
+            if (mapInfo.Feature == null) return false;
+            if (mapInfo.Feature is not BaseGraphic geometryFeature || mapInfo.Feature is OrthodromeGraphic) return false;
+            if (mapInfo.WorldPosition == null) return true;
+
+            _dragInfo.Feature = geometryFeature;
+            _dragInfo.StartOffsetsToVertexes = new MPoint[_dragInfo.Feature.Coordinates.Count];
+            
+            for (var i = 0; i < _dragInfo.Feature.Coordinates.Count; i++)
+                _dragInfo.StartOffsetsToVertexes[i] = mapInfo.WorldPosition - _dragInfo.Feature.Coordinates[i].ToMPoint();
+
+            return true;
         }
 
         public bool DraggingEntirely(Point? worldPosition)

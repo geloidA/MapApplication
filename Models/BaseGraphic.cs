@@ -32,14 +32,12 @@ namespace map_app.Models
         public BaseGraphic(List<LinearPoint> points) : base()
         {
             _coordinates = points.ToCoordinates().ToList();
-            Geometry = RenderGeometry();
             InitializeGraphicStyle();
         }
 
         public BaseGraphic(List<Coordinate> points) : base() 
         {
             _coordinates = points;
-            Geometry = RenderGeometry();
             InitializeGraphicStyle();
         }
 
@@ -50,7 +48,7 @@ namespace map_app.Models
         public abstract GraphicType Type { get; }
 
         [JsonProperty]
-        public Dictionary<string, IUserTag>? UserTags { get; set; }
+        public Dictionary<string, object?>? UserTags { get; set; }
 
         [JsonProperty]
         public Color? Color 

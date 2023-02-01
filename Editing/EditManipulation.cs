@@ -6,15 +6,6 @@ using Mapsui.UI.Avalonia;
 
 namespace map_app.Editing
 {
-    public enum MouseState
-    {
-        Down,
-        Up,
-        Dragging, // moving with mouse down
-        Moving, // moving with mouse up
-        DoubleClick
-    }
-
     public class EditManipulation
     {
         private MPoint? _mouseDownPosition;
@@ -58,34 +49,29 @@ namespace map_app.Editing
                         // Take into account VertexRadius in feature select, because the objective
                         // is to select the vertex.
                         var mapInfo = mapControl.GetMapInfo(screenPosition, editManager.VertexRadius);
-                        if (editManager.EditMode == EditMode.Modify && mapInfo?.Feature != null)
+                        if (mapInfo?.Feature == null)
+                            return false;
+                        return editManager.EditMode switch
                         {
-                            return editManager.StartDraggingEntirely(mapInfo, editManager.VertexRadius);
-                        }
-                        if (editManager.EditMode == EditMode.Rotate && mapInfo?.Feature != null)
-                        {
-                            return editManager.StartRotating(mapInfo);
-                        }
-                        if (editManager.EditMode == EditMode.Scale && mapInfo?.Feature != null)
-                        {
-                            return editManager.StartScaling(mapInfo);
-                        }
-                        return false;
+                            EditMode.Modify => editManager.StartDraggingEntirely(mapInfo, editManager.VertexRadius),
+                            EditMode.Rotate => editManager.StartRotating(mapInfo),
+                            EditMode.Scale => editManager.StartScaling(mapInfo),
+                            _ => false
+                        };
                     }
                 case MouseState.Dragging:
                     {
                         var args = mapControl.GetMapInfo(screenPosition);
-                        if (editManager.EditMode == EditMode.Modify)
-                            return editManager.DraggingEntirely(args?.WorldPosition?.ToPoint());
-                        if (editManager.EditMode == EditMode.Rotate)
-                            return editManager.Rotating(args?.WorldPosition?.ToPoint());
-                        if (editManager.EditMode == EditMode.Scale)
-                            return editManager.Scaling(args?.WorldPosition?.ToPoint());
-
-                        return false;
+                        return editManager.EditMode switch
+                        {
+                            EditMode.Modify => editManager.DraggingEntirely(args?.WorldPosition?.ToPoint()),
+                            EditMode.Rotate => editManager.Rotating(args?.WorldPosition?.ToPoint()),
+                            EditMode.Scale => editManager.Scaling(args?.WorldPosition?.ToPoint()),
+                            _ => false
+                        };
                     }
                 case MouseState.Moving:
-                        editManager.HoveringVertex(mapControl.GetMapInfo(screenPosition));
+                    editManager.HoveringVertex(mapControl.GetMapInfo(screenPosition));
                     return false;
                 case MouseState.DoubleClick:
                     _inDoubleClick = true;

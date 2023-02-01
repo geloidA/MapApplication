@@ -5,6 +5,7 @@ using map_app.Models;
 using map_app.Models.Extensions;
 using System.Linq;
 using Mapsui.Styles;
+using Newtonsoft.Json.Linq;
 
 namespace map_app.Services
 {
@@ -15,50 +16,49 @@ namespace map_app.Services
             return JsonConvert.SerializeObject(graphic);
         }
 
-        public static BaseGraphic Deserialize(string json) // todo: find better way to init graphic
+        public static BaseGraphic Deserialize(string json)
         {
             dynamic? jsonGraphic = JsonConvert.DeserializeObject(json);
 
             if (jsonGraphic is null)
-            {
-                throw new NullReferenceException();
-            }
+                throw new NullReferenceException("Deserialized object was null");
 
             BaseGraphic graphic;
             List<LinearPoint> points = jsonGraphic.LinearPoints.ToObject<List<LinearPoint>>();
 
-            switch ((GraphicType)jsonGraphic.Type)
+            graphic = (GraphicType)jsonGraphic.Type switch
             {
-                case GraphicType.Orthodrome:
-                    graphic = new OrthodromeGraphic(points.ToCoordinates().ToList());
-                    InitCommonProperties(jsonGraphic, graphic);
-                    return graphic;
-
-                case GraphicType.Point:
-                    graphic = new PointGraphic(points.ToCoordinates().ToList()) { Image = jsonGraphic.Image.ToObject<string?>() };
-                    InitCommonProperties(jsonGraphic, graphic);
-                    return graphic;
-
-                case GraphicType.Rectangle:
-                    graphic = new RectangleGraphic(points.ToCoordinates().ToList());
-                    InitCommonProperties(jsonGraphic, graphic);
-                    return graphic;
-
-                case GraphicType.Polygon:
-                    graphic = new PolygonGraphic(points.ToCoordinates().ToList());
-                    InitCommonProperties(jsonGraphic, graphic);
-                    return graphic;
-
-                default:
-                    throw new NotImplementedException();
-            }
+                GraphicType.Orthodrome => new OrthodromeGraphic(points.ToCoordinates().ToList()),
+                GraphicType.Point => new PointGraphic(points.ToCoordinates().ToList()) { Image = jsonGraphic.Image.ToObject<string?>() },
+                GraphicType.Rectangle => new RectangleGraphic(points.ToCoordinates().ToList()),
+                GraphicType.Polygon => new PolygonGraphic(points.ToCoordinates().ToList()),
+                _ => throw new NotImplementedException()
+            };
+            InitCommonProperties(jsonGraphic, graphic);
+            return graphic;
         }
 
         private static void InitCommonProperties(dynamic jsonGraphic, BaseGraphic graphic)
         {
             graphic.Color = jsonGraphic.Color.ToObject<Color?>();
-            graphic.UserTags = jsonGraphic.UserTags.ToObject<Dictionary<string, IUserTag>>();
+            graphic.UserTags = JsonConvert.DeserializeObject<Dictionary<string, object?>>(((JToken)jsonGraphic.UserTags).ToString())
+                ?.ToDictionary(k => k.Key, kv => SelectTypeFor(kv.Value));
             graphic.Opacity = jsonGraphic.Opacity.ToObject<double>();
+        }
+
+        private static object? SelectTypeFor(object? value)
+        {
+            if (value is not JArray array)
+                return value;
+            if (!array.Any())
+                return Array.Empty<object>();
+            return array.First?.Type switch
+            {
+                JTokenType.String => array.Select(x => (string?)x).ToArray(),
+                JTokenType.Integer => array.Select(x => (int)x).ToArray(),
+                JTokenType.Float => array.Select(x => (double)x).ToArray(),
+                _ => throw new NotImplementedException()
+            };
         }
     }
 }

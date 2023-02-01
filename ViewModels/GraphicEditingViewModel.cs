@@ -15,6 +15,7 @@ using ReactiveUI.Validation.Helpers;
 using ReactiveUI.Validation.Extensions;
 using System.Linq;
 using map_app.Models.Extensions;
+using Avalonia.Input;
 
 namespace map_app.ViewModels
 {
@@ -57,7 +58,7 @@ namespace map_app.ViewModels
 
             var canSave = this.IsValid();
 
-            SaveChanges = ReactiveCommand.Create(() =>
+            SaveChanges = ReactiveCommand.Create<ICloseable>(window =>
             {
                 if (!IsCorrectCoordinateNumber())
                 {
@@ -70,6 +71,10 @@ namespace map_app.ViewModels
                     return;
                 }
                 _editGraphic.Coordinates = _linear.ToCoordinates().ToList();
+                var color = GraphicColor.Value;
+                _editGraphic.Color = new Mapsui.Styles.Color(red: color.R, green: color.G, blue: color.B, alpha: color.A);
+                _editGraphic.Opacity = Opacity;
+                Close(window);
             }, canSave);
             
             this.WhenAnyValue(x => x.SelectedPointType)
@@ -136,15 +141,10 @@ namespace map_app.ViewModels
         public ICommand SaveChanges { get; }
 
         /* 
-            Проверить корректность координат
-            -180 > Долгота < 180
-            -90 > Широта < 90
-            Не давать нажимать кнопку, пока некорректна прозрачность
-
             Метки - контекстное меню добавить/удалить
         */       
 
-        private void Cancel(Avalonia.Input.ICloseable window) => WindowCloser.Close(window);
+        private void Close(ICloseable window) => WindowCloser.Close(window);
 
         private bool IsCoordinatesIncorrect 
             => _geo.Where(g=> IsCoordinateIncorrect(g))
