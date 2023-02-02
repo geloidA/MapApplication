@@ -48,7 +48,7 @@ namespace map_app.Models
         public abstract GraphicType Type { get; }
 
         [JsonProperty]
-        public Dictionary<string, object?>? UserTags { get; set; }
+        public Dictionary<string, string>? UserTags { get; set; }
 
         [JsonProperty]
         public Color? Color 
@@ -60,6 +60,7 @@ namespace map_app.Models
                     throw new NullReferenceException();
                 _color = value;
                 _style!.Fill = new Brush(value);
+                _style!.Line = new Pen(value, 2);
             }
         }
 

@@ -23,7 +23,7 @@ namespace map_app.ViewModels
         private readonly OwnWritableLayer? _savedGraphicLayer;
         private const double LeftBorderMap = -20037494;
         private readonly MapControl _mapControl;
-        private readonly EditManager _editManager = new();
+        private readonly EditManager _editManager;
         private readonly EditManipulation _editManipulation = new();
         private readonly ObservableAsPropertyHelper<bool> _isBaseGraphicUnderPointer;
         #endregion
@@ -46,10 +46,10 @@ namespace map_app.ViewModels
         {
             _mapControl = mapControl;
             _mapControl.Map = MapCreator.Create();
-            _editManager.Extent = new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap);
             _savedGraphicLayer = (OwnWritableLayer)_mapControl.Map!.Layers.First(l => l.Name == "Target Layer");
             _savedGraphicLayer.Clear();
-            _editManager.Layer = _savedGraphicLayer; // todo: change on one layer
+            _editManager = new EditManager(_savedGraphicLayer);
+            _editManager.Extent = new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap);
             GraphicsPopupViewModel = new GraphicsPopupViewModel(_savedGraphicLayer!);
             NavigationPanelViewModel = new NavigationPanelViewModel(mapControl, _editManager, _savedGraphicLayer!);
             AuxiliaryPanelViewModel = new AuxiliaryPanelViewModel(mapControl);
@@ -149,7 +149,7 @@ namespace map_app.ViewModels
         {
             if (FeatureUnderPointer is null)
                 throw new NullReferenceException("Graphic was null");
-            _editManager.Layer?.TryRemove(FeatureUnderPointer);
+            _editManager.Layer.TryRemove(FeatureUnderPointer);
         }
     }
 }

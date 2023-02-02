@@ -41,24 +41,23 @@ namespace map_app.Services
         private static void InitCommonProperties(dynamic jsonGraphic, BaseGraphic graphic)
         {
             graphic.Color = jsonGraphic.Color.ToObject<Color?>();
-            graphic.UserTags = JsonConvert.DeserializeObject<Dictionary<string, object?>>(((JToken)jsonGraphic.UserTags).ToString())
-                ?.ToDictionary(k => k.Key, kv => SelectTypeFor(kv.Value));
+            graphic.UserTags = JsonConvert.DeserializeObject<Dictionary<string, string>>(((JToken)jsonGraphic.UserTags).ToString());
             graphic.Opacity = jsonGraphic.Opacity.ToObject<double>();
         }
 
-        private static object? SelectTypeFor(object? value)
-        {
-            if (value is not JArray array)
-                return value;
-            if (!array.Any())
-                return Array.Empty<object>();
-            return array.First?.Type switch
-            {
-                JTokenType.String => array.Select(x => (string?)x).ToArray(),
-                JTokenType.Integer => array.Select(x => (int)x).ToArray(),
-                JTokenType.Float => array.Select(x => (double)x).ToArray(),
-                _ => throw new NotImplementedException()
-            };
-        }
+        // private static object SelectTypeFor(object value)
+        // {
+        //     if (value is not JArray array)
+        //         return value;
+        //     if (!array.Any())
+        //         return Array.Empty<object>();
+        //     return array.First?.Type switch
+        //     {
+        //         JTokenType.String => array.Select(x => (string?)x).ToArray(),
+        //         JTokenType.Integer => array.Select(x => (int)x).ToArray(),
+        //         JTokenType.Float => array.Select(x => (double)x).ToArray(),
+        //         _ => throw new NotImplementedException()
+        //     };
+        // }
     }
 }

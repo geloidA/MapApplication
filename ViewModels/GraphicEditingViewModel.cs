@@ -12,10 +12,11 @@ using AvaloniaEdit.Utils;
 using Mapsui.Projections;
 using System.Reactive.Linq;
 using ReactiveUI.Validation.Helpers;
-using ReactiveUI.Validation.Extensions;
 using System.Linq;
 using map_app.Models.Extensions;
 using Avalonia.Input;
+using DynamicData.Binding;
+using DynamicData;
 
 namespace map_app.ViewModels
 {
@@ -25,17 +26,17 @@ namespace map_app.ViewModels
         private List<LinearPoint> _linear;
         private List<GeoPoint> _geo;
 
+        private ObservableAsPropertyHelper<bool> _canSaveChanges;
+
         public GraphicEditingViewModel(BaseGraphic editGraphic)
         {
             _editGraphic = editGraphic;
-
             PointTypes = EnumUtils.ToDescriptions(typeof(PointType));
-
             _linear = new List<LinearPoint>(_editGraphic.LinearPoints);
             _geo = new List<GeoPoint>(_editGraphic.GeoPoints);
-
             Points = new ObservableCollection<IThreeDimensionalPoint>(_linear);
-
+            Tags = new ObservableCollection<Tag>(_editGraphic.UserTags?.Select(x => new Tag() { Name = x.Key, Value = x.Value })
+                ?? Array.Empty<Tag>());
             Opacity = _editGraphic.Opacity;
             GraphicType = _editGraphic.Type;
             GraphicColor = new Color(
@@ -45,19 +46,25 @@ namespace map_app.ViewModels
                 b: (byte)_editGraphic.Color!.B
             );
 
-            var canRemove = this
-                .WhenAnyValue(x => x.SelectedIndex)
+            var canRemoveTag = this
+                .WhenAnyValue(x => x.SelectedTagIndex)
                 .Select(IsIndexValid);
-
+            RemoveSelectedTag = ReactiveCommand.Create(() => Tags.RemoveAt(SelectedTagIndex), canRemoveTag);
+            var canRemovePoint = this
+                .WhenAnyValue(x => x.SelectedPointIndex)
+                .Select(IsIndexValid);
             RemoveSelectedPoint = ReactiveCommand.Create(() => 
             {
-                _linear.RemoveAt(SelectedIndex);
-                _geo.RemoveAt(SelectedIndex);
-                Points.RemoveAt(SelectedIndex);
-            }, canRemove);
-
-            var canSave = this.IsValid();
-
+                _linear.RemoveAt(SelectedPointIndex);
+                _geo.RemoveAt(SelectedPointIndex);
+                Points.RemoveAt(SelectedPointIndex);
+            }, canRemovePoint);
+            var canSave = Tags
+                .ToObservableChangeSet()
+                .AutoRefresh(m => m.Name)
+                .ToCollection()
+                .Select(x => !x.Any() || x.All(y => !y.HasErrors));
+            _canSaveChanges = canSave.ToProperty(this, x => x.CanSaveChanges); // dont refresh in first time
             SaveChanges = ReactiveCommand.Create<ICloseable>(window =>
             {
                 if (!IsCorrectCoordinateNumber())
@@ -70,15 +77,12 @@ namespace map_app.ViewModels
                     ShowMessageIncorrectData("Некорректные координаты ");
                     return;
                 }
-                _editGraphic.Coordinates = _linear.ToCoordinates().ToList();
-                var color = GraphicColor.Value;
-                _editGraphic.Color = new Mapsui.Styles.Color(red: color.R, green: color.G, blue: color.B, alpha: color.A);
-                _editGraphic.Opacity = Opacity;
+                ConfirmChanges();
                 Close(window);
-            }, canSave);
+            });
             
             this.WhenAnyValue(x => x.SelectedPointType)
-                .Subscribe(SwapPoints);
+                .Subscribe(SwapPointsSource);
                 
             this.WhenAnyValue(x => x.ChangedCell)
                 .Subscribe(ChangeCoordinate);
@@ -93,14 +97,20 @@ namespace map_app.ViewModels
         [Reactive]
         public string? Header3 { get; set; }
 
+        public bool CanSaveChanges => _canSaveChanges.Value;
+
+        public ObservableCollection<Tag> Tags { get; }
+
         [Reactive]
-        public ObservableCollection<IThreeDimensionalPoint> Points { get; set; }
+        public int SelectedTagIndex { get; set; }
+
+        public ObservableCollection<IThreeDimensionalPoint> Points { get; }
 
         [Reactive]
         public PointType SelectedPointType { get; set; } = PointType.Linear;
 
         [Reactive]
-        public int SelectedIndex { get; set; }
+        public int SelectedPointIndex { get; set; }
 
         public IEnumerable<EnumDescription> PointTypes { get; }
 
@@ -113,7 +123,21 @@ namespace map_app.ViewModels
         public GraphicType GraphicType { get; set; }
 
         [Reactive]
-        public Color? GraphicColor { get; set; }        
+        public Color GraphicColor { get; set; }  
+
+        public ICommand RemoveSelectedPoint { get; }
+
+        public ICommand SaveChanges { get; }
+
+        public ICommand RemoveSelectedTag { get; }
+
+        private void ConfirmChanges()
+        {
+            _editGraphic.Coordinates = _linear.ToCoordinates().ToList();
+            var color = GraphicColor;
+            _editGraphic.Color = new Mapsui.Styles.Color(red: color.R, green: color.G, blue: color.B, alpha: color.A);
+            _editGraphic.Opacity = Opacity;
+        }
 
         private void AddPoint()
         {
@@ -134,15 +158,12 @@ namespace map_app.ViewModels
                 _geo.Add((GeoPoint)point);
                 _linear.Add(new LinearPoint());
             }
-        }        
+        }
 
-        public ICommand RemoveSelectedPoint { get; }
-
-        public ICommand SaveChanges { get; }
-
-        /* 
-            Метки - контекстное меню добавить/удалить
-        */       
+        private void AddTag()
+        {
+            Tags.Add(new Tag());
+        }
 
         private void Close(ICloseable window) => WindowCloser.Close(window);
 
@@ -160,28 +181,49 @@ namespace map_app.ViewModels
 
         private bool IsCorrectCoordinateNumber()
         {
-            if (_editGraphic is PointGraphic)
-                return _geo.Count == 1;
-            if (_editGraphic is RectangleGraphic)
-                return _geo.Count == 2;
-            if (_editGraphic is PolygonGraphic)
-                return _geo.Count >= 2;
-            if (_editGraphic is OrthodromeGraphic)
-                return _geo.Count >= 2;
-            throw new NotImplementedException();
+            return _editGraphic switch
+            {
+                PointGraphic => _geo.Count == 1,
+                RectangleGraphic => _geo.Count == 2,
+                PolygonGraphic => _geo.Count >= 2,
+                OrthodromeGraphic => _geo.Count >= 2,
+                _ => throw new NotImplementedException()
+            };
         }
 
-        private void SwapPoints(PointType type)
+        private void SwapPointsSource(PointType targetType)
         {
-            ChangeCoordinateHeaders(type);
+            ChangeCoordinateHeaders(targetType);
             Points.Clear();
-            IEnumerable<IThreeDimensionalPoint> points = type switch
+            IEnumerable<IThreeDimensionalPoint> points = targetType switch
             {
                 PointType.Linear => _linear,
                 PointType.Geo => _geo,
                 _ => new List<IThreeDimensionalPoint>()
             };
             Points.AddRange(points);
+        }
+
+        private void ChangeCoordinateHeaders(PointType pointType)
+        {
+            switch (pointType)
+            {
+                case PointType.Linear:
+                    SetNames(new[] { "X", "Y", "Z"});
+                    break;
+                case PointType.Geo:
+                     SetNames(new[] { "Долгота", "Широта", "Высота"});
+                     break;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        private void SetNames(string[] names)
+        {
+            Header1 = names[0];
+            Header2 = names[1];
+            Header3 = names[2];
         }
 
         private void ChangeCoordinate(Cell? cell)
@@ -234,28 +276,6 @@ namespace map_app.ViewModels
                 "Некорректные данные",
                 message);            
             messageBoxStandardWindow.Show();
-        }
-
-        private void ChangeCoordinateHeaders(PointType pointType)
-        {
-            switch (pointType)
-            {
-                case PointType.Linear:
-                    SetNames(new[] { "X", "Y", "Z"});
-                    break;
-                case PointType.Geo:
-                     SetNames(new[] { "Долгота", "Широта", "Высота"});
-                     break;
-                default:
-                    throw new NotImplementedException();
-            }
-        }
-
-        private void SetNames(string[] names)
-        {
-            Header1 = names[0];
-            Header2 = names[1];
-            Header3 = names[2];
         }
 
         private static bool IsIndexValid(int index) => index != -1;

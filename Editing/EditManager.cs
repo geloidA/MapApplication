@@ -15,7 +15,7 @@ namespace map_app.Editing
 {
     public class EditManager
     {
-        public OwnWritableLayer? Layer { get; set; }
+        public OwnWritableLayer Layer { get; }
         public double CurrentOpacity { get; set; } = 1;
         public Color? CurrentColor { get; set; }
         public MRect? Extent { get; set; }
@@ -24,6 +24,11 @@ namespace map_app.Editing
         private readonly AddInfo _addInfo = new();
         private readonly RotateInfo _rotateInfo = new();
         private readonly ScaleInfo _scaleInfo = new();
+
+        public EditManager(OwnWritableLayer layer)
+        {
+            Layer = layer;
+        }
 
         public EditMode EditMode { get; set; }
 
@@ -50,7 +55,7 @@ namespace map_app.Editing
             _addInfo.Feature = null;
             _addInfo.Vertex = null;
             EditMode = nextMode;
-            Layer?.LayersFeatureHasChanged();
+            Layer.LayersFeatureHasChanged();
             return false;
         }
 
@@ -61,7 +66,7 @@ namespace map_app.Editing
                 _addInfo.Vertex.SetXY(mapInfo?.WorldPosition);
                 _addInfo.Feature?.RenderedGeometry.Clear();
                 _addInfo.Feature?.RerenderGeometry();
-                Layer?.DataHasChanged();
+                Layer.DataHasChanged();
             }
         }
 
@@ -72,8 +77,8 @@ namespace map_app.Editing
 
             if (EditMode == EditMode.AddPoint)
             {
-                Layer?.Add(new PointGraphic(new[] { worldPosition }.ToList()) { Color = CurrentColor, Opacity = CurrentOpacity });
-                Layer?.LayersFeatureHasChanged();
+                Layer.Add(new PointGraphic(new[] { worldPosition }.ToList()) { Color = CurrentColor, Opacity = CurrentOpacity });
+                Layer.LayersFeatureHasChanged();
             }
             else if (EditMode == EditMode.AddPolygon)
                 AddGraphic(worldPosition, typeof(PolygonGraphic), EditMode.DrawingPolygon);
@@ -95,8 +100,8 @@ namespace map_app.Editing
             _addInfo.Vertex = secondPoint;
             _addInfo.Vertices = new List<Coordinate>(new[] { firstPoint, secondPoint });
             _addInfo.Feature = CreateGraphic(graphicType);
-            Layer?.Add(_addInfo.Feature);
-            Layer?.LayersFeatureHasChanged();
+            Layer.Add(_addInfo.Feature);
+            Layer.LayersFeatureHasChanged();
             EditMode = drawingMode;
         }
 
@@ -121,7 +126,7 @@ namespace map_app.Editing
             target.AddPoint(_addInfo.Vertex);
 
             _addInfo.Feature?.RenderedGeometry.Clear();
-            Layer?.DataHasChanged();
+            Layer.DataHasChanged();
         }
 
         private static Coordinate? FindVertexTouched(MapInfo mapInfo, IEnumerable<Coordinate> vertices, double screenDistance)
@@ -186,7 +191,7 @@ namespace map_app.Editing
                     {
                         geometryFeature.Geometry = geometryFeature.Geometry.DeleteCoordinate(index);
                         geometryFeature.RenderedGeometry.Clear();
-                        Layer?.DataHasChanged();
+                        Layer.DataHasChanged();
                     }
                 }
             }
@@ -208,7 +213,7 @@ namespace map_app.Editing
                     geometryFeature.Geometry = geometryFeature.Geometry.InsertCoordinate(mapInfo.WorldPosition.ToCoordinate3D() 
                         ?? throw new NullReferenceException("Inserted mapInfo was null"), segment);
                     geometryFeature.RenderedGeometry.Clear();
-                    Layer?.DataHasChanged();
+                    Layer.DataHasChanged();
                 }
             }
             return false;
@@ -245,7 +250,7 @@ namespace map_app.Editing
             _rotateInfo.PreviousPosition = worldPosition;
 
             _rotateInfo.Feature.RenderedGeometry.Clear();
-            Layer?.DataHasChanged();
+            Layer.DataHasChanged();
 
             return true; // to signal pan lock
         }
@@ -296,7 +301,7 @@ namespace map_app.Editing
             _scaleInfo.PreviousPosition = worldPosition;
 
             _scaleInfo.Feature.RenderedGeometry.Clear();
-            Layer?.DataHasChanged();
+            Layer.DataHasChanged();
 
             return true; // to signal pan lock
         }
