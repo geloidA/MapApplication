@@ -8,6 +8,8 @@ namespace map_app.Models
     public class RectangleGraphic : BaseGraphic
     {
         private RectangleGraphic(RectangleGraphic source) : base(source) { }
+
+        public RectangleGraphic() : base() { }
         
         public RectangleGraphic(List<Coordinate> points) : base(points)
         {            

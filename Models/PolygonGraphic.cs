@@ -11,6 +11,8 @@ namespace map_app.Models
         private Coordinate? _hoverVertex;
         private PolygonGraphic(PolygonGraphic source) : base(source) { }
 
+        public PolygonGraphic() : base() { }
+
         public PolygonGraphic(List<Coordinate> points) : base(points)
         {
             if (points.Count < 2)
@@ -32,9 +34,7 @@ namespace map_app.Models
         public void AddRangePoints(IEnumerable<Coordinate> worldPoints)
         {
             foreach(var point in worldPoints)
-            {
-                _coordinates.Add(point);
-            }
+                _coordinates.Add(point);                
             Geometry = RenderGeometry();
         }
 

@@ -104,9 +104,8 @@
             </Grid>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="5">
-                <Button Classes="dialog" Content="Ок" Command="{Binding SaveChanges}" CommandParameter="{Binding ElementName=thisWindow}"
-                    IsEnabled="{Binding CanSaveChanges}" />
-                <Button Classes="dialog" Content="Отмена" Command="{Binding Close}" CommandParameter="{Binding ElementName=thisWindow}" />
+                <Button Classes="dialog" Content="Ок" Command="{Binding SaveChanges}" CommandParameter="{Binding ElementName=thisWindow}" />
+                <Button Classes="dialog" Content="Отмена" Command="{Binding Cancel}" CommandParameter="{Binding ElementName=thisWindow}" />
             </StackPanel>
         </Grid>
     </Grid>

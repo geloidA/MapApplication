@@ -20,8 +20,7 @@ public partial class MainView : ReactiveWindow<MainViewModel>
         GraphicCotxtMenu.ContextMenuOpening += vm.AccessOnlyGraphic;
         this.WhenActivated(d => d(ViewModel!.ShowLayersManageDialog.RegisterHandler(DoShowLayersManageDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ShowGraphicEditingDialog.RegisterHandler(DoShowGraphicEditingDialogAsync)));
-        this.WhenActivated(d => d(ViewModel!.GraphicsPopupViewModel.ShowEditGraphicDialog.RegisterHandler(DoShowEditGraphicDialogAsync)));
-        this.WhenActivated(d => d(ViewModel!.GraphicsPopupViewModel.ShowAddGraphicDialog.RegisterHandler(DoShowAddGraphicDialogAsync)));
+        this.WhenActivated(d => d(ViewModel!.GraphicsPopupViewModel.ShowAddEditGraphicDialog.RegisterHandler(DoShowAddEditGraphicDialogAsync)));
     }
 
     private async Task DoShowLayersManageDialogAsync(InteractionContext<LayersManageViewModel, MainViewModel> interaction)
@@ -42,18 +41,9 @@ public partial class MainView : ReactiveWindow<MainViewModel>
         interaction.SetOutput(result);
     }
 
-    private async Task DoShowEditGraphicDialogAsync(InteractionContext<EditGraphicViewModel, GraphicsPopupViewModel> interaction)
+    private async Task DoShowAddEditGraphicDialogAsync(InteractionContext<GraphicEditingViewModel, GraphicsPopupViewModel> interaction)
     {
-        var dialog = new EditGraphicView();
-        dialog.DataContext = interaction.Input;
-
-        var result = await dialog.ShowDialog<GraphicsPopupViewModel>(this);
-        interaction.SetOutput(result);
-    }
-
-    private async Task DoShowAddGraphicDialogAsync(InteractionContext<AddGraphicViewModel, GraphicsPopupViewModel> interaction)
-    {
-        var dialog = new AddGraphicView();
+        var dialog = new GraphicEditingView();
         dialog.DataContext = interaction.Input;
 
         var result = await dialog.ShowDialog<GraphicsPopupViewModel>(this);

@@ -1,3 +1,4 @@
+#region Usings
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Avalonia.Media;
@@ -17,6 +18,8 @@ using map_app.Models.Extensions;
 using Avalonia.Input;
 using DynamicData.Binding;
 using DynamicData;
+using System.Text;
+#endregion
 
 namespace map_app.ViewModels
 {
@@ -25,8 +28,14 @@ namespace map_app.ViewModels
         private BaseGraphic _editGraphic;
         private List<LinearPoint> _linear;
         private List<GeoPoint> _geo;
+        private readonly bool _isAddMode;
+        private readonly OwnWritableLayer? _graphicPool;
 
-        private ObservableAsPropertyHelper<bool> _canSaveChanges;
+        public GraphicEditingViewModel(OwnWritableLayer target, GraphicType pointType) : this(GraphicCreator.Create(pointType)) 
+        { 
+            _graphicPool = target;
+            _isAddMode = true; 
+        }
 
         public GraphicEditingViewModel(BaseGraphic editGraphic)
         {
@@ -36,23 +45,33 @@ namespace map_app.ViewModels
             _geo = new List<GeoPoint>(_editGraphic.GeoPoints);
             Points = new ObservableCollection<IThreeDimensionalPoint>(_linear);
             Tags = new ObservableCollection<Tag>(_editGraphic.UserTags?.Select(x => new Tag() { Name = x.Key, Value = x.Value })
-                ?? Array.Empty<Tag>());
+                ?? new List<Tag>());
             Opacity = _editGraphic.Opacity;
             GraphicType = _editGraphic.Type;
-            GraphicColor = new Color(
-                a: (byte)_editGraphic.Color!.A,
-                r: (byte)_editGraphic.Color!.R,
-                g: (byte)_editGraphic.Color!.G,
-                b: (byte)_editGraphic.Color!.B
-            );
+            GraphicColor = _editGraphic.Color is null
+                ? Colors.Black
+                : new Color(
+                    r: (byte)_editGraphic.Color.R,
+                    g: (byte)_editGraphic.Color.G,
+                    b: (byte)_editGraphic.Color.B,
+                    a: (byte)_editGraphic.Color.A);
+            InitializeCommands();
+            this.WhenAnyValue(x => x.SelectedPointType)
+                .Subscribe(SwapPointsSource);
+            this.WhenAnyValue(x => x.ChangedCell)
+                .Subscribe(ChangeCoordinate);
+        }
 
+        private void InitializeCommands()
+        {
             var canRemoveTag = this
                 .WhenAnyValue(x => x.SelectedTagIndex)
-                .Select(IsIndexValid);
+                .Select(x => IsIndexValid(x, Tags.Count));
             RemoveSelectedTag = ReactiveCommand.Create(() => Tags.RemoveAt(SelectedTagIndex), canRemoveTag);
+            AddTag = ReactiveCommand.Create(() => Tags.Add(new Tag()));
             var canRemovePoint = this
                 .WhenAnyValue(x => x.SelectedPointIndex)
-                .Select(IsIndexValid);
+                .Select(x => IsIndexValid(x, Points.Count));
             RemoveSelectedPoint = ReactiveCommand.Create(() => 
             {
                 _linear.RemoveAt(SelectedPointIndex);
@@ -63,29 +82,24 @@ namespace map_app.ViewModels
                 .ToObservableChangeSet()
                 .AutoRefresh(m => m.Name)
                 .ToCollection()
-                .Select(x => !x.Any() || x.All(y => !y.HasErrors));
-            _canSaveChanges = canSave.ToProperty(this, x => x.CanSaveChanges); // dont refresh in first time
+                .Select(x => !x.Any() || x.All(y => !y.HasErrors))
+                .StartWith(true);
+            Cancel = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
             SaveChanges = ReactiveCommand.Create<ICloseable>(window =>
             {
-                if (!IsCorrectCoordinateNumber())
+                if (HaveValidationErrors(out string message))
                 {
-                    ShowMessageIncorrectData("Некорректное количество координат ");
-                    return;
-                }
-                if (IsCoordinatesIncorrect)
-                {
-                    ShowMessageIncorrectData("Некорректные координаты ");
+                    ShowMessageIncorrectData(message);
                     return;
                 }
                 ConfirmChanges();
-                Close(window);
-            });
-            
-            this.WhenAnyValue(x => x.SelectedPointType)
-                .Subscribe(SwapPointsSource);
-                
-            this.WhenAnyValue(x => x.ChangedCell)
-                .Subscribe(ChangeCoordinate);
+                if (_isAddMode)
+                {
+                    _graphicPool!.Add(_editGraphic);
+                    _graphicPool!.DataHasChanged();
+                }
+                Cancel.Execute(window);
+            }, canSave);
         }
 
         [Reactive]
@@ -97,8 +111,6 @@ namespace map_app.ViewModels
         [Reactive]
         public string? Header3 { get; set; }
 
-        public bool CanSaveChanges => _canSaveChanges.Value;
-
         public ObservableCollection<Tag> Tags { get; }
 
         [Reactive]
@@ -107,7 +119,7 @@ namespace map_app.ViewModels
         public ObservableCollection<IThreeDimensionalPoint> Points { get; }
 
         [Reactive]
-        public PointType SelectedPointType { get; set; } = PointType.Linear;
+        public PointType SelectedPointType { get; set; } = PointType.Geo;
 
         [Reactive]
         public int SelectedPointIndex { get; set; }
@@ -123,13 +135,13 @@ namespace map_app.ViewModels
         public GraphicType GraphicType { get; set; }
 
         [Reactive]
-        public Color GraphicColor { get; set; }  
+        public Color GraphicColor { get; set; }
 
-        public ICommand RemoveSelectedPoint { get; }
-
-        public ICommand SaveChanges { get; }
-
-        public ICommand RemoveSelectedTag { get; }
+        public ICommand? RemoveSelectedPoint { get; private set; }
+        public ICommand? SaveChanges { get; private set; }
+        public ICommand? RemoveSelectedTag { get; private set; }
+        public ICommand? AddTag { get; private set; }
+        public ICommand? Cancel { get; private set; }
 
         private void ConfirmChanges()
         {
@@ -137,6 +149,7 @@ namespace map_app.ViewModels
             var color = GraphicColor;
             _editGraphic.Color = new Mapsui.Styles.Color(red: color.R, green: color.G, blue: color.B, alpha: color.A);
             _editGraphic.Opacity = Opacity;
+            _editGraphic.UserTags = Tags.ToDictionary(t => t.Name, t => t.Value ?? string.Empty);
         }
 
         private void AddPoint()
@@ -160,18 +173,28 @@ namespace map_app.ViewModels
             }
         }
 
-        private void AddTag()
+        private bool HaveValidationErrors(out string message)
         {
-            Tags.Add(new Tag());
+            var errors = new List<string>();
+            if (HaveTagDuplicates)
+                errors.Add("Имена меток не могут совпадать ");
+            if (IsCoordinatesIncorrect)
+                errors.Add("Некорректные координаты ");
+            if (!IsCorrectCoordinateNumber)
+                errors.Add("Некорректное количество координат ");
+            message = string.Join('\n', errors);
+            return errors.Any();
         }
 
-        private void Close(ICloseable window) => WindowCloser.Close(window);
+        private bool HaveTagDuplicates
+            => Tags.GroupBy(x => x.Name)
+                .Any(g => g.Count() > 1);
 
         private bool IsCoordinatesIncorrect 
-            => _geo.Where(g=> IsCoordinateIncorrect(g))
+            => _geo.Where(g => IsCoordinateIncorrect(g))
                 .Any();
 
-        private bool IsCoordinateIncorrect(GeoPoint point) // z and altitude
+        private bool IsCoordinateIncorrect(GeoPoint point) // need check z and altitude
         {
             return point.Longtitude < -180 
                 || point.Longtitude > 180
@@ -179,17 +202,15 @@ namespace map_app.ViewModels
                 || point.Latitude > 85;
         }
 
-        private bool IsCorrectCoordinateNumber()
-        {
-            return _editGraphic switch
+        private bool IsCorrectCoordinateNumber        
+            => _editGraphic switch
             {
                 PointGraphic => _geo.Count == 1,
                 RectangleGraphic => _geo.Count == 2,
                 PolygonGraphic => _geo.Count >= 2,
                 OrthodromeGraphic => _geo.Count >= 2,
                 _ => throw new NotImplementedException()
-            };
-        }
+            };        
 
         private void SwapPointsSource(PointType targetType)
         {
@@ -209,10 +230,10 @@ namespace map_app.ViewModels
             switch (pointType)
             {
                 case PointType.Linear:
-                    SetNames(new[] { "X", "Y", "Z"});
+                    SetNames(new[] { "X", "Y", "Z" });
                     break;
                 case PointType.Geo:
-                     SetNames(new[] { "Долгота", "Широта", "Высота"});
+                     SetNames(new[] { "Долгота", "Широта", "Высота" });
                      break;
                 default:
                     throw new NotImplementedException();
@@ -274,10 +295,10 @@ namespace map_app.ViewModels
         {
             var messageBoxStandardWindow = MessageBoxManager.GetMessageBoxStandardWindow(
                 "Некорректные данные",
-                message);            
+                message);
             messageBoxStandardWindow.Show();
         }
 
-        private static bool IsIndexValid(int index) => index != -1;
+        private static bool IsIndexValid(int index, int count) => index != -1 && index <= count - 1;
     }
 }

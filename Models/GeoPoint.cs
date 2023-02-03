@@ -19,9 +19,9 @@ namespace map_app.Models
         [JsonProperty]
         public double Altitude { get; set; }
         
-        public double First  { get => Longtitude; set => Longtitude = value; }
-        public double Second { get => Latitude; set => Latitude = value; }
-        public double Third { get => Altitude; set => Altitude = value; }
+        public double First  { get => this.Longtitude; set => this.Longtitude = value; }
+        public double Second { get => this.Latitude; set => this.Latitude = value; }
+        public double Third { get => this.Altitude; set => this.Altitude = value; }
 
         public GeoPoint() : this(0, 0, 0) { }
 

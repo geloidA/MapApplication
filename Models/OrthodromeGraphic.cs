@@ -19,6 +19,11 @@ namespace map_app.Models
             _hoverVertex = source._hoverVertex;
         }
 
+        public OrthodromeGraphic() : base()
+        {
+            _orthodromes = new LinkedList<Orthodrome>();
+        }
+
         public OrthodromeGraphic(List<Coordinate> points) : base(points)
         {
             var firstPoints = points.Take(2).ToArray();
@@ -54,7 +59,18 @@ namespace map_app.Models
         }
 
         public void AddRangePoints(IEnumerable<Coordinate> worldCoordinates)
-        {            
+        {
+            var start = 0;
+            if (_orthodromes.First is null)
+            {
+                start = 2;
+                var firstCoordinates = worldCoordinates.Take(start)
+                    .Select(x => x.ToGeoPoint())
+                    .ToArray();
+                var firstOrthodrome = new Orthodrome(firstCoordinates[0], firstCoordinates[1]);
+                _orthodromes.AddFirst(firstOrthodrome);
+            }
+
             foreach (var point in worldCoordinates)
             {
                 _orthodromes.AddLast(new Orthodrome(_orthodromes.Last!.Value.End, point.ToGeoPoint()));

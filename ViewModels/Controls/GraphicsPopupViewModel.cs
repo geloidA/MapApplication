@@ -63,26 +63,22 @@ namespace map_app.ViewModels.Controls
                 Graphics?.AddRange(GetSavedGraphics);
             };
 
-            ShowEditGraphicDialog = new Interaction<EditGraphicViewModel, GraphicsPopupViewModel>();
+            ShowAddEditGraphicDialog = new Interaction<GraphicEditingViewModel, GraphicsPopupViewModel>();
+            
             OpenEditGraphicView = ReactiveCommand.CreateFromTask(async () =>
             {
-                var manager = new EditGraphicViewModel(SelectedGraphic!);
-                var result = await ShowEditGraphicDialog.Handle(manager);
-            }, canExecute);
+                var manager = new GraphicEditingViewModel(SelectedGraphic!);
+                var result = await ShowAddEditGraphicDialog.Handle(manager);
+            }, canExecute);           
 
-            
-
-            ShowAddGraphicDialog = new Interaction<AddGraphicViewModel, GraphicsPopupViewModel>();
-            OpenAddGraphicView = ReactiveCommand.CreateFromTask(async () =>
+            OpenAddGraphicView = ReactiveCommand.CreateFromTask<GraphicType>(async (type) =>
             {
-                var manager = new AddGraphicViewModel(_savedGraphicLayer);
-                var result = await ShowAddGraphicDialog.Handle(manager);
+                var manager = new GraphicEditingViewModel(_savedGraphicLayer, type);
+                var result = await ShowAddEditGraphicDialog.Handle(manager);
             });
         }
 
-        public Interaction<EditGraphicViewModel, GraphicsPopupViewModel> ShowEditGraphicDialog { get; }
-
-        public Interaction<AddGraphicViewModel, GraphicsPopupViewModel> ShowAddGraphicDialog { get; }
+        public Interaction<GraphicEditingViewModel, GraphicsPopupViewModel> ShowAddEditGraphicDialog { get; }
 
         public Image ArrowImage => _arrowImage.Value;
 

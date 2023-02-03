@@ -14,7 +14,7 @@ namespace map_app.Models
     public abstract class BaseGraphic : GeometryFeature
     {
         private Color? _color;
-        private double _opacity;
+        private double _opacity = 1;
         private VectorStyle? _style;
         protected List<Coordinate> _coordinates = new();
 
@@ -29,15 +29,11 @@ namespace map_app.Models
             Geometry = source.Geometry;
         }
 
-        public BaseGraphic(List<LinearPoint> points) : base()
-        {
-            _coordinates = points.ToCoordinates().ToList();
-            InitializeGraphicStyle();
-        }
+        public BaseGraphic() : this(new List<Coordinate3D>()) { }
 
-        public BaseGraphic(List<Coordinate> points) : base() 
+        public BaseGraphic(IEnumerable<Coordinate> points) : base() 
         {
-            _coordinates = points;
+            _coordinates = points.ToList();
             InitializeGraphicStyle();
         }
 

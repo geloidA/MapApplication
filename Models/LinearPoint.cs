@@ -8,8 +8,6 @@ namespace map_app.Models
     [JsonObject(MemberSerialization.OptIn)]
     public class LinearPoint : IThreeDimensionalPoint
     {
-        private const double Eps = 1e-5;
-
         [JsonProperty]
         public double X { get; set; }
 
@@ -47,21 +45,6 @@ namespace map_app.Models
         public override string ToString()
         {
             return $"X:{X} Y:{Y} Z:{Z}";
-        }
-
-        public override bool Equals(object? obj)
-        {
-            if (obj is not LinearPoint other) return false;
-            if (ReferenceEquals(this, other)) return true;
-            
-            return Math.Abs(other.X - X) < Eps
-                && Math.Abs(other.Y - Y) < Eps
-                && Math.Abs(other.Z - Z) < Eps;
-        }
-
-        public override int GetHashCode()
-        {
-            return (X.GetHashCode() * 31 + Y.GetHashCode()) * 31 + Z.GetHashCode();
         }
     }
 }

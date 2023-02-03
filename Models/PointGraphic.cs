@@ -19,6 +19,7 @@ namespace map_app.Models
 
         public override GraphicType Type => GraphicType.Point;
 
+        public PointGraphic() : base() { }
         public PointGraphic(List<Coordinate> points) : base(points) { Geometry = RenderGeometry(); }
         public PointGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
         public PointGraphic(Geometry? geometry) : base(geometry) { }

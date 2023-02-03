@@ -33,7 +33,7 @@ namespace map_app.ViewModels
                 BaseGraphic graphic;
                 try
                 {
-                    graphic = CreateGraphic(CurrentGraphicType, ParseCoordinates(Coordinates));
+                    graphic = GraphicCreator.Create(CurrentGraphicType, ParseCoordinates(Coordinates));
                     ErrorMessage = string.Empty;
                 }
                 catch (ArgumentException ex)
@@ -111,15 +111,5 @@ namespace map_app.ViewModels
                         .ToCoordinates());
             return result;
         }
-
-        private BaseGraphic CreateGraphic(GraphicType target, List<Coordinate> source) => 
-            target switch
-                {
-                    GraphicType.Orthodrome => new OrthodromeGraphic(source),
-                    GraphicType.Point => new PointGraphic(source),
-                    GraphicType.Polygon => new PolygonGraphic(source),
-                    GraphicType.Rectangle => new RectangleGraphic(source),
-                    _ => throw new NotImplementedException()
-                };
     }
 }

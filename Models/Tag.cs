@@ -36,7 +36,7 @@ namespace map_app.Models
         public IEnumerable GetErrors(string? propertyName)
         {
             return _hasErrors 
-                ? new[] { "Имя метки не должно быть пустым" }
+                ? new[] { "Имя метки не может быть пустым" }
                 : Array.Empty<object>();
         }
 
