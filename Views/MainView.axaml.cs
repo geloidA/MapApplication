@@ -32,7 +32,7 @@ public partial class MainView : ReactiveWindow<MainViewModel>
         interaction.SetOutput(result);
     }
 
-    private async Task DoShowGraphicEditingDialogAsync(InteractionContext<GraphicEditingViewModel, MainViewModel> interaction)
+    private async Task DoShowGraphicEditingDialogAsync(InteractionContext<GraphicAddEditViewModel, MainViewModel> interaction)
     {
         var dialog = new GraphicEditingView();
         dialog.DataContext = interaction.Input;
@@ -41,7 +41,7 @@ public partial class MainView : ReactiveWindow<MainViewModel>
         interaction.SetOutput(result);
     }
 
-    private async Task DoShowAddEditGraphicDialogAsync(InteractionContext<GraphicEditingViewModel, GraphicsPopupViewModel> interaction)
+    private async Task DoShowAddEditGraphicDialogAsync(InteractionContext<GraphicAddEditViewModel, GraphicsPopupViewModel> interaction)
     {
         var dialog = new GraphicEditingView();
         dialog.DataContext = interaction.Input;

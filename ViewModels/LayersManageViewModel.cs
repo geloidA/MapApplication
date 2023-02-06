@@ -16,8 +16,8 @@ namespace map_app.ViewModels
 {
     public class LayersManageViewModel : ViewModelBase
     {
-        private readonly ObservableStack<Action> _undoStack;
         private readonly Map _map;
+        private readonly ObservableStack<Action> _undoStack;
 
         public LayersManageViewModel(Map map)
         {
@@ -31,29 +31,30 @@ namespace map_app.ViewModels
             UndoChanges = ReactiveCommand.Create(() => _undoStack.Pop()(), this.WhenAnyValue(x => x.CanUndo));
             
             SaveAndClose = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
-            Layers = new ObservableCollection<ILayer>(map.Layers.Where(l => l.Tag?.ToString() == "User"));
+            Layers = new ObservableCollection<ILayer>(map.Layers);
             _map.Layers.Changed += (s, e) => { Layers.Clear(); Layers.AddRange(map.Layers.Where(l => l.Tag?.ToString() == "User")); };
 
             #region Commands init
 
-            ShowAddDialog = new Interaction<AddLayerViewModel, LayersManageViewModel>();
+            ShowAddEditDialog = new Interaction<LayerAddEditViewModel, LayersManageViewModel>();
 
-            OpenAddLayerView = ReactiveCommand.CreateFromTask(async () => 
+            OpenLayerAddView = ReactiveCommand.CreateFromTask(async () => 
             {
-                var addView = new AddLayerViewModel(_map, _undoStack);
-                var result = await ShowAddDialog.Handle(addView);
+                var view = new LayerAddEditViewModel(_map, _undoStack);
+                var result = await ShowAddEditDialog.Handle(view);
             });
 
             var canExecute = this.WhenAnyValue(x => x.SelectedLayer, IsNotNull);
 
-            ShowChangeDialog = new Interaction<EditLayerViewModel, LayersManageViewModel>();
-
-            OpenChangeLayerView = ReactiveCommand.CreateFromTask(async () =>
+            OpenLayerEditView = ReactiveCommand.CreateFromTask(async () =>
             {
-                var changeView = new EditLayerViewModel(_map, SelectedLayer!, _undoStack);
-                var result = await ShowChangeDialog.Handle(changeView);                
-            },
-            canExecute);
+                var view = new LayerAddEditViewModel(_map, SelectedLayer!, _undoStack);
+                var result = await ShowAddEditDialog.Handle(view);
+            }, canExecute);
+
+            var canRemove = this
+                .WhenAnyValue(x => x.SelectedLayer,
+                layer => layer != null && layer.Tag?.ToString() != "Graphic");
 
             RemoveLayer = ReactiveCommand.Create(() =>
             {
@@ -66,7 +67,7 @@ namespace map_app.ViewModels
                     copy.Dispose();
                 });
             },
-            canExecute);
+            canRemove);
 
             #endregion
         }
@@ -79,12 +80,11 @@ namespace map_app.ViewModels
         [ObservableAsProperty]
         public bool CanUndo { get; }
 
-        public Interaction<AddLayerViewModel, LayersManageViewModel> ShowAddDialog { get; }
-        public Interaction<EditLayerViewModel, LayersManageViewModel> ShowChangeDialog { get; }
+        public Interaction<LayerAddEditViewModel, LayersManageViewModel> ShowAddEditDialog { get; }
 
-        public ICommand OpenAddLayerView { get; }
+        public ICommand OpenLayerAddView { get; }
         public ICommand SaveAndClose { get; }
-        public ICommand OpenChangeLayerView { get; }
+        public ICommand OpenLayerEditView { get; }
         public ICommand UndoChanges { get; }
         public ICommand RemoveLayer { get; }
 

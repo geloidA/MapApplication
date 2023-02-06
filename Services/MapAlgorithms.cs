@@ -18,7 +18,8 @@ namespace map_app.Services
         {
             if (degPoint1 is null) return new List<GeoPoint>();
             if (degPoint2 is null) return new List<GeoPoint>();
-            if (degPoint1.Equals(degPoint2)) return new List<GeoPoint>();
+            var comparer = new GeoPointsEqualityComparer();
+            if (comparer.Equals(degPoint1, degPoint2)) return new List<GeoPoint>();
 
             var lat1Rad = Algorithms.DegreesToRadians(degPoint1.Latitude);
             var lat2Rad = Algorithms.DegreesToRadians(degPoint2.Latitude);

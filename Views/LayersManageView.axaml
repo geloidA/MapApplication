@@ -21,14 +21,14 @@
           </DataGrid.Columns>
         </DataGrid>
 	<StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" >
-	  <Button Classes="dialog" Content="Добавить" Command="{Binding OpenAddLayerView}" />
+	  <Button Classes="dialog" Content="Добавить" Command="{Binding OpenLayerAddView}" />
 	  <Button Classes="dialog" Content="Удалить" Command="{Binding RemoveLayer}" />
 	</StackPanel>
       </Grid>
       <StackPanel Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" >
         <Button Classes="dialog" Content="ОК" Command="{Binding SaveAndClose}" CommandParameter="{Binding ElementName=LayersView}"/>
         <Button Classes="dialog" Content="Отменить" Command="{Binding UndoChanges}" />
-        <Button Classes="dialog" Content="Изменить" Command="{Binding OpenChangeLayerView}" />
+        <Button Classes="dialog" Content="Изменить" Command="{Binding OpenLayerEditView}" />
       </StackPanel>
   </Grid>
 </Window>

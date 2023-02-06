@@ -33,12 +33,7 @@ namespace map_app.Editing
                         editManager.StopScaling();
 
                     if (IsClick(screenPosition, _mouseDownPosition))
-                    {
-                        if (editManager.EditMode == EditMode.Modify)
-                        {
-                            return editManager.TryInsertCoordinate(
-                                mapControl.GetMapInfo(screenPosition, editManager.VertexRadius));
-                        }
+                    {                        
                         return editManager.AddVertex(mapControl.Viewport.ScreenToWorld(screenPosition).ToCoordinate3D()
                             ?? throw new NullReferenceException("ScreenPosition was null"));
                     }

@@ -11,8 +11,6 @@ using map_app.Views;
 using map_app.Network;
 using Mapsui.Projections;
 using Mapsui.UI;
-using map_app.Models;
-using System.Linq;
 
 namespace map_app.Services
 {
@@ -36,12 +34,8 @@ namespace map_app.Services
                 Tag = "User"
             };
             map.Layers.Add(layer);
-            //map.Layers.Add(CreateAnimatedAircraftsLayer());
             var graphicLayer = CreateTargetWritableLayer();
             map.Layers.Add(graphicLayer);
-            // var editLayer = CreateEditLayer();
-            // map.Layers.Add(editLayer);
-            // map.Layers.Add(new VertexOnlyLayer(editLayer) { Name = "VertexLayer" });
             return map;
         }
 
@@ -105,7 +99,7 @@ namespace map_app.Services
         {
             var layer = new OwnWritableLayer
             {
-                Name = "Target Layer",
+                Name = "Graphic Layer",
                 IsMapInfoLayer = true,
                 Tag = "Graphic",
                 Style = CreateTargetLayerStyle()

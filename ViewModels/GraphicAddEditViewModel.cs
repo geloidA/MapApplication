@@ -23,7 +23,7 @@ using System.Text;
 
 namespace map_app.ViewModels
 {
-    public class GraphicEditingViewModel : ReactiveValidationObject
+    public class GraphicAddEditViewModel : ReactiveValidationObject
     {
         private BaseGraphic _editGraphic;
         private List<LinearPoint> _linear;
@@ -31,13 +31,13 @@ namespace map_app.ViewModels
         private readonly bool _isAddMode;
         private readonly OwnWritableLayer? _graphicPool;
 
-        public GraphicEditingViewModel(OwnWritableLayer target, GraphicType pointType) : this(GraphicCreator.Create(pointType)) 
+        public GraphicAddEditViewModel(OwnWritableLayer target, GraphicType pointType) : this(GraphicCreator.Create(pointType)) 
         { 
             _graphicPool = target;
             _isAddMode = true; 
         }
 
-        public GraphicEditingViewModel(BaseGraphic editGraphic)
+        public GraphicAddEditViewModel(BaseGraphic editGraphic)
         {
             _editGraphic = editGraphic;
             PointTypes = EnumUtils.ToDescriptions(typeof(PointType));

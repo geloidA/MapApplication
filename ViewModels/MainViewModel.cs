@@ -1,5 +1,4 @@
 using System;
-using Mapsui.Layers;
 using Mapsui.UI.Avalonia;
 using map_app.Services;
 using map_app.Editing;
@@ -46,7 +45,7 @@ namespace map_app.ViewModels
         {
             _mapControl = mapControl;
             _mapControl.Map = MapCreator.Create();
-            _savedGraphicLayer = (OwnWritableLayer)_mapControl.Map!.Layers.First(l => l.Name == "Target Layer");
+            _savedGraphicLayer = (OwnWritableLayer)_mapControl.Map!.Layers.First(l => l.Name == "Graphic Layer");
             _savedGraphicLayer.Clear();
             _editManager = new EditManager(_savedGraphicLayer);
             _editManager.Extent = new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap);
@@ -66,10 +65,10 @@ namespace map_app.ViewModels
                 .ToProperty(this, x => x.IsBaseGraphicUnderPointer);
 
             var canExecute = this.WhenAnyValue(x => x.IsBaseGraphicUnderPointer);
-            ShowGraphicEditingDialog = new Interaction<GraphicEditingViewModel, MainViewModel>();
+            ShowGraphicEditingDialog = new Interaction<GraphicAddEditViewModel, MainViewModel>();
             OpenGraphicEditingView = ReactiveCommand.CreateFromTask(async () =>
             {
-                var vm = new GraphicEditingViewModel(FeatureUnderPointer ?? throw new NullReferenceException());
+                var vm = new GraphicAddEditViewModel(FeatureUnderPointer ?? throw new NullReferenceException());
                 await ShowGraphicEditingDialog.Handle(vm);
             }, canExecute);
         }
@@ -80,7 +79,7 @@ namespace map_app.ViewModels
 
         public Interaction<LayersManageViewModel, MainViewModel> ShowLayersManageDialog { get; }
 
-        public Interaction<GraphicEditingViewModel, MainViewModel> ShowGraphicEditingDialog { get; }
+        public Interaction<GraphicAddEditViewModel, MainViewModel> ShowGraphicEditingDialog { get; }
 
         internal void AccessOnlyGraphic(object? sender, CancelEventArgs e) => e.Cancel = !NavigationPanelViewModel.IsEditMode || !IsBaseGraphicUnderPointer;
 

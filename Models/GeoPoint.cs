@@ -8,8 +8,6 @@ namespace map_app.Models
     [JsonObject(MemberSerialization.OptIn)]
     public class GeoPoint : IThreeDimensionalPoint
     {
-        private const double Eps = 1e-5;
-
         [JsonProperty]
         public double Longtitude { get; set; }
 
@@ -64,22 +62,6 @@ namespace map_app.Models
         public override string ToString()
         {
             return string.Format("Lon:{0:0.00} ; Lat:{1:0.00} ; Alt:{2:0.00}", Longtitude, Latitude, Altitude);
-        }
-
-        public override bool Equals(object? obj)
-        {
-            if (obj is not GeoPoint other) return false;
-            if (ReferenceEquals(this, other)) return true;
-
-            return Math.Abs(other.Longtitude - Longtitude) < Eps
-                && Math.Abs(other.Latitude - Latitude) < Eps
-                && Math.Abs(other.Altitude - Altitude) < Eps;
-        }
-
-        public override int GetHashCode()
-        {
-            return (Longtitude.GetHashCode() * 31 + Latitude.GetHashCode()) 
-                * 31 + Altitude.GetHashCode();
         }
     }
 }

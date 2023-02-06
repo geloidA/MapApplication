@@ -3,7 +3,7 @@ using map_app.ViewModels;
 
 namespace map_app.Views;
 
-public partial class GraphicEditingView : ReactiveWindow<GraphicEditingViewModel>
+public partial class GraphicEditingView : ReactiveWindow<GraphicAddEditViewModel>
 {
     public GraphicEditingView()
     {
