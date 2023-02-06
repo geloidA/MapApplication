@@ -41,7 +41,7 @@ namespace map_app.ViewModels
             OpenLayerAddView = ReactiveCommand.CreateFromTask(async () => 
             {
                 var view = new LayerAddEditViewModel(_map, _undoStack);
-                var result = await ShowAddEditDialog.Handle(view);
+                await ShowAddEditDialog.Handle(view);
             });
 
             var canExecute = this.WhenAnyValue(x => x.SelectedLayer, IsNotNull);
@@ -49,7 +49,7 @@ namespace map_app.ViewModels
             OpenLayerEditView = ReactiveCommand.CreateFromTask(async () =>
             {
                 var view = new LayerAddEditViewModel(_map, SelectedLayer!, _undoStack);
-                var result = await ShowAddEditDialog.Handle(view);
+                await ShowAddEditDialog.Handle(view);
             }, canExecute);
 
             var canRemove = this

@@ -17,6 +17,7 @@ namespace map_app.Models
         {
             if (points.Count < 2)
                 throw new ArgumentException("Points length can't be less then 2");
+            Geometry = RenderGeometry();
         }
 
         public PolygonGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }

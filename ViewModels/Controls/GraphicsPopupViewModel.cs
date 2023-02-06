@@ -68,13 +68,13 @@ namespace map_app.ViewModels.Controls
             OpenEditGraphicView = ReactiveCommand.CreateFromTask(async () =>
             {
                 var manager = new GraphicAddEditViewModel(SelectedGraphic!);
-                var result = await ShowAddEditGraphicDialog.Handle(manager);
+                await ShowAddEditGraphicDialog.Handle(manager);
             }, canExecute);           
 
             OpenAddGraphicView = ReactiveCommand.CreateFromTask<GraphicType>(async (type) =>
             {
                 var manager = new GraphicAddEditViewModel(_savedGraphicLayer, type);
-                var result = await ShowAddEditGraphicDialog.Handle(manager);
+                await ShowAddEditGraphicDialog.Handle(manager);
             });
         }
 

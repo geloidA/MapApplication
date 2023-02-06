@@ -16,6 +16,11 @@ namespace map_app.Services
             return JsonConvert.SerializeObject(graphic);
         }
 
+        public static string SerializeCollection(IEnumerable<BaseGraphic> graphics)
+        {
+            return JsonConvert.SerializeObject(graphics, Formatting.Indented);
+        }
+
         public static BaseGraphic Deserialize(string json)
         {
             dynamic? jsonGraphic = JsonConvert.DeserializeObject(json);
@@ -44,20 +49,5 @@ namespace map_app.Services
             graphic.UserTags = JsonConvert.DeserializeObject<Dictionary<string, string>>(((JToken)jsonGraphic.UserTags).ToString());
             graphic.Opacity = jsonGraphic.Opacity.ToObject<double>();
         }
-
-        // private static object SelectTypeFor(object value)
-        // {
-        //     if (value is not JArray array)
-        //         return value;
-        //     if (!array.Any())
-        //         return Array.Empty<object>();
-        //     return array.First?.Type switch
-        //     {
-        //         JTokenType.String => array.Select(x => (string?)x).ToArray(),
-        //         JTokenType.Integer => array.Select(x => (int)x).ToArray(),
-        //         JTokenType.Float => array.Select(x => (double)x).ToArray(),
-        //         _ => throw new NotImplementedException()
-        //     };
-        // }
     }
 }

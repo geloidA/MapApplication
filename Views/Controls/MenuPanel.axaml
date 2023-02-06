@@ -6,11 +6,12 @@
              x:Class="map_app.Views.Controls.MenuPanel">
   <Menu Background="LightGray" Height="20">
     <MenuItem Header="Файл">
-        <MenuItem Header="Открыть" Command="{Binding OpenStateFile}"/>
+        <MenuItem Header="Открыть" Command="{Binding LoadGraphicState}"/>
         <MenuItem Header="Сохранить как..." Command="{Binding SaveGraphicStateInFile}"/>
         <Separator/>
         <MenuItem Header="Выход" Command="{Binding ExitApp}"/>
     </MenuItem>
     <MenuItem Header="Управление слоями карты" Command="{Binding OpenLayersManageView}" />
+    <Label Content="{Binding LoadedFileName}" />
   </Menu>
 </UserControl>

@@ -12,6 +12,9 @@ using map_app.Models;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 using map_app.ViewModels.Controls;
+using System.Reactive;
+using map_app.Services.IO;
+using System.IO;
 
 namespace map_app.ViewModels
 {
@@ -33,6 +36,12 @@ namespace map_app.ViewModels
         private BaseGraphic? FeatureUnderPointer { get; set; }
 
         [Reactive]
+        public string? LoadedFileName { get; set; }
+
+        [Reactive]
+        private bool HaveGraphics { get; set; }
+
+        [Reactive]
         internal GraphicsPopupViewModel GraphicsPopupViewModel { get; set; }
 
         [Reactive]
@@ -47,6 +56,7 @@ namespace map_app.ViewModels
             _mapControl.Map = MapCreator.Create();
             _savedGraphicLayer = (OwnWritableLayer)_mapControl.Map!.Layers.First(l => l.Name == "Graphic Layer");
             _savedGraphicLayer.Clear();
+            _savedGraphicLayer.LayersFeatureChanged += (_, _) => HaveGraphics = _savedGraphicLayer.Any();
             _editManager = new EditManager(_savedGraphicLayer);
             _editManager.Extent = new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap);
             GraphicsPopupViewModel = new GraphicsPopupViewModel(_savedGraphicLayer!);
@@ -71,15 +81,38 @@ namespace map_app.ViewModels
                 var vm = new GraphicAddEditViewModel(FeatureUnderPointer ?? throw new NullReferenceException());
                 await ShowGraphicEditingDialog.Handle(vm);
             }, canExecute);
+            ShowSaveGraphicStateDialog = new Interaction<Unit, string?>();
+            var canSave = this.WhenAnyValue(x => x.HaveGraphics);                
+            SaveGraphicStateInFile = ReactiveCommand.CreateFromTask(async () =>
+            {
+                var saveLocation = await ShowSaveGraphicStateDialog.Handle(Unit.Default);
+                await BaseGraphicJsonMarshaller.SaveAsync(_savedGraphicLayer.GetFeatures().Cast<BaseGraphic>(), saveLocation);
+            }, canSave);
+            ShowOpenGraphicStateDialog = new Interaction<Unit, string?>();
+            LoadGraphicState = ReactiveCommand.CreateFromTask(async () =>
+            {
+                var loadLocation = await ShowOpenGraphicStateDialog.Handle(Unit.Default);
+                await BaseGraphicJsonMarshaller.LoadAsync(_savedGraphicLayer, loadLocation);
+                LoadedFileName = Path.GetFileName(loadLocation);
+                _mapControl.Refresh();
+            });
         }
 
         public ICommand OpenLayersManageView { get; }
 
         public ICommand OpenGraphicEditingView { get; }
 
+        public ICommand SaveGraphicStateInFile { get; }
+
+        public ICommand LoadGraphicState { get; }
+
         public Interaction<LayersManageViewModel, MainViewModel> ShowLayersManageDialog { get; }
 
         public Interaction<GraphicAddEditViewModel, MainViewModel> ShowGraphicEditingDialog { get; }
+
+        public Interaction<Unit, string?> ShowSaveGraphicStateDialog { get; }
+        
+        public Interaction<Unit, string?> ShowOpenGraphicStateDialog { get; }
 
         internal void AccessOnlyGraphic(object? sender, CancelEventArgs e) => e.Cancel = !NavigationPanelViewModel.IsEditMode || !IsBaseGraphicUnderPointer;
 

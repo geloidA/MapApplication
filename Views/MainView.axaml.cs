@@ -4,6 +4,9 @@ using Avalonia.ReactiveUI;
 using System.Threading.Tasks;
 using ReactiveUI;
 using map_app.ViewModels.Controls;
+using System.Reactive;
+using Avalonia.Controls;
+using System.Linq;
 
 namespace map_app.Views;
 
@@ -20,7 +23,9 @@ public partial class MainView : ReactiveWindow<MainViewModel>
         GraphicCotxtMenu.ContextMenuOpening += vm.AccessOnlyGraphic;
         this.WhenActivated(d => d(ViewModel!.ShowLayersManageDialog.RegisterHandler(DoShowLayersManageDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ShowGraphicEditingDialog.RegisterHandler(DoShowGraphicEditingDialogAsync)));
-        this.WhenActivated(d => d(ViewModel!.GraphicsPopupViewModel.ShowAddEditGraphicDialog.RegisterHandler(DoShowAddEditGraphicDialogAsync)));
+        this.WhenActivated(d => d(ViewModel!.GraphicsPopupViewModel.ShowAddEditGraphicDialog.RegisterHandler(DoShowGraphicAddEditDialogAsync)));
+        this.WhenActivated(d => d(ViewModel!.ShowSaveGraphicStateDialog.RegisterHandler(DoShowSaveGraphicStateDialogAsync)));
+        this.WhenActivated(d => d(ViewModel!.ShowOpenGraphicStateDialog.RegisterHandler(DoShowOpenGraphicStateDialogAsync)));
     }
 
     private async Task DoShowLayersManageDialogAsync(InteractionContext<LayersManageViewModel, MainViewModel> interaction)
@@ -41,12 +46,28 @@ public partial class MainView : ReactiveWindow<MainViewModel>
         interaction.SetOutput(result);
     }
 
-    private async Task DoShowAddEditGraphicDialogAsync(InteractionContext<GraphicAddEditViewModel, GraphicsPopupViewModel> interaction)
+    private async Task DoShowGraphicAddEditDialogAsync(InteractionContext<GraphicAddEditViewModel, GraphicsPopupViewModel> interaction)
     {
         var dialog = new GraphicEditingView();
         dialog.DataContext = interaction.Input;
 
         var result = await dialog.ShowDialog<GraphicsPopupViewModel>(this);
         interaction.SetOutput(result);
+    }
+
+    private async Task DoShowSaveGraphicStateDialogAsync(InteractionContext<Unit, string?> interaction)
+    {
+        var dialog = new SaveFileDialog();
+        var result = await dialog.ShowAsync(this);
+
+        interaction.SetOutput(result);
+    }
+
+    private async Task DoShowOpenGraphicStateDialogAsync(InteractionContext<Unit, string?> interaction)
+    {
+        var dialog = new OpenFileDialog();
+        var result = await dialog.ShowAsync(this);
+
+        interaction.SetOutput(result?.First());
     }
 }

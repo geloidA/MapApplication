@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ using Mapsui.Styles;
 
 namespace map_app.Services
 {
-    public class OwnWritableLayer : WritableLayer
+    public class OwnWritableLayer : WritableLayer, IEnumerable<IFeature>
     {
         private readonly List<IFeature> orderedFeatures = new();
 
@@ -62,6 +63,16 @@ namespace map_app.Services
         private void OnLayersFeatureChanged()
         {
             LayersFeatureChanged?.Invoke(this, new DataChangedEventArgs());
+        }
+
+        public IEnumerator<IFeature> GetEnumerator()
+        {
+            return orderedFeatures.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

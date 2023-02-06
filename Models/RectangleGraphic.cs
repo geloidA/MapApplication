@@ -15,6 +15,7 @@ namespace map_app.Models
         {            
             if (points.Count != 2)
                 throw new ArgumentException();
+            Geometry = RenderGeometry();            
         }
         
         public RectangleGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
