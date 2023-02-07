@@ -22,7 +22,7 @@ namespace map_app.Services
 
         public static Map Create()
         {
-            var map = new Map();
+            var map = new Map { CRS = "EPSG:3857" };
             map.Limiter = new ViewportLimiterKeepWithin
             {
                 PanLimits = GetLimitsOfWorld(),

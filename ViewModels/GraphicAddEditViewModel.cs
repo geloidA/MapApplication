@@ -100,6 +100,7 @@ namespace map_app.ViewModels
                 }
                 Cancel.Execute(window);
             }, canSave);
+            SelectImage = ReactiveCommand.Create(() => { });
         }
 
         [Reactive]
@@ -142,6 +143,7 @@ namespace map_app.ViewModels
         public ICommand? RemoveSelectedTag { get; private set; }
         public ICommand? AddTag { get; private set; }
         public ICommand? Cancel { get; private set; }
+        public ICommand? SelectImage { get; private set; }
 
         private void ConfirmChanges()
         {

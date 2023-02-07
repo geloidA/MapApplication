@@ -15,6 +15,10 @@ using map_app.ViewModels.Controls;
 using System.Reactive;
 using map_app.Services.IO;
 using System.IO;
+using System.Threading.Tasks;
+using Mapsui.Extensions;
+using Mapsui.Widgets.ScaleBar;
+using Mapsui.Widgets;
 
 namespace map_app.ViewModels
 {
@@ -31,6 +35,9 @@ namespace map_app.ViewModels
         #endregion
 
         public bool IsBaseGraphicUnderPointer => _isBaseGraphicUnderPointer.Value;
+
+        [Reactive]
+        private string? LastFilePath { get; set; }
 
         [Reactive]
         private BaseGraphic? FeatureUnderPointer { get; set; }
@@ -54,6 +61,8 @@ namespace map_app.ViewModels
         {
             _mapControl = mapControl;
             _mapControl.Map = MapCreator.Create();
+            var scaleWidget = GetScaleWidget(_mapControl.Map);
+            _mapControl.Map.Widgets.Add(scaleWidget);
             _savedGraphicLayer = (OwnWritableLayer)_mapControl.Map!.Layers.First(l => l.Name == "Graphic Layer");
             _savedGraphicLayer.Clear();
             _savedGraphicLayer.LayersFeatureChanged += (_, _) => HaveGraphics = _savedGraphicLayer.Any();
@@ -82,25 +91,21 @@ namespace map_app.ViewModels
                 await ShowGraphicEditingDialog.Handle(vm);
             }, canExecute);
             ShowSaveGraphicStateDialog = new Interaction<Unit, string?>();
-            var canSave = this.WhenAnyValue(x => x.HaveGraphics);                
-            SaveGraphicStateInFile = ReactiveCommand.CreateFromTask(async () =>
-            {
-                var saveLocation = await ShowSaveGraphicStateDialog.Handle(Unit.Default);
-                await BaseGraphicJsonMarshaller.SaveAsync(_savedGraphicLayer.GetFeatures().Cast<BaseGraphic>(), saveLocation);
-            }, canSave);
+            var canSave = this.WhenAnyValue(x => x.HaveGraphics);
+            SaveGraphicStateInFile = ReactiveCommand.CreateFromTask(SaveGraphicStateInFileImpl, canSave);
             ShowOpenGraphicStateDialog = new Interaction<Unit, string?>();
-            LoadGraphicState = ReactiveCommand.CreateFromTask(async () =>
-            {
-                var loadLocation = await ShowOpenGraphicStateDialog.Handle(Unit.Default);
-                await BaseGraphicJsonMarshaller.LoadAsync(_savedGraphicLayer, loadLocation);
-                LoadedFileName = Path.GetFileName(loadLocation);
-                _mapControl.Refresh();
-            });
+            LoadGraphicState = ReactiveCommand.CreateFromTask(LoadGraphicStateImpl);
+            var canSaveOpened = this
+                .WhenAnyValue(x => x.LastFilePath)
+                .Select(file => !string.IsNullOrEmpty(file));
+            SaveGraphicStateInOpenedFile = ReactiveCommand.CreateFromTask(async () => await SaveGraphic(LastFilePath!), canSaveOpened);
         }
 
         public ICommand OpenLayersManageView { get; }
 
         public ICommand OpenGraphicEditingView { get; }
+
+        public ICommand SaveGraphicStateInOpenedFile { get; }
 
         public ICommand SaveGraphicStateInFile { get; }
 
@@ -177,11 +182,47 @@ namespace map_app.ViewModels
             }
         }
 
+        private IWidget GetScaleWidget(Mapsui.Map map)
+        {
+            var scaleWidget = new ScaleBarWidget(map);
+            scaleWidget.HorizontalAlignment = HorizontalAlignment.Right;
+            scaleWidget.MarginX = 10F;
+            scaleWidget.MarginY = 10F;
+            return scaleWidget;
+        }
+
         private void DeleteGraphic()
         {
             if (FeatureUnderPointer is null)
                 throw new NullReferenceException("Graphic was null");
             _editManager.Layer.TryRemove(FeatureUnderPointer);
+        }
+
+        private async Task LoadGraphicStateImpl()
+        {
+            var loadLocation = await ShowOpenGraphicStateDialog.Handle(Unit.Default);
+            if (loadLocation is null)
+                return;
+            _savedGraphicLayer!.Clear();
+            await BaseGraphicJsonMarshaller.LoadAsync(_savedGraphicLayer, loadLocation);
+            LastFilePath = loadLocation;
+            LoadedFileName = Path.GetFileName(loadLocation);
+            _mapControl.Refresh();
+        }
+
+        private async Task SaveGraphicStateInFileImpl()
+        {
+            var saveLocation = await ShowSaveGraphicStateDialog.Handle(Unit.Default);
+            if (saveLocation is null)
+                return;
+            LastFilePath = saveLocation;
+            await SaveGraphic(saveLocation);
+        }
+
+        private async Task SaveGraphic(string location)
+        {
+            await BaseGraphicJsonMarshaller.SaveAsync(_savedGraphicLayer!.Cast<BaseGraphic>(), location);
+            LoadedFileName = Path.GetFileName(location);
         }
     }
 }

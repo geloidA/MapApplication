@@ -11,26 +11,25 @@ namespace map_app.Services.IO
 {
     public class BaseGraphicJsonMarshaller
     {
-        internal static async Task LoadAsync(OwnWritableLayer target, string loadLocation) // refactor
+        public static async Task LoadAsync(OwnWritableLayer target, string loadLocation)
         {
             var graphics = new List<BaseGraphic>();
-            string json;
             using (var reader = new StreamReader(loadLocation))
             {
-                json = await reader.ReadToEndAsync();
+                string? json;
+                while ((json = await reader.ReadLineAsync()) != null)
+                    graphics.Add(GraphicSerializer.Deserialize(json));
             }
-            var objects = JsonConvert.DeserializeObject<JArray>(json) ?? throw new FileLoadException();
-            foreach (var graphic in objects)
-                graphics.Add(GraphicSerializer.Deserialize(graphic.ToString()) as BaseGraphic);
             target.AddRange(graphics);
         }
 
-        internal static async Task SaveAsync(IEnumerable<BaseGraphic> graphics, string saveLocation)
+        public static async Task SaveAsync(IEnumerable<BaseGraphic> graphics, string saveLocation)
         {
-            var graphicsString = GraphicSerializer.SerializeCollection(graphics);
+            var graphicsString = GraphicSerializer.Serialize(graphics);
             using (var writer = new StreamWriter(saveLocation, false))
             {
-                await writer.WriteAsync(graphicsString);
+                foreach (var graphic in graphicsString)
+                    await writer.WriteLineAsync(graphic);
             }
         }
     }

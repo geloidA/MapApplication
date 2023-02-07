@@ -16,10 +16,8 @@ namespace map_app.Services
             return JsonConvert.SerializeObject(graphic);
         }
 
-        public static string SerializeCollection(IEnumerable<BaseGraphic> graphics)
-        {
-            return JsonConvert.SerializeObject(graphics, Formatting.Indented);
-        }
+        public static IEnumerable<string> Serialize(IEnumerable<BaseGraphic> graphics)
+            => graphics.Select(Serialize);
 
         public static BaseGraphic Deserialize(string json)
         {

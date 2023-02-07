@@ -6,14 +6,13 @@ using Newtonsoft.Json;
 using Mapsui.Styles;
 using map_app.Editing.Extensions;
 using NetTopologySuite.Geometries;
-using map_app.Models.Extensions;
 
 namespace map_app.Models
 {
     [JsonObject(MemberSerialization.OptIn)]
     public abstract class BaseGraphic : GeometryFeature
     {
-        private Color? _color;
+        private Color _color;
         private double _opacity = 1;
         private VectorStyle? _style;
         protected List<Coordinate> _coordinates = new();
@@ -34,11 +33,20 @@ namespace map_app.Models
         public BaseGraphic(IEnumerable<Coordinate> points) : base() 
         {
             _coordinates = points.ToList();
+            _color = new Color(Color.Black);
             InitializeGraphicStyle();
         }
 
-        public BaseGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { InitializeGraphicStyle(); }
-        public BaseGraphic(Geometry? geometry) : base(geometry) { InitializeGraphicStyle(); }
+        public BaseGraphic(GeometryFeature geometryFeature) : base(geometryFeature) 
+        { 
+            InitializeGraphicStyle();
+            _color = new Color(Color.Black); 
+        }
+        public BaseGraphic(Geometry? geometry) : base(geometry) 
+        {
+            InitializeGraphicStyle();
+            _color = new Color(Color.Black);
+        }
 
         [JsonProperty]
         public abstract GraphicType Type { get; }
@@ -47,7 +55,7 @@ namespace map_app.Models
         public Dictionary<string, string>? UserTags { get; set; }
 
         [JsonProperty]
-        public Color? Color 
+        public Color Color 
         {
             get => _color;
             set

@@ -49,6 +49,12 @@ namespace map_app.Services
             return success;
         }
 
+        public new void Clear()
+        {
+            base.Clear();
+            orderedFeatures.Clear();
+        }
+
         /// <summary>
         ///  Include DataHasChanged call
         /// </summary> 

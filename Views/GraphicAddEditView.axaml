@@ -9,8 +9,8 @@
         MinWidth="600" MinHeight="600"
         Width="600" Height="600"
         Name="thisWindow"
-        x:Class="map_app.Views.GraphicEditingView"
-        Title="GraphicEditingView">
+        x:Class="map_app.Views.GraphicAddEditView"
+        Title="Обзор">
     <Window.Resources>
         <convrts:GraphicTypeToStringConverter x:Key="typeConverter"/>
         <convrts:EnumDescriptionConverter x:Key="pointConverter" />
@@ -38,7 +38,19 @@
             <StackPanel Margin="0 15 0 15" Orientation="Horizontal" HorizontalAlignment="Right"
                 VerticalAlignment="Center" >
                 <TextBlock Text="Цвет" Margin="0 0 10 0" />
-                <controls:PopupColorPicker Color="{Binding GraphicColor, Mode=TwoWay}"/>
+                <!-- <controls:PopupColorPicker Color="{Binding GraphicColor, Mode=TwoWay}"/> -->
+            </StackPanel>
+
+            <StackPanel Margin="0 15 0 15" Orientation="Horizontal" HorizontalAlignment="Left"
+                VerticalAlignment="Center" >
+                <Border BorderBrush="Black" Margin="5 0 0 0" BorderThickness="1" Width="60" Height="50">
+                    <Canvas />
+                </Border>
+                <Button Classes="dataGrid" Width="35" Height="35" VerticalAlignment="Bottom"
+                        Command="{Binding SelectImage}" Margin="0 35 0 0" >
+                        <Image Source="{svg:SvgImage Resources/Assets/selectimage.svg}" />
+                </Button>
+                <!-- <controls:PopupColorPicker Color="{Binding GraphicColor, Mode=TwoWay}"/> -->
             </StackPanel>
 
             <ComboBox Items="{Binding PointTypes}" Grid.Row="1" 
@@ -62,11 +74,11 @@
                     HorizontalAlignment="Right" VerticalAlignment="Top" >
                     <Button Classes="dataGrid" Width="40" Height="40"
                         Command="{Binding AddPoint}">
-                        <Image Source="{svg:SvgImage Resources/Assets/datagridplus.svg}" />
+                        <!-- <Image Source="{svg:SvgImage Resources/Assets/datagridplus.svg}" /> -->
                     </Button>
                     <Button Classes="dataGrid" Width="40" Height="40"
                         Command="{Binding RemoveSelectedPoint}">
-                        <Image Source="{svg:SvgImage Resources/Assets/datagridminus.svg}" />
+                        <!-- <Image Source="{svg:SvgImage Resources/Assets/datagridminus.svg}" /> -->
                     </Button>
                 </StackPanel>
             </Grid>
@@ -85,11 +97,11 @@
                     HorizontalAlignment="Right" VerticalAlignment="Top" >
                     <Button Classes="dataGrid" Width="40" Height="40"
                         Command="{Binding AddTag}">
-                        <Image Source="{svg:SvgImage Resources/Assets/datagridplus.svg}" />
+                        <!-- <Image Source="{svg:SvgImage Resources/Assets/datagridplus.svg}" /> -->
                     </Button>
                     <Button Classes="dataGrid" Width="40" Height="40"
                         Command="{Binding RemoveSelectedTag}">
-                        <Image Source="{svg:SvgImage Resources/Assets/datagridminus.svg}" />
+                        <!-- <Image Source="{svg:SvgImage Resources/Assets/datagridminus.svg}" /> -->
                     </Button>
                 </StackPanel>
             </Grid>

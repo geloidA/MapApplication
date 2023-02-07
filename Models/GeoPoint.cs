@@ -8,13 +8,13 @@ namespace map_app.Models
     [JsonObject(MemberSerialization.OptIn)]
     public class GeoPoint : IThreeDimensionalPoint
     {
-        [JsonProperty]
+        [JsonProperty("Lon")]
         public double Longtitude { get; set; }
 
-        [JsonProperty]
+        [JsonProperty("Lat")]
         public double Latitude { get; set; }
 
-        [JsonProperty]
+        [JsonProperty("Alt")]
         public double Altitude { get; set; }
         
         public double First  { get => this.Longtitude; set => this.Longtitude = value; }

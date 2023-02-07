@@ -16,8 +16,8 @@ namespace map_app.Editing
     public class EditManager
     {
         public OwnWritableLayer Layer { get; }
-        public double CurrentOpacity { get; set; } = 1;
-        public Color? CurrentColor { get; set; }
+        public double CurrentOpacity { get; set; }
+        public Color CurrentColor { get; set; }
         public MRect? Extent { get; set; }
 
         private readonly DragInfo _dragInfo = new();
@@ -28,6 +28,8 @@ namespace map_app.Editing
         public EditManager(OwnWritableLayer layer)
         {
             Layer = layer;
+            CurrentColor = Color.Black;
+            CurrentOpacity = 1;
         }
 
         public EditMode EditMode { get; set; }
