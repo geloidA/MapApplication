@@ -1,0 +1,125 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:svg="clr-namespace:Avalonia.Svg;assembly=Avalonia.Svg"
+        xmlns:controls="clr-namespace:map_app.Views.Controls;assembly=map_app"
+        xmlns:convrts="clr-namespace:map_app.Services.Converters;assembly=map_app"
+        mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="500"
+        MinWidth="600" MinHeight="600"
+        Width="600" Height="600"
+        Name="thisWindow"
+        x:Class="map_app.Views.GraphicAddEditView"
+        Title="Обзор">
+    <Window.Resources>
+        <convrts:GraphicTypeToStringConverter x:Key="typeConverter"/>
+        <convrts:GraphicTypeToBoolConverter x:Key="onlyPointPassedConverter"/>
+        <convrts:EnumDescriptionConverter x:Key="pointConverter" />
+        <convrts:BitmapValueConverter x:Key="bitmapConverter" />
+    </Window.Resources>
+
+    <Window.Styles>
+        <Style Selector="Button.dataGrid">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Button:disabled /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Button.dataGrid:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="RenderTransform" Value="scale(1.11)" />
+        </Style>
+    </Window.Styles>
+
+    <Grid >
+        <Grid RowDefinitions="75,50,*,*,0.45*,0.4*">
+            <TextBlock VerticalAlignment="Top" HorizontalAlignment="Center"
+                FontSize="16"
+                Text="{Binding GraphicType, Converter={StaticResource typeConverter}}" Margin="0 10 0 0" />
+
+            <StackPanel Margin="0 15 0 15" Orientation="Horizontal" HorizontalAlignment="Right"
+                VerticalAlignment="Center" >
+                <TextBlock Text="Цвет" Margin="0 0 10 0" />
+                <controls:PopupColorPicker Color="{Binding GraphicColor, Mode=TwoWay}"/>
+            </StackPanel>
+
+            <StackPanel Margin="0 15 0 15" Orientation="Horizontal" HorizontalAlignment="Left"
+                VerticalAlignment="Center" IsVisible="{Binding GraphicType, Converter={StaticResource onlyPointPassedConverter}}" >
+                <Border BorderBrush="Black" Margin="5 0 0 0" BorderThickness="1" Width="60" Height="50">
+                    <Image Source="{Binding ImagePath, Converter={StaticResource bitmapConverter}}" />
+                </Border>
+                <Button Classes="dataGrid" Width="35" Height="35" VerticalAlignment="Bottom"
+                        Command="{Binding SelectImageAsync}" Margin="0 35 0 0" >
+                        <Image Source="{svg:SvgImage Resources/Assets/selectimage.svg}" />
+                </Button>
+            </StackPanel>
+
+            <ComboBox Items="{Binding PointTypes}" Grid.Row="1" 
+                SelectedItem="{Binding SelectedPointType, Mode=TwoWay, Converter={StaticResource pointConverter}}"
+                VerticalAlignment="Center" HorizontalAlignment="Left" 
+                Margin="5 0 0 0" Width="120"/>
+
+            <Grid Grid.Row="2" Margin="5" >
+                <controls:MyDataGrid SelectedIndex="{Binding SelectedPointIndex}" Items="{Binding Points}"
+                    CurrentCell="{Binding ChangedCell, Mode=TwoWay}"
+                    CanUserReorderColumns="False" ColumnWidth="*" Grid.Column="1"
+                    CanUserSortColumns="False" CanUserResizeColumns="False" >
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="{Binding $parent.DataContext.Header1}" Binding="{Binding First}"/>
+                        <DataGridTextColumn Header="{Binding $parent.DataContext.Header2}" Binding="{Binding Second}"/>
+                        <DataGridTextColumn Header="{Binding $parent.DataContext.Header3}" Binding="{Binding Third}"/>
+                    </DataGrid.Columns>
+                </controls:MyDataGrid>
+
+                <StackPanel Orientation="Horizontal" Height="30"
+                    HorizontalAlignment="Right" VerticalAlignment="Top" >
+                    <Button Classes="dataGrid" Width="40" Height="40"
+                        Command="{Binding AddPoint}">
+                        <Image Source="{svg:SvgImage Resources/Assets/datagridplus.svg}" />
+                    </Button>
+                    <Button Classes="dataGrid" Width="40" Height="40"
+                        Command="{Binding RemoveSelectedPoint}">
+                        <Image Source="{svg:SvgImage Resources/Assets/datagridminus.svg}" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <Grid Grid.Row="3" Margin="5" >
+                <DataGrid Items="{Binding Tags}" ColumnWidth="*" CanUserReorderColumns="False"
+                    CanUserSortColumns="False" CanUserResizeColumns="False"
+                    SelectedIndex="{Binding SelectedTagIndex}" >
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Метка" Binding="{Binding Name}"/>
+                        <DataGridTextColumn Header="Значение" Binding="{Binding Value}"/>
+                    </DataGrid.Columns>          
+                </DataGrid>
+
+                <StackPanel Orientation="Horizontal" Height="30"
+                    HorizontalAlignment="Right" VerticalAlignment="Top" >
+                    <Button Classes="dataGrid" Width="40" Height="40"
+                        Command="{Binding AddTag}">
+                        <Image Source="{svg:SvgImage Resources/Assets/datagridplus.svg}" />
+                    </Button>
+                    <Button Classes="dataGrid" Width="40" Height="40"
+                        Command="{Binding RemoveSelectedTag}">
+                        <Image Source="{svg:SvgImage Resources/Assets/datagridminus.svg}" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <Grid HorizontalAlignment="Center" Grid.Row="4" ColumnDefinitions="*,*,100"
+                VerticalAlignment="Center" >
+                <TextBlock Text="Прозрачность:" VerticalAlignment="Center" Margin="0 0 10 0" />
+                <Slider Width="150" Minimum="0" Grid.Column="1" Maximum="1" Value="{Binding Opacity}"
+                    Margin="5" TickFrequency="0.1" TickPlacement="Outside" />
+                <TextBox Name="opacityTextBox" CornerRadius="0" Grid.Column="2" HorizontalContentAlignment="Center" Height="10" Margin="10 5 0 0" 
+                        Text="{Binding Opacity, Mode=TwoWay}" TextAlignment="Center" />
+            </Grid>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="5">
+                <Button Classes="dialog" Content="Ок" Command="{Binding SaveChanges}" CommandParameter="{Binding ElementName=thisWindow}" />
+                <Button Classes="dialog" Content="Отмена" Command="{Binding Cancel}" CommandParameter="{Binding ElementName=thisWindow}" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

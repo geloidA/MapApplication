@@ -1,0 +1,61 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:cp="clr-namespace:ThemeEditor.Controls.ColorPicker;assembly=ThemeEditor.Controls.ColorPicker"
+             xmlns:convrts="clr-namespace:map_app.Services.Converters;assembly=map_app"
+             x:Class="map_app.App">
+    <Application.Styles>
+        <FluentTheme Mode="Light"/>
+        <Style Selector="Button.dialog">
+            <Setter Property="Background" Value="Black" />
+            <Setter Property="Foreground" Value="Gray" />
+            <Setter Property="Width" Value="90" />
+            <Setter Property="Margin" Value="10" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+        </Style>
+        <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseLight.xaml"/>
+        <StyleInclude Source="avares://ThemeEditor.Controls.ColorPicker/ColorPicker.axaml" />
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Default.xaml"/>
+        <StyleInclude Source="avares://map_app/Views/Controls/PopupColorPicker.axaml" />
+        <Style Selector="DataValidationErrors">
+            <Setter Property="Template">
+                <ControlTemplate>
+                <DockPanel LastChildFill="True">
+                    <ContentControl DockPanel.Dock="Right"
+                                    ContentTemplate="{TemplateBinding ErrorTemplate}"
+                                    DataContext="{TemplateBinding Owner}"
+                                    Content="{Binding (DataValidationErrors.Errors)}"
+                                    IsVisible="{Binding (DataValidationErrors.HasErrors)}"/>
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="{TemplateBinding CornerRadius}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    Content="{TemplateBinding Content}"
+                                    Padding="{TemplateBinding Padding}"/>
+                </DockPanel>
+                </ControlTemplate>
+            </Setter>
+            <Setter Property="ErrorTemplate">
+                <DataTemplate>
+                <Canvas Width="14" Height="14" Margin="4 0 1 0" 
+                        Background="Transparent">
+                    <Canvas.Styles>
+                    <Style Selector="ToolTip">
+                        <Setter Property="Background" Value="Red"/>
+                        <Setter Property="BorderBrush" Value="Red"/>
+                    </Style>
+                    </Canvas.Styles>
+                    <ToolTip.Tip>
+                    <ItemsControl Items="{Binding}"/>
+                    </ToolTip.Tip>
+                    <Path Data="M14,7 A7,7 0 0,0 0,7 M0,7 A7,7 0 1,0 14,7 M7,3l0,5 M7,9l0,2" 
+                        Stroke="Red" 
+                        StrokeThickness="2"/>
+                </Canvas>
+                </DataTemplate>
+            </Setter>
+        </Style>        
+    </Application.Styles>
+</Application>

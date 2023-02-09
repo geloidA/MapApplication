@@ -1,0 +1,80 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="clr-namespace:map_app.Models;assembly=map_app"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="map_app.Views.Controls.GraphicsPopup">
+    <UserControl.Styles>
+        <Style Selector="Border.graphics">
+            <Setter Property="Width" Value="10" />
+            <Setter Property="Height" Value="550" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Width" Duration="0:0:0.2" Easing="QuarticEaseIn"/>
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <Style Selector="Border.graphics.open">
+            <Setter Property="Width" Value="520" />
+            <Setter Property="Height" Value="550" />
+        </Style>
+
+        <Style Selector="Button.default">
+          <Setter Property="FontSize" Value="12"/>
+          <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+    </UserControl.Styles>
+    <Border 
+      BoxShadow="0 3 8 0 Black"
+      CornerRadius="0 5 5 0"
+      Classes="graphics"
+      Classes.open="{Binding IsGraphicsListOpen}"
+      Name="GraphicsConfigurationPopup"
+      Background="white"
+      HorizontalAlignment="Left"
+      VerticalAlignment="Center"
+      >
+      <Grid>
+        <Grid RowDefinitions="30,1*" >
+            <Label Content="Готовые объекты" HorizontalAlignment="Center"/>
+            <Grid Grid.Row="1" ColumnDefinitions="1*,15" >
+                <ListBox Items="{Binding Graphics}" SelectedItem="{Binding SelectedGraphic}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Type}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                    <ListBox.ContextMenu>
+                        <ContextMenu Name="GraphicPopupContxtMenu">
+                        <!-- Command="{Binding OpenAddGraphicView}" -->
+                            <MenuItem Header="Добавить" >
+                                <MenuItem Header="Точка" Command="{Binding OpenAddGraphicView}"
+                                    CommandParameter="{x:Static models:GraphicType.Point}" />
+                                <MenuItem Header="Полигон" Command="{Binding OpenAddGraphicView}"
+                                    CommandParameter="{x:Static models:GraphicType.Polygon}" />
+                                <MenuItem Header="Ортодромия" Command="{Binding OpenAddGraphicView}"
+                                    CommandParameter="{x:Static models:GraphicType.Orthodrome}" />
+                                <MenuItem Header="Прямоугольник" Command="{Binding OpenAddGraphicView}"
+                                    CommandParameter="{x:Static models:GraphicType.Rectangle}" />
+                            </MenuItem>
+                            <MenuItem Header="Редактировать" Command="{Binding OpenEditGraphicView}" />
+                            <MenuItem Header="Удалить" Command="{Binding RemoveGraphic}" />
+                        </ContextMenu>
+                    </ListBox.ContextMenu>
+                </ListBox>
+            </Grid>
+        </Grid>
+        <Button 
+            Grid.Column="1"
+            Height="50"
+            Width="15"
+            Content="{Binding ArrowImage}" 
+            Name="GraphicsPopupButton"
+            HorizontalAlignment="Right" 
+            VerticalAlignment="Center" 
+            Command="{Binding IsGraphicsListPressed}" />
+        </Grid>
+    </Border>
+</UserControl>
