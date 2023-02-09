@@ -12,10 +12,11 @@ namespace map_app.Services.IO
         /// </summary>
         /// <param name="imagePath"></param>
         /// <returns>Return registered by BitmapRegistry bitmapId</returns>
-        internal static async Task<int> LoadAsync(string imagePath)
+        public static async Task<int> LoadAsync(string imagePath)
         {
-            if (imagePath == null) throw new ArgumentNullException("imagePath can't be null");
-            int bitmapId;
+            if (!File.Exists(imagePath)) return -1;
+            if (BitmapRegistry.Instance.TryGetBitmapId(imagePath, out int bitmapId))
+                return bitmapId;
             using (var fileStream = new FileStream(EmbedImage(imagePath), FileMode.Open))
             {
                 var memoryStream = new MemoryStream();
@@ -31,7 +32,7 @@ namespace map_app.Services.IO
                 AppDomain.CurrentDomain.BaseDirectory,
                 "Resources",
                 "SessionUserImages",
-                new FileInfo(imagePath).Name);// todo: equals assertion
+                new FileInfo(imagePath).Name);
             File.Copy(imagePath, destPath, true);
             return destPath;
         }

@@ -1,6 +1,6 @@
-using System.Collections;
 using map_app.Models;
 using map_app.Services;
+using map_app.Tests.Utils;
 using NetTopologySuite.Geometries;
 
 namespace map_app.Tests;
@@ -62,36 +62,23 @@ public class GraphicSerializerTests
     public void SerializeTests(BaseGraphic graphic, string expected)
     {
         var actual = GraphicSerializer.Serialize(graphic);
-        Assert.AreEqual(expected, actual);
+        Assert.That(actual, Is.EqualTo(expected));
     }
 
     [TestCaseSource(nameof(Cases))]
     public void DeserializeTests(BaseGraphic expected, string json)
     {
         var actual = GraphicSerializer.Deserialize(json);
-        Assert.AreEqual(expected.GetType(), actual.GetType());
-        Assert.AreEqual(expected.Opacity, actual.Opacity);
-        Assert.AreEqual(expected.StyleColor, actual.StyleColor);
+        Assert.That(actual.GetType(), Is.EqualTo(expected.GetType()));
+        Assert.That(actual.Opacity, Is.EqualTo(expected.Opacity));
+        Assert.That(actual.StyleColor, Is.EqualTo(expected.StyleColor));
         CollectionAssert.AreEqual(expected.UserTags, actual.UserTags);
         CollectionAssert.AreEqual(expected.LinearPoints, actual.LinearPoints, new ThreeDimensionalPointComparer());
         CollectionAssert.AreEqual(expected.GeoPoints, actual.GeoPoints, new ThreeDimensionalPointComparer());
         if (actual is PointGraphic pointActual)
         {
-            var pointExpected = expected as PointGraphic;
-            Assert.AreEqual(pointExpected!.Image, pointActual.Image);
-        }
-    }
-
-    private class ThreeDimensionalPointComparer : IComparer
-    {
-        EqualityComparer<IThreeDimensionalPoint> comparer = new ThreeDimentionalPointEqualityComparer();
-
-        public int Compare(object? obj1, object? obj2)
-        {
-            if (obj1 is not IThreeDimensionalPoint x ||
-                obj2 is not IThreeDimensionalPoint y) throw new ArgumentException("Values is not IThreeDimentionalPoint");
-            if (comparer.Equals(x, y)) return 0;
-            throw new NotImplementedException();
+            var pointExpected = (PointGraphic)expected;
+            Assert.That(pointActual.Image, Is.EqualTo(pointExpected.Image));
         }
     }
 }
