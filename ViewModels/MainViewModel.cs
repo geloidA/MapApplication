@@ -93,8 +93,8 @@ namespace map_app.ViewModels
             ShowSaveGraphicStateDialog = new Interaction<Unit, string?>();
             var canSave = this.WhenAnyValue(x => x.HaveGraphics);
             SaveGraphicStateInFile = ReactiveCommand.CreateFromTask(SaveGraphicStateInFileImpl, canSave);
-            ShowOpenGraphicStateDialog = new Interaction<Unit, string?>();
-            LoadGraphicState = ReactiveCommand.CreateFromTask(LoadGraphicStateImpl);
+            ShowOpenFileDialogAsync = new Interaction<Unit, string?>();
+            LoadGraphicStateAsync = ReactiveCommand.CreateFromTask(LoadGraphicStateAsyncImpl);
             var canSaveOpened = this
                 .WhenAnyValue(x => x.LastFilePath)
                 .Select(file => !string.IsNullOrEmpty(file));
@@ -109,7 +109,7 @@ namespace map_app.ViewModels
 
         public ICommand SaveGraphicStateInFile { get; }
 
-        public ICommand LoadGraphicState { get; }
+        public ICommand LoadGraphicStateAsync { get; }
 
         public Interaction<LayersManageViewModel, MainViewModel> ShowLayersManageDialog { get; }
 
@@ -117,7 +117,7 @@ namespace map_app.ViewModels
 
         public Interaction<Unit, string?> ShowSaveGraphicStateDialog { get; }
         
-        public Interaction<Unit, string?> ShowOpenGraphicStateDialog { get; }
+        public Interaction<Unit, string?> ShowOpenFileDialogAsync { get; }
 
         internal void AccessOnlyGraphic(object? sender, CancelEventArgs e) => e.Cancel = !NavigationPanelViewModel.IsEditMode || !IsBaseGraphicUnderPointer;
 
@@ -198,16 +198,34 @@ namespace map_app.ViewModels
             _editManager.Layer.TryRemove(FeatureUnderPointer);
         }
 
-        private async Task LoadGraphicStateImpl()
+        private async Task LoadGraphicStateAsyncImpl()
         {
-            var loadLocation = await ShowOpenGraphicStateDialog.Handle(Unit.Default);
+            var loadLocation = await ShowOpenFileDialogAsync.Handle(Unit.Default);
             if (loadLocation is null)
                 return;
             _savedGraphicLayer!.Clear();
             await BaseGraphicJsonMarshaller.LoadAsync(_savedGraphicLayer, loadLocation);
+            await LoadPointImages(_savedGraphicLayer);
             LastFilePath = loadLocation;
             LoadedFileName = Path.GetFileName(loadLocation);
             _mapControl.Refresh();
+        }
+
+        private async Task LoadPointImages(OwnWritableLayer graphics)
+        {
+            foreach (var graphic in graphics.Where(x => x is PointGraphic))
+            {
+                var point = (PointGraphic)graphic;
+                if (point.Image != null)
+                {
+                    var bitmapId = await ImageLoader.LoadAsync(point.Image);
+                    point.GraphicStyle = new Mapsui.Styles.SymbolStyle 
+                    { 
+                        BitmapId = bitmapId, 
+                        SymbolScale = 0.1 
+                    };
+                }
+            }
         }
 
         private async Task SaveGraphicStateInFileImpl()

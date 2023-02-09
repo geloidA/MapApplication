@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mapsui.Nts;
+using Mapsui.Styles;
 using NetTopologySuite.Geometries;
 
 namespace map_app.Models
@@ -9,6 +10,7 @@ namespace map_app.Models
     public class PolygonGraphic : BaseGraphic, IStepByStepGraphic
     {
         private Coordinate? _hoverVertex;
+
         private PolygonGraphic(PolygonGraphic source) : base(source) { }
 
         public PolygonGraphic() : base() { }

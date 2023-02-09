@@ -14,7 +14,8 @@ namespace map_app.Models
     {
         private Color _color;
         private double _opacity = 1;
-        private VectorStyle? _style;
+
+        private VectorStyle _graphicStyle = new VectorStyle();
         protected List<Coordinate> _coordinates = new();
 
         protected BaseGraphic(BaseGraphic source) 
@@ -22,7 +23,7 @@ namespace map_app.Models
             _color = source._color;
             _opacity = source._opacity;
             UserTags = source.UserTags;
-            _style = source._style;
+            GraphicStyle = source.GraphicStyle;
             Styles = source.Styles;
             _coordinates = source._coordinates;
             Geometry = source.Geometry;
@@ -33,29 +34,41 @@ namespace map_app.Models
         public BaseGraphic(IEnumerable<Coordinate> points) : base() 
         {
             _coordinates = points.ToList();
-            _color = new Color(Color.Black);
-            InitializeGraphicStyle();
+            _color = new Color(Color.Black);            
+            Styles.Add(GraphicStyle);
         }
 
         public BaseGraphic(GeometryFeature geometryFeature) : base(geometryFeature) 
-        { 
-            InitializeGraphicStyle();
+        {
+            Styles.Add(GraphicStyle);
             _color = new Color(Color.Black); 
         }
+        
         public BaseGraphic(Geometry? geometry) : base(geometry) 
         {
-            InitializeGraphicStyle();
+            Styles.Add(GraphicStyle);
             _color = new Color(Color.Black);
         }
 
         [JsonProperty]
         public abstract GraphicType Type { get; }
 
+        public virtual VectorStyle GraphicStyle 
+        { 
+            get => _graphicStyle; 
+            set
+            {
+                Styles.Remove(_graphicStyle);
+                _graphicStyle = value;
+                Styles.Add(_graphicStyle);
+            } 
+        }
+
         [JsonProperty]
         public Dictionary<string, string>? UserTags { get; set; }
 
-        [JsonProperty]
-        public Color Color 
+        [JsonProperty("Color")]
+        public Color StyleColor 
         {
             get => _color;
             set
@@ -63,8 +76,8 @@ namespace map_app.Models
                 if (value is null)
                     throw new NullReferenceException();
                 _color = value;
-                _style!.Fill = new Brush(value);
-                _style!.Line = new Pen(value, 2);
+                GraphicStyle.Fill = new Brush(_color);
+                GraphicStyle.Line = new Pen(_color, 2);
             }
         }
 
@@ -77,7 +90,7 @@ namespace map_app.Models
                 if (value < 0 || value > 1)
                     throw new ArgumentOutOfRangeException();
                 _opacity = value;
-                _style!.Opacity = (float)_opacity;
+                GraphicStyle.Opacity = (float)_opacity;
             }
         }
 
@@ -116,12 +129,6 @@ namespace map_app.Models
         public void RerenderGeometry()
         {
             Geometry = RenderGeometry();
-        }
-
-        private void InitializeGraphicStyle()
-        {
-            _style = new VectorStyle();
-            Styles.Add(_style);
         }
     }
 }

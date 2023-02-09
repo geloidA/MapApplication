@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Mapsui.Nts;
 using Mapsui.Nts.Extensions;
+using Mapsui.Styles;
 using NetTopologySuite.Geometries;
 using Newtonsoft.Json;
 
@@ -35,6 +37,19 @@ namespace map_app.Models
         public override PointGraphic LightCopy()
         {
             return new PointGraphic(this);
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            if (Image != null)
+            {
+                if (BitmapRegistry.Instance.TryGetBitmapId(Image, out int bitmapId))
+                {
+                    var bitmap = BitmapRegistry.Instance.Unregister(bitmapId);
+                    (bitmap as IDisposable)?.Dispose();
+                }
+            }
         }
     }
 }

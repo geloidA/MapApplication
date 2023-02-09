@@ -8,6 +8,8 @@ using System.Reactive;
 using Avalonia.Controls;
 using System.Linq;
 using Avalonia.Controls.Notifications;
+using System;
+using System.IO;
 
 namespace map_app.Views;
 
@@ -26,7 +28,15 @@ public partial class MainView : ReactiveWindow<MainViewModel>
         this.WhenActivated(d => d(ViewModel!.ShowGraphicEditingDialog.RegisterHandler(DoShowGraphicEditingDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.GraphicsPopupViewModel.ShowAddEditGraphicDialog.RegisterHandler(DoShowGraphicAddEditDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ShowSaveGraphicStateDialog.RegisterHandler(DoShowSaveGraphicStateDialogAsync)));
-        this.WhenActivated(d => d(ViewModel!.ShowOpenGraphicStateDialog.RegisterHandler(DoShowOpenGraphicStateDialogAsync)));
+        this.WhenActivated(d => d(ViewModel!.ShowOpenFileDialogAsync.RegisterHandler(DoShowOpenFileDialogAsync)));
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        base.OnClosed(e);
+        var sessionUserImages = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "SessionUserImages"));
+        foreach (var file in sessionUserImages.GetFiles())
+            file.Delete();
     }
 
     private async Task DoShowLayersManageDialogAsync(InteractionContext<LayersManageViewModel, MainViewModel> interaction)
@@ -65,7 +75,7 @@ public partial class MainView : ReactiveWindow<MainViewModel>
         interaction.SetOutput(result);
     }
 
-    private async Task DoShowOpenGraphicStateDialogAsync(InteractionContext<Unit, string?> interaction)
+    private async Task DoShowOpenFileDialogAsync(InteractionContext<Unit, string?> interaction)
     {
         var dialog = new OpenFileDialog();
         var result = await dialog.ShowAsync(this);

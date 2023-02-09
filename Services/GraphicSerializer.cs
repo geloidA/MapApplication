@@ -43,7 +43,7 @@ namespace map_app.Services
 
         private static void InitCommonProperties(dynamic jsonGraphic, BaseGraphic graphic)
         {
-            graphic.Color = jsonGraphic.Color.ToObject<Color?>();
+            graphic.StyleColor = jsonGraphic.Color.ToObject<Color?>();
             graphic.UserTags = JsonConvert.DeserializeObject<Dictionary<string, string>>(((JToken)jsonGraphic.UserTags).ToString());
             graphic.Opacity = jsonGraphic.Opacity.ToObject<double>();
         }

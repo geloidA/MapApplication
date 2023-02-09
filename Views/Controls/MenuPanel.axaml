@@ -6,7 +6,7 @@
              x:Class="map_app.Views.Controls.MenuPanel">
   <Menu Background="LightGray" Height="20">
     <MenuItem Header="Файл">
-        <MenuItem Header="Открыть" Command="{Binding LoadGraphicState}"/>
+        <MenuItem Header="Открыть" Command="{Binding LoadGraphicStateAsync}"/>
         <MenuItem Header="Сохранить" Command="{Binding SaveGraphicStateInOpenedFile}"/>
         <MenuItem Header="Сохранить как..." Command="{Binding SaveGraphicStateInFile}"/>
         <Separator/>

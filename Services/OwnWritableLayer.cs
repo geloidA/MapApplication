@@ -40,7 +40,7 @@ namespace map_app.Services
         public new bool TryRemove(IFeature feature, Func<IFeature, IFeature, bool>? compare = null)
         {
             var success = base.TryRemove(feature, compare);
-            orderedFeatures.Remove(feature); // todo: 
+            orderedFeatures.Remove(feature); // todo: add compare
             if (success)
             {
                 feature.Dispose();
@@ -51,6 +51,8 @@ namespace map_app.Services
 
         public new void Clear()
         {
+            foreach (var feature in this.GetFeatures())
+                feature.Dispose();
             base.Clear();
             orderedFeatures.Clear();
         }

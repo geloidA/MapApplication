@@ -18,7 +18,12 @@ using map_app.Models.Extensions;
 using Avalonia.Input;
 using DynamicData.Binding;
 using DynamicData;
-using System.Text;
+using System.Reactive;
+using System.Threading.Tasks;
+using Mapsui.Styles;
+using Mapsui.Extensions;
+using System.IO;
+using map_app.Services.IO;
 #endregion
 
 namespace map_app.ViewModels
@@ -47,19 +52,22 @@ namespace map_app.ViewModels
             Tags = new ObservableCollection<Tag>(_editGraphic.UserTags?.Select(x => new Tag() { Name = x.Key, Value = x.Value })
                 ?? new List<Tag>());
             Opacity = _editGraphic.Opacity;
-            GraphicType = _editGraphic.Type;
-            GraphicColor = _editGraphic.Color is null
+            GraphicType = _editGraphic.Type;            
+            GraphicColor = _editGraphic.StyleColor is null
                 ? Colors.Black
-                : new Color(
-                    r: (byte)_editGraphic.Color.R,
-                    g: (byte)_editGraphic.Color.G,
-                    b: (byte)_editGraphic.Color.B,
-                    a: (byte)_editGraphic.Color.A);
+                : new Avalonia.Media.Color(
+                    r: (byte)_editGraphic.StyleColor.R,
+                    g: (byte)_editGraphic.StyleColor.G,
+                    b: (byte)_editGraphic.StyleColor.B,
+                    a: (byte)_editGraphic.StyleColor.A);
+            ShowOpenFileDialog = new Interaction<Unit, string?>();
             InitializeCommands();
             this.WhenAnyValue(x => x.SelectedPointType)
                 .Subscribe(SwapPointsSource);
             this.WhenAnyValue(x => x.ChangedCell)
                 .Subscribe(ChangeCoordinate);
+            if (_editGraphic is PointGraphic point)
+                ImagePath = point.Image;
         }
 
         private void InitializeCommands()
@@ -85,22 +93,8 @@ namespace map_app.ViewModels
                 .Select(x => !x.Any() || x.All(y => !y.HasErrors))
                 .StartWith(true);
             Cancel = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
-            SaveChanges = ReactiveCommand.Create<ICloseable>(window =>
-            {
-                if (HaveValidationErrors(out string message))
-                {
-                    ShowMessageIncorrectData(message);
-                    return;
-                }
-                ConfirmChanges();
-                if (_isAddMode)
-                {
-                    _graphicPool!.Add(_editGraphic);
-                    _graphicPool!.DataHasChanged();
-                }
-                Cancel.Execute(window);
-            }, canSave);
-            SelectImage = ReactiveCommand.Create(() => { });
+            SaveChanges = ReactiveCommand.Create<ICloseable>(SaveChangesImpl, canSave);
+            SelectImageAsync = ReactiveCommand.CreateFromTask(SelectImageAsyncImpl);
         }
 
         [Reactive]
@@ -111,6 +105,9 @@ namespace map_app.ViewModels
 
         [Reactive]
         public string? Header3 { get; set; }
+
+        [Reactive]
+        public string? ImagePath { get; set; }
 
         public ObservableCollection<Tag> Tags { get; }
 
@@ -136,22 +133,63 @@ namespace map_app.ViewModels
         public GraphicType GraphicType { get; set; }
 
         [Reactive]
-        public Color GraphicColor { get; set; }
+        public Avalonia.Media.Color GraphicColor { get; set; }
+
+        internal Interaction<Unit, string?> ShowOpenFileDialog { get; }
 
         public ICommand? RemoveSelectedPoint { get; private set; }
         public ICommand? SaveChanges { get; private set; }
         public ICommand? RemoveSelectedTag { get; private set; }
         public ICommand? AddTag { get; private set; }
         public ICommand? Cancel { get; private set; }
-        public ICommand? SelectImage { get; private set; }
+        public ICommand? SelectImageAsync { get; private set; }
 
-        private void ConfirmChanges()
+        private async Task SelectImageAsyncImpl()
+        {
+            var imagePath = await ShowOpenFileDialog.Handle(Unit.Default);
+            if (imagePath is null)
+                return;
+            ImagePath = imagePath;
+        }
+
+        private void SaveChangesImpl(ICloseable wnd)
+        {            
+            if (HaveValidationErrors(out string message))
+            {
+                ShowMessageIncorrectData(message);
+                return;
+            }
+            ConfirmChanges();
+            if (_isAddMode)
+            {
+                _graphicPool!.Add(_editGraphic);
+                _graphicPool!.DataHasChanged();
+            }
+            Cancel?.Execute(wnd);
+        }
+
+        private async void ConfirmChanges()
         {
             _editGraphic.Coordinates = _linear.ToCoordinates().ToList();
             var color = GraphicColor;
-            _editGraphic.Color = new Mapsui.Styles.Color(red: color.R, green: color.G, blue: color.B, alpha: color.A);
+            if (_editGraphic is PointGraphic point && point.Image != ImagePath)            
+                await ChangePointStyle(point, ImagePath); 
+            _editGraphic.StyleColor = new Mapsui.Styles.Color(red: color.R, green: color.G, blue: color.B, alpha: color.A);
             _editGraphic.Opacity = Opacity;
             _editGraphic.UserTags = Tags.ToDictionary(t => t.Name, t => t.Value ?? string.Empty);
+                       
+        }
+
+        private async Task ChangePointStyle(PointGraphic point, string? newImagePath)
+        {
+            point.Image = newImagePath;
+            if (point.Image is null)
+            {
+                point.GraphicStyle = new VectorStyle();
+                return;
+            }
+            var bitmapId = ImageLoader.LoadAsync(point.Image);
+            point.GraphicStyle = new SymbolStyle { BitmapId = await bitmapId, SymbolScale = 0.1 };
         }
 
         private void AddPoint()

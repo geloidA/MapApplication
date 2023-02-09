@@ -79,7 +79,7 @@ namespace map_app.Editing
 
             if (EditMode == EditMode.AddPoint)
             {
-                Layer.Add(new PointGraphic(new[] { worldPosition }.ToList()) { Color = CurrentColor, Opacity = CurrentOpacity });
+                Layer.Add(new PointGraphic(new[] { worldPosition }.ToList()) { StyleColor = CurrentColor, Opacity = CurrentOpacity });
                 Layer.LayersFeatureHasChanged();
             }
             else if (EditMode == EditMode.AddPolygon)
@@ -111,7 +111,7 @@ namespace map_app.Editing
         {
             var graphic = (BaseGraphic?)Activator.CreateInstance(graphicType, _addInfo.Vertices!.ToList())
                 ?? throw new Exception($"Activator can not create instance of type \"{graphicType}\"");
-            graphic.Color = CurrentColor;
+            graphic.StyleColor = CurrentColor;
             graphic.Opacity = CurrentOpacity;
             return graphic;
         }
