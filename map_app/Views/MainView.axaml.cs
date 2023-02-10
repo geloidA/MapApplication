@@ -7,9 +7,9 @@ using map_app.ViewModels.Controls;
 using System.Reactive;
 using Avalonia.Controls;
 using System.Linq;
-using Avalonia.Controls.Notifications;
 using System;
 using System.IO;
+using System.Collections.Generic;
 
 namespace map_app.Views;
 
@@ -75,9 +75,13 @@ public partial class MainView : ReactiveWindow<MainViewModel>
         interaction.SetOutput(result);
     }
 
-    private async Task DoShowOpenFileDialogAsync(InteractionContext<Unit, string?> interaction)
+    private async Task DoShowOpenFileDialogAsync(InteractionContext<List<string>, string?> interaction)
     {
         var dialog = new OpenFileDialog();
+        dialog.Filters = new List<FileDialogFilter>
+        { 
+            new FileDialogFilter() { Extensions = interaction.Input }
+        };
         var result = await dialog.ShowAsync(this);
 
         interaction.SetOutput(result?.First());

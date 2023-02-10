@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
@@ -16,9 +17,13 @@ public partial class GraphicAddEditView : ReactiveWindow<GraphicAddEditViewModel
         this.WhenActivated(d => d(ViewModel!.ShowOpenFileDialog.RegisterHandler(DoShowOpenFileDialogAsync)));
     }
 
-    private async Task DoShowOpenFileDialogAsync(InteractionContext<Unit, string?> interaction)
+    private async Task DoShowOpenFileDialogAsync(InteractionContext<List<string>, string?> interaction)
     {
         var dialog = new OpenFileDialog();
+        dialog.Filters = new List<FileDialogFilter> 
+        {
+            new FileDialogFilter { Extensions = interaction.Input }
+        };
         var path = await dialog.ShowAsync(this);
         interaction.SetOutput(path?.First());
     }

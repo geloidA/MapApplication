@@ -57,22 +57,33 @@ namespace map_app.Tests.TestsIO
         }
 
         [Test]
+        public async Task LoadAsync_ShouldReturnTrue_WhenLoadSuccess()
+        {
+            await SaveFile();
+            var info = new FileInfo(fileName);
+            var container = new List<BaseGraphic>();
+            var actual = await BaseGraphicJsonMarshaller.TryLoadAsync(container, info.FullName);
+            Assert.That(actual, Is.EqualTo(true));
+        }
+
+        [Test]
         public async Task LoadAsync_ShouldLoadObjects()
         {
             await SaveFile();
             var info = new FileInfo(fileName);
-            var container = new OwnWritableLayer();
-            await BaseGraphicJsonMarshaller.LoadAsync(container, info.FullName);
+            var container = new List<BaseGraphic>();
+            await BaseGraphicJsonMarshaller.TryLoadAsync(container, info.FullName);
             CollectionAssert.AreEqual(graphics, container, new BaseGraphicComparer());
         }
 
         [Test]
-        public async Task LoadAsync_ShouldThrowFileLoadException_WhenJsonWrong()
+        public async Task LoadAsync_ShouldReturnFalse_WhenJsonWrong()
         {
             await SaveFile();
             var info = new FileInfo(wrongJsonLocation);
-            var container = new OwnWritableLayer();
-            Assert.ThrowsAsync<JsonReaderException>(async () => await BaseGraphicJsonMarshaller.LoadAsync(container, info.FullName));
+            var container = new List<BaseGraphic>();
+            var actual = await BaseGraphicJsonMarshaller.TryLoadAsync(container, info.FullName);
+            Assert.That(actual, Is.EqualTo(false));
         }
 
         private async Task SaveFile()

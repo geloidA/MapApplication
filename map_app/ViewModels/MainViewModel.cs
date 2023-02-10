@@ -19,6 +19,10 @@ using System.Threading.Tasks;
 using Mapsui.Extensions;
 using Mapsui.Widgets.ScaleBar;
 using Mapsui.Widgets;
+using System.Collections.Generic;
+using Avalonia.Notification;
+using Avalonia.Media;
+using Avalonia.Controls;
 
 namespace map_app.ViewModels
 {
@@ -26,6 +30,7 @@ namespace map_app.ViewModels
     {
         #region Private members
         private bool _isRightWasPressed;
+        private readonly List<string> _unregisteredImages = new();
         private readonly OwnWritableLayer? _savedGraphicLayer;
         private const double LeftBorderMap = -20037494;
         private readonly MapControl _mapControl;
@@ -93,7 +98,7 @@ namespace map_app.ViewModels
             ShowSaveGraphicStateDialog = new Interaction<Unit, string?>();
             var canSave = this.WhenAnyValue(x => x.HaveGraphics);
             SaveGraphicStateInFile = ReactiveCommand.CreateFromTask(SaveGraphicStateInFileImpl, canSave);
-            ShowOpenFileDialogAsync = new Interaction<Unit, string?>();
+            ShowOpenFileDialogAsync = new Interaction<List<string>, string?>();
             LoadGraphicStateAsync = ReactiveCommand.CreateFromTask(LoadGraphicStateAsyncImpl);
             var canSaveOpened = this
                 .WhenAnyValue(x => x.LastFilePath)
@@ -111,13 +116,15 @@ namespace map_app.ViewModels
 
         public ICommand LoadGraphicStateAsync { get; }
 
+        public INotificationMessageManager Manager { get; } = new NotificationMessageManager();
+
         public Interaction<LayersManageViewModel, MainViewModel> ShowLayersManageDialog { get; }
 
         public Interaction<GraphicAddEditViewModel, MainViewModel> ShowGraphicEditingDialog { get; }
 
         public Interaction<Unit, string?> ShowSaveGraphicStateDialog { get; }
         
-        public Interaction<Unit, string?> ShowOpenFileDialogAsync { get; }
+        public Interaction<List<string>, string?> ShowOpenFileDialogAsync { get; }
 
         internal void AccessOnlyGraphic(object? sender, CancelEventArgs e) => e.Cancel = !NavigationPanelViewModel.IsEditMode || !IsBaseGraphicUnderPointer;
 
@@ -200,33 +207,88 @@ namespace map_app.ViewModels
 
         private async Task LoadGraphicStateAsyncImpl()
         {
-            var loadLocation = await ShowOpenFileDialogAsync.Handle(Unit.Default);
+            var loadLocation = await ShowOpenFileDialogAsync.Handle(new List<string> { "txt" });
             if (loadLocation is null)
                 return;
-            _savedGraphicLayer!.Clear();
-            await BaseGraphicJsonMarshaller.LoadAsync(_savedGraphicLayer, loadLocation);
-            await LoadPointImages(_savedGraphicLayer);
-            LastFilePath = loadLocation;
-            LoadedFileName = Path.GetFileName(loadLocation);
-            _mapControl.Refresh();
+            var graphics = new List<BaseGraphic>();
+            var isLoadSuccess = await BaseGraphicJsonMarshaller.TryLoadAsync(graphics, loadLocation);
+            if (!isLoadSuccess)
+            {
+                ShowNotification(
+                    "Выбранный файл не удалось преобразовать в объекты", 
+                    "Ошибка",
+                    Colors.Red);
+                return;
+            }
+            await LoadPointImagesAsync(graphics);
+            if (_unregisteredImages.Any())
+            {
+                ShowImageNotification("Проблема загрузки изображений", "Информация", Colors.LightBlue);
+                _unregisteredImages.Clear();
+            }
+            LoadGraphicsInLayer(graphics, loadLocation);
         }
 
-        private async Task LoadPointImages(OwnWritableLayer graphics)
+        private async Task LoadPointImagesAsync(List<BaseGraphic> graphics)
         {
             foreach (var graphic in graphics.Where(x => x is PointGraphic))
             {
                 var point = (PointGraphic)graphic;
                 if (point.Image != null)
                 {
-                    var bitmapId = await ImageLoader.LoadAsync(point.Image);
+                    var bitmapId = await ImageRegister.RegisterAsync(point.Image);
+                    if (bitmapId is null)
+                    {
+                        _unregisteredImages.Add(point.Image);
+                        continue;
+                    }
                     point.GraphicStyle = new Mapsui.Styles.SymbolStyle 
                     { 
-                        BitmapId = bitmapId, 
+                        BitmapId = bitmapId.Value, 
                         SymbolScale = 0.1 
                     };
                 }
             }
         }
+
+        private void ShowNotification(string message, string badge, Color color)
+        {
+            var accentBrush = new SolidColorBrush(color);
+            this.Manager
+                .CreateMessage()
+                .Accent(accentBrush)
+                .Animates(true)
+                .Background("#333")
+                .HasBadge(badge)
+                .HasMessage(message)
+                .Dismiss()
+                .WithButton("OK", _ => { })
+                .Queue();
+        }
+
+        private void ShowImageNotification(string message, string badge, Color color)
+        {
+            var accentBrush = new SolidColorBrush(color);
+            this.Manager
+                .CreateMessage()
+                .Accent(accentBrush)
+                .Animates(true)
+                .Background("#333")
+                .HasBadge(badge)
+                .HasMessage(message)
+                .Dismiss()
+                .WithButton("OK", _ => { })
+                .Queue();
+        }
+
+        private void LoadGraphicsInLayer(List<BaseGraphic> newGraphics, string loadLocation)
+        {
+            _savedGraphicLayer!.Clear();
+            _savedGraphicLayer.AddRange(newGraphics);
+            LastFilePath = loadLocation;
+            LoadedFileName = Path.GetFileName(loadLocation);
+            _mapControl.Refresh();
+        }        
 
         private async Task SaveGraphicStateInFileImpl()
         {

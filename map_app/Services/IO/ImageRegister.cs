@@ -5,16 +5,16 @@ using Mapsui.Styles;
 
 namespace map_app.Services.IO
 {
-    public static class ImageLoader
+    public static class ImageRegister
     {
         /// <summary>
         /// Load image in internal folder
         /// </summary>
         /// <param name="imagePath"></param>
         /// <returns>Return registered by BitmapRegistry bitmapId</returns>
-        public static async Task<int> LoadAsync(string imagePath)
+        public static async Task<int?> RegisterAsync(string imagePath)
         {
-            if (!File.Exists(imagePath)) return -1;
+            if (!File.Exists(imagePath)) return null;
             if (BitmapRegistry.Instance.TryGetBitmapId(imagePath, out int bitmapId))
                 return bitmapId;
             using (var fileStream = new FileStream(EmbedImage(imagePath), FileMode.Open))

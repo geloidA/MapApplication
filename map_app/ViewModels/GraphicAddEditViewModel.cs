@@ -60,7 +60,7 @@ namespace map_app.ViewModels
                     g: (byte)_editGraphic.StyleColor.G,
                     b: (byte)_editGraphic.StyleColor.B,
                     a: (byte)_editGraphic.StyleColor.A);
-            ShowOpenFileDialog = new Interaction<Unit, string?>();
+            ShowOpenFileDialog = new Interaction<List<string>, string?>();
             InitializeCommands();
             this.WhenAnyValue(x => x.SelectedPointType)
                 .Subscribe(SwapPointsSource);
@@ -135,7 +135,7 @@ namespace map_app.ViewModels
         [Reactive]
         public Avalonia.Media.Color GraphicColor { get; set; }
 
-        internal Interaction<Unit, string?> ShowOpenFileDialog { get; }
+        internal Interaction<List<string>, string?> ShowOpenFileDialog { get; }
 
         public ICommand? RemoveSelectedPoint { get; private set; }
         public ICommand? SaveChanges { get; private set; }
@@ -146,7 +146,7 @@ namespace map_app.ViewModels
 
         private async Task SelectImageAsyncImpl()
         {
-            var imagePath = await ShowOpenFileDialog.Handle(Unit.Default);
+            var imagePath = await ShowOpenFileDialog.Handle(new List<string> { "png", "webp", "jpg", "gif", "ico" });
             if (imagePath is null)
                 return;
             ImagePath = imagePath;
@@ -188,8 +188,13 @@ namespace map_app.ViewModels
                 point.GraphicStyle = new VectorStyle();
                 return;
             }
-            var bitmapId = ImageLoader.LoadAsync(point.Image);
-            point.GraphicStyle = new SymbolStyle { BitmapId = await bitmapId, SymbolScale = 0.1 };
+            var bitmapId = await ImageRegister.RegisterAsync(point.Image);
+            if (bitmapId is null)
+            {
+                ShowMessageIncorrectData("Файл не существует");
+                return;
+            }
+            point.GraphicStyle = new SymbolStyle { BitmapId = bitmapId.Value, SymbolScale = 0.1 };
         }
 
         private void AddPoint()

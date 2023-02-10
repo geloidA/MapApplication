@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:controls="clr-namespace:map_app.Views.Controls;assembly=map_app"
+        xmlns:notification="clr-namespace:Avalonia.Notification.Controls;assembly=Notification.Avalonia"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:avalonia="clr-namespace:Mapsui.UI.Avalonia;assembly=Mapsui.UI.Avalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -12,7 +13,12 @@
         Title="Подготовка полётного задания">
     <Grid>
         <DockPanel>
-            <controls:MenuPanel DockPanel.Dock="Top"/>
+            <StackPanel DockPanel.Dock="Top">
+                <controls:MenuPanel />
+                <Border Background="LightGray" >
+                    <notification:NotificationMessageContainer Manager="{Binding Manager}" />
+                </Border>
+            </StackPanel>
 
             <Grid DockPanel.Dock="Bottom" Name="MainGrid">
                 <avalonia:MapControl x:Name="MapControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
