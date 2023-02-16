@@ -109,7 +109,7 @@ namespace map_app.ViewModels
 
         private ILayer CreateUserLayer(string address, string name, double opacity)
         {
-            return new TileLayer(DictKnownTileSources.Create(address)) { Name = name, Opacity = opacity, Tag = "User" };
+            return new TileLayer(MyTileSource.Create(address)) { Name = name, Opacity = opacity, Tag = "User" };
         }
     }
 }

@@ -11,6 +11,9 @@ using map_app.Views;
 using map_app.Network;
 using Mapsui.Projections;
 using Mapsui.UI;
+using System;
+using Mapsui.Widgets;
+using Mapsui.Widgets.ScaleBar;
 
 namespace map_app.Services
 {
@@ -28,17 +31,27 @@ namespace map_app.Services
                 PanLimits = GetLimitsOfWorld(),
                 ZoomLimits = new MinMax(2.5, 25000)
             };
-            var layer = new TileLayer(DictKnownTileSources.Create("www.openstreetmap.org"))
+            var layer = new TileLayer(MyTileSource.Create("www.openstreetmap.org"))
             { 
                 Name = "Основной",
                 Tag = "User"
             };
+            var scaleWidget = GetScaleWidget(map);
+            map.Widgets.Add(scaleWidget);
             map.Layers.Add(layer);
             var graphicLayer = CreateTargetWritableLayer();
             map.Layers.Add(graphicLayer);
             return map;
         }
 
+        private static IWidget GetScaleWidget(Mapsui.Map map)
+        {
+            var scaleWidget = new ScaleBarWidget(map);
+            scaleWidget.HorizontalAlignment = HorizontalAlignment.Right;
+            scaleWidget.MarginX = 150F;
+            scaleWidget.MarginY = 25F;
+            return scaleWidget;
+        }
         private static MRect GetLimitsOfWorld()
         {
             var (minX, minY) = SphericalMercator.FromLonLat(-180, 85);

@@ -30,7 +30,7 @@
                     </avalonia:MapControl.ContextMenu>
                 </avalonia:MapControl>
                 <controls:GraphicsPopup DataContext="{Binding GraphicsPopupViewModel}" />
-                <controls:AuxiliaryPanel HorizontalAlignment="Right" Width="60" DataContext="{Binding AuxiliaryPanelViewModel}" />
+                <controls:AuxiliaryPanel HorizontalAlignment="Right" Width="175" DataContext="{Binding AuxiliaryPanelViewModel}" />
                 <controls:NavigationPanel DataContext="{Binding NavigationPanelViewModel}" />
             </Grid>
         </DockPanel>

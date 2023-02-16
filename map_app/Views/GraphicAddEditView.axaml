@@ -12,9 +12,8 @@
         x:Class="map_app.Views.GraphicAddEditView"
         Title="Обзор">
     <Window.Resources>
-        <convrts:GraphicTypeToStringConverter x:Key="typeConverter"/>
         <convrts:GraphicTypeToBoolConverter x:Key="onlyPointPassedConverter"/>
-        <convrts:EnumDescriptionConverter x:Key="pointConverter" />
+        <convrts:EnumDescriptionConverter x:Key="enumConverter" />
         <convrts:BitmapValueConverter x:Key="bitmapConverter" />
     </Window.Resources>
 
@@ -33,9 +32,8 @@
 
     <Grid >
         <Grid RowDefinitions="75,50,*,*,0.45*,0.4*">
-            <TextBlock VerticalAlignment="Top" HorizontalAlignment="Center"
-                FontSize="16"
-                Text="{Binding GraphicType, Converter={StaticResource typeConverter}}" Margin="0 10 0 0" />
+            <ContentControl Content="{Binding GraphicType, Converter={StaticResource enumConverter}}"
+                VerticalAlignment="Top" HorizontalAlignment="Center" FontSize="16" Margin="0 10 0 0" />
 
             <StackPanel Margin="0 15 0 15" Orientation="Horizontal" HorizontalAlignment="Right"
                 VerticalAlignment="Center" >
@@ -55,7 +53,7 @@
             </StackPanel>
 
             <ComboBox Items="{Binding PointTypes}" Grid.Row="1" 
-                SelectedItem="{Binding SelectedPointType, Mode=TwoWay, Converter={StaticResource pointConverter}}"
+                SelectedItem="{Binding SelectedPointType, Mode=TwoWay, Converter={StaticResource enumConverter}}"
                 VerticalAlignment="Center" HorizontalAlignment="Left" 
                 Margin="5 0 0 0" Width="120"/>
 

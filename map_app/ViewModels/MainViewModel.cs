@@ -22,7 +22,6 @@ using Mapsui.Widgets;
 using System.Collections.Generic;
 using Avalonia.Notification;
 using Avalonia.Media;
-using Avalonia.Controls;
 
 namespace map_app.ViewModels
 {
@@ -66,11 +65,8 @@ namespace map_app.ViewModels
         {
             _mapControl = mapControl;
             _mapControl.Map = MapCreator.Create();
-            var scaleWidget = GetScaleWidget(_mapControl.Map);
-            _mapControl.Map.Widgets.Add(scaleWidget);
             _savedGraphicLayer = (OwnWritableLayer)_mapControl.Map!.Layers.First(l => l.Name == "Graphic Layer");
-            _savedGraphicLayer.Clear();
-            _savedGraphicLayer.LayersFeatureChanged += (_, _) => HaveGraphics = _savedGraphicLayer.Any();
+            _savedGraphicLayer.Clear();            
             _editManager = new EditManager(_savedGraphicLayer);
             _editManager.Extent = new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap);
             GraphicsPopupViewModel = new GraphicsPopupViewModel(_savedGraphicLayer!);
@@ -96,6 +92,7 @@ namespace map_app.ViewModels
                 await ShowGraphicEditingDialog.Handle(vm);
             }, canExecute);
             ShowSaveGraphicStateDialog = new Interaction<Unit, string?>();
+            _savedGraphicLayer.LayersFeatureChanged += (_, _) => HaveGraphics = _savedGraphicLayer.Any();
             var canSave = this.WhenAnyValue(x => x.HaveGraphics);
             SaveGraphicStateInFile = ReactiveCommand.CreateFromTask(SaveGraphicStateInFileImpl, canSave);
             ShowOpenFileDialogAsync = new Interaction<List<string>, string?>();
@@ -187,15 +184,6 @@ namespace map_app.ViewModels
                 _mapControl.Map.PanLock = _editManipulation.Manipulate(MouseState.Down,
                     args.GetPosition(_mapControl).ToMapsui(), _editManager, _mapControl);
             }
-        }
-
-        private IWidget GetScaleWidget(Mapsui.Map map)
-        {
-            var scaleWidget = new ScaleBarWidget(map);
-            scaleWidget.HorizontalAlignment = HorizontalAlignment.Right;
-            scaleWidget.MarginX = 10F;
-            scaleWidget.MarginY = 10F;
-            return scaleWidget;
         }
 
         private void DeleteGraphic()

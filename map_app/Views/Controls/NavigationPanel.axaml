@@ -21,7 +21,7 @@
             HorizontalAlignment="Center"
             Background="White"
             Width="250"
-            Margin="30"
+            Margin="20"
             CornerRadius="15"
             Height="35" >
             <Grid ColumnDefinitions="Auto,0.1*">

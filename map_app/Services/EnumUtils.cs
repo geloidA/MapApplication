@@ -26,7 +26,7 @@ namespace map_app.Services
         {
             if (!t.IsEnum)
                 throw new ArgumentException($"{nameof(t)} must be an enum type");
-        
+
             return Enum.GetValues(t).Cast<Enum>().Select(ToDescription).ToList();
         }
         
@@ -54,19 +54,6 @@ namespace map_app.Services
 
             return new EnumDescription() { Value = value, Description = description, Help = help };
         }
-
-        // public static string? GetStringValue(Enum value)
-        // {
-        //     string? output = null;
-        //     Type type = value.GetType();
-        //     FieldInfo? fi = type.GetField(value.ToString());
-        //     if (fi!.GetCustomAttributes(typeof(StringValue),
-        //             false) is StringValue[] { Length: > 0 } attrs)
-        //     {
-        //         output = attrs[0].Value;
-        //     }
-        //     return output;
-        // }
 
         public static T? Parse<T>(string input) where T : struct
         {

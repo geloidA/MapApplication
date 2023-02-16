@@ -1,13 +1,10 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using BruTile.Predefined;
 using BruTile.Web;
 
 namespace map_app.Services
 {
-    public static class DictKnownTileSources
+    public static class MyTileSource
     {
         private static Dictionary<string, KnownTileSource> domenMasks = new()
         {

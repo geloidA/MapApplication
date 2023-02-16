@@ -35,6 +35,7 @@ namespace map_app.Services.IO
                 new FileInfo(imagePath).Name);
             File.Copy(imagePath, destPath, true);
             return destPath;
+            // todo: hide sessionresourses from user or show error message
         }
     }
 }
