@@ -25,7 +25,7 @@ namespace map_app.Models
             set
             {
                 _start = value;
-                RenderValue();
+                RenderPath();
             }
         }
 
@@ -38,13 +38,13 @@ namespace map_app.Models
             set
             {
                 _end = value;
-                RenderValue();
+                RenderPath();
             }
         }
 
         public List<GeoPoint> Path => _path;
 
-        private void RenderValue()
+        private void RenderPath()
         {
             _path = MapAlgorithms.GetOrthodromePath(Start, End);
         }

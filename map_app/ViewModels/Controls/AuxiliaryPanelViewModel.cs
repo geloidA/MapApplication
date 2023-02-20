@@ -1,5 +1,9 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using Avalonia;
+using Avalonia.Input;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using map_app.Services;
 using Mapsui.Styles;
 using Mapsui.UI.Avalonia;
@@ -11,14 +15,16 @@ namespace map_app.ViewModels.Controls;
 public class AuxiliaryPanelViewModel : ViewModelBase
 {
     private readonly GridLayer _gridLayer;
+    private readonly MainViewModel _mainViewModel;
     private readonly GridMemoryProvider _gridLinesProvider;
     private readonly MapControl _mapControl;
-    private double _kilometerInterval;
     private readonly Color LineColor = new Color(0, 0, 255, 100);
+    private double _kilometerInterval;
 
-    public AuxiliaryPanelViewModel(MapControl mapControl)
+    public AuxiliaryPanelViewModel(MainViewModel mainViewModel)
     {
-        _mapControl = mapControl;
+        _mapControl = mainViewModel.MapContrl;
+        _mainViewModel = mainViewModel;
         _gridLinesProvider = new GridMemoryProvider(_mapControl.Viewport, this.WhenAnyValue(x => x.IsGridActivated));
         _mapControl.Navigator!.Navigated += (_, _) => KilometerInterval = _mapControl.Viewport.Resolution / 25;
         _gridLayer = new GridLayer(_gridLinesProvider)
@@ -44,6 +50,9 @@ public class AuxiliaryPanelViewModel : ViewModelBase
     [Reactive]
     public bool IsGridActivated { get; set; }
 
+    [Reactive]
+    public bool IsRulerActivated { get; set; }
+
     private void ShowGridReference()
     {
         IsGridActivated ^= true;
@@ -57,7 +66,7 @@ public class AuxiliaryPanelViewModel : ViewModelBase
 
     private void EnableRuler()
     {
-        
+        IsRulerActivated ^= true;
     }
 
     private void ZoomIn() => _mapControl!.Navigator!.ZoomIn(200);

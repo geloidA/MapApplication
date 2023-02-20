@@ -35,17 +35,17 @@ internal class GraphicsPopupViewModel : ViewModelBase
         Height = 15
     };
 
-    private OwnWritableLayer? _savedGraphicLayer;
-    private BaseGraphic? _selectedGraphic;
+    private readonly OwnWritableLayer _graphics;
     private readonly ObservableAsPropertyHelper<Image> _arrowImage;
     private readonly ObservableAsPropertyHelper<bool> _isSelectedGraphicNotNull;
     private readonly MapControl _mapControl;
     private bool IsSelectedGraphicNotNull => _isSelectedGraphicNotNull.Value;
+    private BaseGraphic? _selectedGraphic;
     
-    public GraphicsPopupViewModel(OwnWritableLayer savedGraphicLayer, MapControl mapControl)
+    public GraphicsPopupViewModel(MainViewModel mainViewModel)
     {
-        _mapControl = mapControl;
-        _savedGraphicLayer = savedGraphicLayer;
+        _mapControl = mainViewModel.MapContrl;
+        _graphics = mainViewModel.Graphics;
         _arrowImage = this
             .WhenAnyValue(x => x.IsGraphicsListOpen)
             .Select(isOpen => isOpen ? _arrowLeft : _arrowRight)
@@ -58,13 +58,13 @@ internal class GraphicsPopupViewModel : ViewModelBase
             .Select(g => g is not null)
             .ToProperty(this, x => x.IsSelectedGraphicNotNull);
         var canExecute = this.WhenAnyValue(x => x.IsSelectedGraphicNotNull);
-        RemoveGraphic = ReactiveCommand.Create(() => _savedGraphicLayer.TryRemove(SelectedGraphic!), canExecute);
+        RemoveGraphic = ReactiveCommand.Create(() => _graphics.TryRemove(SelectedGraphic!), canExecute);
         
         Graphics = new ObservableCollection<BaseGraphic>(GetSavedGraphics);
-        _savedGraphicLayer!.LayersFeatureChanged += (s, e) => 
+        _graphics.LayersFeatureChanged += (s, e) => 
         {
             Graphics.Clear();
-            Graphics?.AddRange(GetSavedGraphics);
+            Graphics.AddRange(GetSavedGraphics);
         };
 
         ShowAddEditGraphicDialog = new Interaction<GraphicAddEditViewModel, GraphicsPopupViewModel>();
@@ -77,7 +77,7 @@ internal class GraphicsPopupViewModel : ViewModelBase
 
         OpenAddGraphicView = ReactiveCommand.CreateFromTask<GraphicType>(async (type) =>
         {
-            var manager = new GraphicAddEditViewModel(_savedGraphicLayer, type);
+            var manager = new GraphicAddEditViewModel(_graphics, type);
             await ShowAddEditGraphicDialog.Handle(manager);
         });
     }
@@ -111,7 +111,7 @@ internal class GraphicsPopupViewModel : ViewModelBase
 
     public ICommand OpenAddGraphicView { get; }
 
-    private IEnumerable<BaseGraphic> GetSavedGraphics => _savedGraphicLayer!
+    private IEnumerable<BaseGraphic> GetSavedGraphics => _graphics
             .GetFeatures()
             .Cast<BaseGraphic>();
 }

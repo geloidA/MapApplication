@@ -21,7 +21,7 @@
             </StackPanel>
 
             <Grid DockPanel.Dock="Bottom" Name="MainGrid">
-                <avalonia:MapControl x:Name="MapControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <avalonia:MapControl Cursor="{Binding Cursor}" x:Name="MapControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                     <avalonia:MapControl.ContextMenu>
                         <ContextMenu Name="GraphicCotxtMenu" >
                             <MenuItem Header="Обзор" Command="{Binding OpenGraphicEditingView}" />
