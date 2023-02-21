@@ -1,4 +1,3 @@
-using System;
 using Mapsui.Projections;
 using NetTopologySuite.Geometries;
 using Newtonsoft.Json;

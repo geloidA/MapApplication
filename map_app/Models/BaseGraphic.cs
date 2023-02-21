@@ -41,7 +41,7 @@ public abstract class BaseGraphic : GeometryFeature
     public BaseGraphic(GeometryFeature geometryFeature) : base(geometryFeature) 
     {
         Styles.Add(GraphicStyle);
-        _color = new Color(Color.Black); 
+        _color = new Color(Color.Black);
     }
     
     public BaseGraphic(Geometry? geometry) : base(geometry) 
@@ -61,7 +61,7 @@ public abstract class BaseGraphic : GeometryFeature
             Styles.Remove(_graphicStyle);
             _graphicStyle = value;
             Styles.Add(_graphicStyle);
-        } 
+        }
     }
 
     [JsonProperty]

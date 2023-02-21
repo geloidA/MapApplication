@@ -44,7 +44,7 @@ internal class GraphicsPopupViewModel : ViewModelBase
     
     public GraphicsPopupViewModel(MainViewModel mainViewModel)
     {
-        _mapControl = mainViewModel.MapContrl;
+        _mapControl = mainViewModel.MapControl;
         _graphics = mainViewModel.Graphics;
         _arrowImage = this
             .WhenAnyValue(x => x.IsGraphicsListOpen)

@@ -15,7 +15,7 @@ namespace map_app.Editing
 {
     public class EditManager
     {
-        public OwnWritableLayer Layer { get; }
+        public OwnWritableLayer Layer { get; set; }
         public double CurrentOpacity { get; set; }
         public Color CurrentColor { get; set; }
         public MRect? Extent { get; set; }

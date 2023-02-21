@@ -9,34 +9,56 @@ namespace map_app.Services
 {
     public static class MapAlgorithms // todo: bug when draw right to left
     {
+        private const double EarthKmRadius = 6371;
+
         public static List<GeoPoint> GetOrthodromePath(Coordinate worldPoint1, Coordinate worldPoint2)
         {
             return GetOrthodromePath(worldPoint1.ToGeoPoint(), worldPoint2.ToGeoPoint());
         }
 
-        public static List<GeoPoint> GetOrthodromePath(GeoPoint? degPoint1, GeoPoint? degPoint2, double lineStep = 0.5)
+        public static List<GeoPoint> GetOrthodromePath(GeoPoint degPoint1, GeoPoint degPoint2, double f = 0.01)
         {
-            if (degPoint1 is null) return new List<GeoPoint>();
-            if (degPoint2 is null) return new List<GeoPoint>();
-            var comparer = new ThreeDimentionalPointEqualityComparer();
-            if (comparer.Equals(degPoint1, degPoint2)) return new List<GeoPoint>();
-
-            var lat1Rad = Algorithms.DegreesToRadians(degPoint1.Latitude);
-            var lat2Rad = Algorithms.DegreesToRadians(degPoint2.Latitude);
-            var lon1Rad = Algorithms.DegreesToRadians(degPoint1.Longtitude);
-            var lon2Rad = Algorithms.DegreesToRadians(degPoint2.Longtitude);
-
             var points = new List<GeoPoint>();
-            var left = Math.Min(degPoint1.Longtitude, degPoint2.Longtitude);
-            var right = Math.Max(degPoint1.Longtitude, degPoint2.Longtitude);
-            for (var lon = left; lon <= right; lon += lineStep)
-            {  
-                var lonRad = Algorithms.DegreesToRadians(lon);
-                var lat = Math.Atan((Math.Tan(lat1Rad) * Math.Sin(lon2Rad - lonRad)) / (Math.Sin(lon2Rad - lon1Rad)) + (Math.Tan(lat2Rad) * Math.Sin(lonRad - lon1Rad)) / (Math.Sin(lon2Rad - lon1Rad)));
-                points.Add(new GeoPoint(lon, lat / Math.PI * 180.0));
+            var comparer = new ThreeDimentionalPointEqualityComparer();
+            if (comparer.Equals(degPoint1, degPoint2))
+                return points;
+            var lat1 = Algorithms.DegreesToRadians(degPoint1.Latitude);
+            var lat2 = Algorithms.DegreesToRadians(degPoint2.Latitude);
+            var lon1 = Algorithms.DegreesToRadians(degPoint1.Longtitude);
+            var lon2 = Algorithms.DegreesToRadians(degPoint2.Longtitude);
+            var d = Haversine(degPoint1, degPoint2) / 6371;
+            
+            for (var i = 0.0; i <= 1.0; i += f)
+            {
+                var A = Math.Sin((1 - i) * d) / Math.Sin(d);
+                var B = Math.Sin(i * d) / Math.Sin(d);
+                var x = A * Math.Cos(lat1) * Math.Cos(lon1) +
+                        B * Math.Cos(lat2) * Math.Cos(lon2);
+                var y = A * Math.Cos(lat1) * Math.Sin(lon1) +
+                        B * Math.Cos(lat2) * Math.Sin(lon2);
+                var z = A * Math.Sin(lat1) + B * Math.Sin(lat2);
+                var lat = Math.Atan2(z, Math.Sqrt(x * x + y * y));
+                var lon = Math.Atan2(y, x);
+                points.Add(new GeoPoint(
+                        Algorithms.RadiansToDegrees(lon), 
+                        Algorithms.RadiansToDegrees(lat)));
             }
-            points.Add(right == degPoint1.Longtitude ? degPoint1 : degPoint2);
+
             return points;
+        }
+
+        public static double Haversine(GeoPoint p1, GeoPoint p2)
+        {
+            var lat1 = Algorithms.DegreesToRadians(p1.Latitude);
+            var lat2 = Algorithms.DegreesToRadians(p2.Latitude);
+            var lon1 = Algorithms.DegreesToRadians(p1.Longtitude);
+            var lon2 = Algorithms.DegreesToRadians(p2.Longtitude);
+
+            return 2 * EarthKmRadius * Math.Asin(
+                Math.Sqrt(
+                    Math.Sin((lat1 - lat2) / 2) * Math.Sin((lat1 - lat2) / 2) +
+                    Math.Cos(lat1) * Math.Cos(lat2) * 
+                    Math.Sin((lon1 - lon2) / 2) * Math.Sin((lon1 - lon2) / 2) ));  
         }
     }
 }

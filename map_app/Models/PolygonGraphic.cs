@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mapsui.Nts;
-using Mapsui.Styles;
 using NetTopologySuite.Geometries;
 
 namespace map_app.Models
@@ -53,15 +52,13 @@ namespace map_app.Models
             return new Polygon(new LinearRing(linearRing.ToArray()));
         }
 
-        public bool RemoveHoverVertex()
+        public void RemoveHoverVertex()
         {
-            if (_hoverVertex is null)
-                return false;
+            if (_hoverVertex is null) return;
             if (!ReferenceEquals(_hoverVertex, _coordinates[_coordinates.Count - 1]))
-                return false;
+                return;
             _coordinates.RemoveAt(_coordinates.Count - 1);
             _hoverVertex = null;
-            return true;
         }
     }
 }

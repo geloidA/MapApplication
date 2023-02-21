@@ -94,15 +94,13 @@ namespace map_app.Models
             return new LineString(result.ToWorldPositions().ToArray());
         }
 
-        public bool RemoveHoverVertex()
+        public void RemoveHoverVertex()
         {
-            if (_hoverVertex is null)
-                return false;
+            if (_hoverVertex is null) return;
             if (!ReferenceEquals(_hoverVertex, _coordinates[_coordinates.Count - 1]))
-                return false;
+                return;
             _coordinates.RemoveAt(_coordinates.Count - 1);
             _hoverVertex = null;
-            return true;
         }
 
         private static LinkedList<Orthodrome> CreateOrhodromes(List<GeoPoint> points)

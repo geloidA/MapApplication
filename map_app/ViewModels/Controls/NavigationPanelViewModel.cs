@@ -30,7 +30,7 @@ internal class NavigationPanelViewModel : ViewModelBase
     
     public NavigationPanelViewModel(MainViewModel mainViewModel)
     {
-        _mapControl = mainViewModel.MapContrl;
+        _mapControl = mainViewModel.MapControl;
         _editManager = mainViewModel.EditManager;
         _graphics = mainViewModel.Graphics;
         var canEdit = this.WhenAnyValue(x => x.IsEditMode);

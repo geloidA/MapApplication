@@ -1,10 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Avalonia;
-using Avalonia.Input;
-using Avalonia.Media.Imaging;
-using Avalonia.Platform;
+using System.Linq;
+using map_app.Models;
 using map_app.Services;
+using Mapsui;
 using Mapsui.Styles;
 using Mapsui.UI.Avalonia;
 using ReactiveUI;
@@ -23,7 +23,7 @@ public class AuxiliaryPanelViewModel : ViewModelBase
 
     public AuxiliaryPanelViewModel(MainViewModel mainViewModel)
     {
-        _mapControl = mainViewModel.MapContrl;
+        _mapControl = mainViewModel.MapControl;
         _mainViewModel = mainViewModel;
         _gridLinesProvider = new GridMemoryProvider(_mapControl.Viewport, this.WhenAnyValue(x => x.IsGridActivated));
         _mapControl.Navigator!.Navigated += (_, _) => KilometerInterval = _mapControl.Viewport.Resolution / 25;
@@ -67,9 +67,44 @@ public class AuxiliaryPanelViewModel : ViewModelBase
     private void EnableRuler()
     {
         IsRulerActivated ^= true;
+        var labelStyle = new LabelStyle 
+        { 
+            LabelMethod = x => string.Join('\n', GetDistances(x)),
+            Offset = new Offset(100, 0)
+        };
+        var graphicsStyle = _mainViewModel.Graphics.Style as StyleCollection;
+        graphicsStyle!.Styles.Add(labelStyle);
+    }
+
+    public IEnumerable<string> GetDistances(IFeature feature)
+    {
+        if (feature is not BaseGraphic graphic)
+            throw new ArgumentException("LabelStyle only for BaseGraphic type");
+
+        var distances = new List<string>();
+        if (graphic.GeoPoints.Count > 1)
+        {
+            if (graphic.GeoPoints.Count > 2) 
+            {
+                var distance = MapAlgorithms.Haversine
+                (
+                    graphic.GeoPoints[0],
+                    graphic.GeoPoints[graphic.GeoPoints.Count - 1]
+                );
+                distances.Add($"{distance:f2}");
+            }
+            var previosPoint = graphic.GeoPoints[0];
+            foreach (var point in graphic.GeoPoints.Skip(1))
+            {
+                var distance = MapAlgorithms.Haversine(previosPoint, point);
+                distances.Add($"{distance:f2}");
+                previosPoint = point;
+            }
+        }
+        return distances;
     }
 
     private void ZoomIn() => _mapControl!.Navigator!.ZoomIn(200);
 
-    private void ZoomOut() => _mapControl!.Navigator!.ZoomOut(200);        
+    private void ZoomOut() => _mapControl!.Navigator!.ZoomOut(200);
 }

@@ -1,12 +1,11 @@
 using System.Collections.Generic;
 using NetTopologySuite.Geometries;
 
-namespace map_app.Models
+namespace map_app.Models;
+
+public interface IStepByStepGraphic
 {
-    public interface IStepByStepGraphic
-    {
-        void AddPoint(Coordinate worldCoordinate);
-        void AddRangePoints(IEnumerable<Coordinate> worldCoordinates);
-        bool RemoveHoverVertex();
-    }
+    void AddPoint(Coordinate worldCoordinate);
+    void AddRangePoints(IEnumerable<Coordinate> worldCoordinates);
+    void RemoveHoverVertex();
 }

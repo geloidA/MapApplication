@@ -34,7 +34,7 @@ public class MainViewModel : ViewModelBase
 
     public bool IsBaseGraphicUnderPointer => _isBaseGraphicUnderPointer.Value;
 
-    internal MapControl MapContrl { get; }
+    internal MapControl MapControl { get; }
 
     internal OwnWritableLayer Graphics { get; }
     
@@ -63,9 +63,9 @@ public class MainViewModel : ViewModelBase
 
     public MainViewModel(MapControl mapControl)
     {
-        MapContrl = mapControl;
-        MapContrl.Map = MapCreator.Create();
-        Graphics = (OwnWritableLayer)MapContrl.Map!.Layers.First(l => l.Name == "Graphic Layer");
+        MapControl = mapControl;
+        MapControl.Map = MapCreator.Create();
+        Graphics = (OwnWritableLayer)MapControl.Map!.Layers.First(l => l.Name == "Graphic Layer");
         Graphics.Clear();
         EditManager = new EditManager(Graphics);
         EditManager.Extent = new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap);
@@ -75,7 +75,7 @@ public class MainViewModel : ViewModelBase
         ShowLayersManageDialog = new Interaction<LayersManageViewModel, MainViewModel>();
         OpenLayersManageView = ReactiveCommand.CreateFromTask(async () =>
         {
-            var manager = new LayersManageViewModel(MapContrl.Map);
+            var manager = new LayersManageViewModel(MapControl.Map);
             await ShowLayersManageDialog.Handle(manager);
         });
 
@@ -123,29 +123,32 @@ public class MainViewModel : ViewModelBase
     
     public Interaction<List<string>, string?> ShowOpenFileDialogAsync { get; }
 
-    internal void AccessOnlyGraphic(object? sender, CancelEventArgs e) => e.Cancel = !NavigationPanelViewModel.IsEditMode || !IsBaseGraphicUnderPointer;
+    internal void AccessOnlyGraphic(object? sender, CancelEventArgs e)
+    {
+        e.Cancel = !NavigationPanelViewModel.IsEditMode || !IsBaseGraphicUnderPointer;
+    }
 
     internal void MapControlOnPointerMoved(object? sender, PointerEventArgs args)
     {
-        var point = args.GetCurrentPoint(MapContrl);
-        var screenPosition = args.GetPosition(MapContrl).ToMapsui();
-        var worldPosition = MapContrl.Viewport.ScreenToWorld(screenPosition);
+        var point = args.GetCurrentPoint(MapControl);
+        var screenPosition = args.GetPosition(MapControl).ToMapsui();
+        var worldPosition = MapControl.Viewport.ScreenToWorld(screenPosition);
 
         if (point.Properties.IsLeftButtonPressed)
         {
             _editManipulation.Manipulate(MouseState.Dragging, screenPosition,
-                EditManager, MapContrl);
+                EditManager, MapControl);
         }
         else
         {
             _editManipulation.Manipulate(MouseState.Moving, screenPosition,
-                EditManager, MapContrl);
+                EditManager, MapControl);
         }
     }
 
     internal void MapControlOnPointerReleased(object? sender, PointerReleasedEventArgs args)
     {
-        var point = args.GetCurrentPoint(MapContrl);
+        var point = args.GetCurrentPoint(MapControl);
 
         if (_isRightWasPressed) // need for escape drawing by right click
         {
@@ -153,36 +156,36 @@ public class MainViewModel : ViewModelBase
             return;
         }
 
-        if (MapContrl.Map != null)
-            MapContrl.Map.PanLock = _editManipulation.Manipulate(MouseState.Up,
-                args.GetPosition(MapContrl).ToMapsui(), EditManager, MapContrl);
+        if (MapControl.Map != null)
+            MapControl.Map.PanLock = _editManipulation.Manipulate(MouseState.Up,
+                args.GetPosition(MapControl).ToMapsui(), EditManager, MapControl);
     }
 
     internal void MapControlOnPointerPressed(object? sender, PointerPressedEventArgs args)
     {
-        var point = args.GetCurrentPoint(MapContrl);
+        var point = args.GetCurrentPoint(MapControl);
 
-        if (MapContrl.Map == null)
+        if (MapControl.Map == null)
             return;
 
         if (point.Properties.IsRightButtonPressed)
         {
             _isRightWasPressed = true;
-            var infoArgs = MapContrl.GetMapInfo(args.GetPosition(MapContrl).ToMapsui());
+            var infoArgs = MapControl.GetMapInfo(args.GetPosition(MapControl).ToMapsui());
             FeatureUnderPointer = infoArgs?.Feature as BaseGraphic;
             return;
         }
 
         if (args.ClickCount > 1)
         {
-            MapContrl.Map.PanLock = _editManipulation.Manipulate(MouseState.DoubleClick,
-                args.GetPosition(MapContrl).ToMapsui(), EditManager, MapContrl);
+            MapControl.Map.PanLock = _editManipulation.Manipulate(MouseState.DoubleClick,
+                args.GetPosition(MapControl).ToMapsui(), EditManager, MapControl);
             args.Handled = true;
         }
         else
         {
-            MapContrl.Map.PanLock = _editManipulation.Manipulate(MouseState.Down,
-                args.GetPosition(MapContrl).ToMapsui(), EditManager, MapContrl);
+            MapControl.Map.PanLock = _editManipulation.Manipulate(MouseState.Down,
+                args.GetPosition(MapControl).ToMapsui(), EditManager, MapControl);
         }
     }
 
@@ -275,7 +278,7 @@ public class MainViewModel : ViewModelBase
         Graphics.AddRange(newGraphics);
         LastFilePath = loadLocation;
         LoadedFileName = Path.GetFileName(loadLocation);
-        MapContrl.Refresh();
+        MapControl.Refresh();
     }        
 
     private async Task SaveGraphicStateInFileImpl()

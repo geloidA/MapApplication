@@ -36,8 +36,7 @@ public class MapCreator
         var scaleWidget = GetScaleWidget(map);
         map.Widgets.Add(scaleWidget);
         map.Layers.Add(layer);
-        var graphicLayer = CreateTargetWritableLayer();
-        map.Layers.Add(graphicLayer);
+        map.Layers.Add(CreateTargetWritableLayer());
         return map;
     }
 
@@ -86,26 +85,30 @@ public class MapCreator
         };
     }
 
-    private static WritableLayer CreateTargetWritableLayer()
+    private static ILayer CreateTargetWritableLayer()
     {
-        var layer = new OwnWritableLayer
+        return new OwnWritableLayer
         {
             Name = "Graphic Layer",
             IsMapInfoLayer = true,
             Tag = "Graphic",
             Style = CreateTargetLayerStyle()
         };
-        return layer;
     }
 
     private static IStyle CreateTargetLayerStyle()
     {
-        return new VectorStyle
+        var style = new StyleCollection();
+        style.Styles = new System.Collections.ObjectModel.Collection<IStyle>
         {
-            Fill = null,
-            Outline = new Pen(EditModeColor, 3),
-            Line = new Pen(EditModeColor, 3)
+            new VectorStyle
+            {
+                Fill = null,
+                Outline = new Pen(EditModeColor, 3),
+                Line = new Pen(EditModeColor, 3)
+            }
         };
+        return style;
     }
 
     private HttpTileSource CreateOwnTileSourse()
