@@ -76,32 +76,13 @@ public class AuxiliaryPanelViewModel : ViewModelBase
         graphicsStyle!.Styles.Add(labelStyle);
     }
 
-    public IEnumerable<string> GetDistances(IFeature feature)
+    public IEnumerable<double> GetDistances(IFeature feature)
     {
         if (feature is not BaseGraphic graphic)
             throw new ArgumentException("LabelStyle only for BaseGraphic type");
 
-        var distances = new List<string>();
-        if (graphic.GeoPoints.Count > 1)
-        {
-            if (graphic.GeoPoints.Count > 2) 
-            {
-                var distance = MapAlgorithms.Haversine
-                (
-                    graphic.GeoPoints[0],
-                    graphic.GeoPoints[graphic.GeoPoints.Count - 1]
-                );
-                distances.Add($"{distance:f2}");
-            }
-            var previosPoint = graphic.GeoPoints[0];
-            foreach (var point in graphic.GeoPoints.Skip(1))
-            {
-                var distance = MapAlgorithms.Haversine(previosPoint, point);
-                distances.Add($"{distance:f2}");
-                previosPoint = point;
-            }
-        }
-        return distances;
+        return graphic.GeoPoints.Zip(graphic.GeoPoints.Skip(1), (a, b) => MapAlgorithms.Haversine(a, b));
+        
     }
 
     private void ZoomIn() => _mapControl!.Navigator!.ZoomIn(200);

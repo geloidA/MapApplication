@@ -6,18 +6,24 @@ using NetTopologySuite.Geometries;
 
 namespace map_app.Models
 {
-    public class PolygonGraphic : BaseGraphic, IStepByStepGraphic
+    public class PolygonGraphic : BaseGraphic, IHoveringGraphic
     {
-        private Coordinate? _hoverVertex;
-
         private PolygonGraphic(PolygonGraphic source) : base(source) { }
+
+        public Coordinate? HoverVertex { get; set; }
 
         public PolygonGraphic() : base() { }
 
-        public PolygonGraphic(List<Coordinate> points) : base(points)
+        public PolygonGraphic(Coordinate startPoint) : base()
+        {
+            _coordinates = new List<Coordinate> { startPoint };
+        }
+
+        public PolygonGraphic(List<Coordinate> points) : this()
         {
             if (points.Count < 2)
                 throw new ArgumentException("Points length can't be less then 2");
+            _coordinates = points;
             Geometry = RenderGeometry();
         }
 
@@ -29,18 +35,10 @@ namespace map_app.Models
         public void AddPoint(Coordinate worldCoordinate)
         {
             _coordinates.Add(worldCoordinate);
-            _hoverVertex = worldCoordinate;
             Geometry = RenderGeometry();
         }
 
-        public void AddRangePoints(IEnumerable<Coordinate> worldPoints)
-        {
-            foreach(var point in worldPoints)
-                _coordinates.Add(point);                
-            Geometry = RenderGeometry();
-        }
-
-        public override PolygonGraphic LightCopy()
+        public override PolygonGraphic Copy()
         {
             return new PolygonGraphic(this);
         }
@@ -48,17 +46,10 @@ namespace map_app.Models
         protected override Geometry RenderGeometry()
         {
             var linearRing = _coordinates.ToList();
+            if (HoverVertex is not null)
+                linearRing.Add(HoverVertex);
             linearRing.Add(_coordinates[0].Copy()); // Add first coordinate at end to close the ring.
             return new Polygon(new LinearRing(linearRing.ToArray()));
-        }
-
-        public void RemoveHoverVertex()
-        {
-            if (_hoverVertex is null) return;
-            if (!ReferenceEquals(_hoverVertex, _coordinates[_coordinates.Count - 1]))
-                return;
-            _coordinates.RemoveAt(_coordinates.Count - 1);
-            _hoverVertex = null;
         }
     }
 }

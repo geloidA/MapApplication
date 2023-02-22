@@ -29,11 +29,8 @@ public abstract class BaseGraphic : GeometryFeature
         Geometry = source.Geometry;
     }
 
-    public BaseGraphic() : this(new List<Coordinate3D>()) { }
-
-    public BaseGraphic(IEnumerable<Coordinate> points) : base() 
+    public BaseGraphic()
     {
-        _coordinates = points.ToList();
         _color = new Color(Color.Black);            
         Styles.Add(GraphicStyle);
     }
@@ -124,7 +121,7 @@ public abstract class BaseGraphic : GeometryFeature
 
     protected abstract Geometry RenderGeometry();
 
-    public abstract BaseGraphic LightCopy();
+    public abstract BaseGraphic Copy();
     
     public void RerenderGeometry()
     {

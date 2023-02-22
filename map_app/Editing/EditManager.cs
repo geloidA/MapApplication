@@ -40,8 +40,8 @@ namespace map_app.Editing
         {
             if (_addInfo.Feature is null) return false;
             if (_addInfo.Vertices is null) return false;
-            if (_addInfo.Feature is IStepByStepGraphic feature)
-                feature.RemoveHoverVertex();
+            if (_addInfo.Feature is IHoveringGraphic feature)
+                feature.HoverVertex = null;
 
             return EditMode switch
             {
@@ -85,23 +85,27 @@ namespace map_app.Editing
             else if (EditMode == EditMode.AddPolygon)
                 AddGraphic(worldPosition, typeof(PolygonGraphic), EditMode.DrawingPolygon);
             else if (EditMode == EditMode.DrawingPolygon || EditMode == EditMode.DrawingOrthodromeLine)
-                AddNewStepPoint(worldPosition, _addInfo.Feature as IStepByStepGraphic);
+                AddNewStepPoint(worldPosition, _addInfo.Feature as IHoveringGraphic);
             else if (EditMode == EditMode.AddOrthodromeLine)
                 AddGraphic(worldPosition, typeof(OrthodromeGraphic), EditMode.DrawingOrthodromeLine);
             else if (EditMode == EditMode.AddRectangle)
                 AddGraphic(worldPosition, typeof(RectangleGraphic), EditMode.DrawingRectangle);
+            else if (EditMode == EditMode.DrawingRectangle)
+            {
+                AddNewStepPoint(worldPosition, _addInfo.Feature as IHoveringGraphic);
+                EndEdit();
+            }
 
             return false;
         }
 
         private void AddGraphic(Coordinate worldPosition, Type graphicType, EditMode drawingMode)
         {
-            var firstPoint = worldPosition.Copy();
-            // Add a second point right away. The second one will be the 'hover' vertex
-            var secondPoint = worldPosition.Copy();
-            _addInfo.Vertex = secondPoint;
-            _addInfo.Vertices = new List<Coordinate>(new[] { firstPoint, secondPoint });
-            _addInfo.Feature = CreateGraphic(graphicType);
+            _addInfo.Vertices = new List<Coordinate> { worldPosition };
+            var graphic = CreateGraphic(graphicType);
+            _addInfo.Feature = graphic;
+            _addInfo.Vertex = worldPosition.Copy();
+            (graphic as IHoveringGraphic).HoverVertex = _addInfo.Vertex;
             Layer.Add(_addInfo.Feature);
             Layer.LayersFeatureHasChanged();
             EditMode = drawingMode;
@@ -109,23 +113,24 @@ namespace map_app.Editing
 
         private BaseGraphic CreateGraphic(Type graphicType)
         {
-            var graphic = (BaseGraphic?)Activator.CreateInstance(graphicType, _addInfo.Vertices!.ToList())
+            var graphic = (BaseGraphic?)Activator.CreateInstance(graphicType, _addInfo.Vertices!.Single())
                 ?? throw new Exception($"Activator can not create instance of type \"{graphicType}\"");
             graphic.StyleColor = CurrentColor;
             graphic.Opacity = CurrentOpacity;
             return graphic;
         }
 
-        private void AddNewStepPoint(Coordinate worldPosition, IStepByStepGraphic? target)
+        private void AddNewStepPoint(Coordinate worldPosition, IHoveringGraphic? target)
         {
             if (target is null) return;
             if (_addInfo.Vertices is null) return;
 
             // Set the final position of the 'hover' vertex (that was already part of the geometry)
-            _addInfo.Vertex.SetXY(worldPosition);
+            _addInfo.Vertex.SetXY(worldPosition); // maybe doesn't need
             _addInfo.Vertex = worldPosition.Copy(); // and create a new hover vertex
             _addInfo.Vertices.Add(_addInfo.Vertex);
-            target.AddPoint(_addInfo.Vertex);
+            target.AddPoint(worldPosition);
+            target.HoverVertex = _addInfo.Vertex;
 
             _addInfo.Feature?.RenderedGeometry.Clear();
             Layer.DataHasChanged();

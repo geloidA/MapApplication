@@ -20,10 +20,7 @@ namespace map_app.Editing
             {
                 case MouseState.Up:
                     if (_inDoubleClick) // Workaround to prevent that after a double click the 'up' event will immediately add a new geometry.
-                    {
-                        _inDoubleClick = false;
-                        return false;
-                    }
+                        return (_inDoubleClick = false);
 
                     if (editManager.EditMode == EditMode.Modify)
                         editManager.StopDragging();
@@ -33,10 +30,8 @@ namespace map_app.Editing
                         editManager.StopScaling();
 
                     if (IsClick(screenPosition, _mouseDownPosition))
-                    {                        
-                        return editManager.AddVertex(mapControl.Viewport.ScreenToWorld(screenPosition).ToCoordinate3D()
-                            ?? throw new NullReferenceException("ScreenPosition was null"));
-                    }
+                        return editManager.AddVertex(mapControl.Viewport.ScreenToWorld(screenPosition).ToCoordinate3D());
+
                     return false;
                 case MouseState.Down:
                     {
@@ -71,7 +66,7 @@ namespace map_app.Editing
                 case MouseState.DoubleClick:
                     _inDoubleClick = true;
                     if (editManager.EditMode != EditMode.Modify)
-                        return editManager.EndEdit();
+                        return editManager.EndEdit();                        
                     return false;
                 default:
                     throw new Exception();

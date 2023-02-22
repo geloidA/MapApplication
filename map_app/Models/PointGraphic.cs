@@ -22,19 +22,22 @@ namespace map_app.Models
         public override GraphicType Type => GraphicType.Point;
 
         public PointGraphic() : base() { }
-        public PointGraphic(List<Coordinate> points) : base(points) { Geometry = RenderGeometry(); }
+        public PointGraphic(List<Coordinate> points) : this() 
+        {
+            if (points.Count != 1)
+                throw new ArgumentException($"List need contain one point, but was {points.Count}");
+            _coordinates = points;
+            Geometry = RenderGeometry(); 
+        }
         public PointGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
         public PointGraphic(Geometry? geometry) : base(geometry) { }
 
         protected override Geometry RenderGeometry()
         {
-            if (_coordinates.Count != 1)
-                throw new ArgumentException($"List need contain one point, but was {_coordinates.Count}");
-            var coordinate = _coordinates[0] ?? throw new NullReferenceException("Point was null");
-            return coordinate.ToPoint();
+            return _coordinates[0].ToPoint();
         }
 
-        public override PointGraphic LightCopy()
+        public override PointGraphic Copy()
         {
             return new PointGraphic(this);
         }
