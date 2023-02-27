@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using map_app.Editing.Extensions;
 using map_app.Models;
 using map_app.Services;
+using map_app.Services.Renders;
 using Mapsui;
 using Mapsui.Styles;
 using Mapsui.UI.Avalonia;
@@ -14,20 +16,22 @@ namespace map_app.ViewModels.Controls;
 
 public class AuxiliaryPanelViewModel : ViewModelBase
 {
-    private readonly GridLayer _gridLayer;
+    private readonly MapGridLayer _gridLayer;
     private readonly MainViewModel _mainViewModel;
     private readonly GridMemoryProvider _gridLinesProvider;
     private readonly MapControl _mapControl;
     private readonly Color LineColor = new Color(0, 0, 255, 100);
+    private readonly IStyle _graphicLabels;
     private double _kilometerInterval;
 
     public AuxiliaryPanelViewModel(MainViewModel mainViewModel)
     {
         _mapControl = mainViewModel.MapControl;
         _mainViewModel = mainViewModel;
+        _graphicLabels = (mainViewModel.Graphics.Style as StyleCollection)!.Styles.First(x => x is LabelDistanceStyle);
         _gridLinesProvider = new GridMemoryProvider(_mapControl.Viewport, this.WhenAnyValue(x => x.IsGridActivated));
         _mapControl.Navigator!.Navigated += (_, _) => KilometerInterval = _mapControl.Viewport.Resolution / 25;
-        _gridLayer = new GridLayer(_gridLinesProvider)
+        _gridLayer = new MapGridLayer(_gridLinesProvider)
         {
             Style = new VectorStyle { Line = new Pen(LineColor, 1) }
         };
@@ -67,22 +71,7 @@ public class AuxiliaryPanelViewModel : ViewModelBase
     private void EnableRuler()
     {
         IsRulerActivated ^= true;
-        var labelStyle = new LabelStyle 
-        { 
-            LabelMethod = x => string.Join('\n', GetDistances(x)),
-            Offset = new Offset(100, 0)
-        };
-        var graphicsStyle = _mainViewModel.Graphics.Style as StyleCollection;
-        graphicsStyle!.Styles.Add(labelStyle);
-    }
-
-    public IEnumerable<double> GetDistances(IFeature feature)
-    {
-        if (feature is not BaseGraphic graphic)
-            throw new ArgumentException("LabelStyle only for BaseGraphic type");
-
-        return graphic.GeoPoints.Zip(graphic.GeoPoints.Skip(1), (a, b) => MapAlgorithms.Haversine(a, b));
-        
+        _graphicLabels.Enabled = IsRulerActivated;
     }
 
     private void ZoomIn() => _mapControl!.Navigator!.ZoomIn(200);

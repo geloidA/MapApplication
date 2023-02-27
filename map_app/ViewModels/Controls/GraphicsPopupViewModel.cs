@@ -35,7 +35,7 @@ internal class GraphicsPopupViewModel : ViewModelBase
         Height = 15
     };
 
-    private readonly OwnWritableLayer _graphics;
+    private readonly GraphicsLayer _graphics;
     private readonly ObservableAsPropertyHelper<Image> _arrowImage;
     private readonly ObservableAsPropertyHelper<bool> _isSelectedGraphicNotNull;
     private readonly MapControl _mapControl;
@@ -111,7 +111,5 @@ internal class GraphicsPopupViewModel : ViewModelBase
 
     public ICommand OpenAddGraphicView { get; }
 
-    private IEnumerable<BaseGraphic> GetSavedGraphics => _graphics
-            .GetFeatures()
-            .Cast<BaseGraphic>();
+    private IEnumerable<BaseGraphic> GetSavedGraphics => _graphics.Features;
 }

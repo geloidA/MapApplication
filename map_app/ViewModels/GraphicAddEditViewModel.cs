@@ -34,9 +34,9 @@ namespace map_app.ViewModels
         private List<LinearPoint> _linear;
         private List<GeoPoint> _geo;
         private readonly bool _isAddMode;
-        private readonly OwnWritableLayer? _graphicPool;
+        private readonly GraphicsLayer? _graphicPool;
 
-        public GraphicAddEditViewModel(OwnWritableLayer target, GraphicType pointType) : this(GraphicCreator.Create(pointType)) 
+        public GraphicAddEditViewModel(GraphicsLayer target, GraphicType pointType) : this(GraphicCreator.Create(pointType)) 
         { 
             _graphicPool = target;
             _isAddMode = true; 

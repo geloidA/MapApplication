@@ -38,16 +38,16 @@ namespace map_app.Models
 
         protected override Geometry RenderGeometry()
         {
-            var startPos = _coordinates[0];
-            var currentPos = HoverVertex ?? _coordinates[1];
+            var first = _coordinates[0];
+            var second = HoverVertex ?? _coordinates[1];
 
             return new Polygon(new LinearRing(new[] 
             {
-                new Coordinate { X = startPos.X, Y = startPos.Y },
-                new Coordinate { X = currentPos.X, Y = startPos.Y },
-                new Coordinate { X = currentPos.X, Y = currentPos.Y },
-                new Coordinate { X = startPos.X, Y = currentPos.Y },
-                new Coordinate { X = startPos.X, Y = startPos.Y } // need to be ring
+                new Coordinate { X = first.X, Y = first.Y },
+                new Coordinate { X = second.X, Y = first.Y },
+                new Coordinate { X = second.X, Y = second.Y },
+                new Coordinate { X = first.X, Y = second.Y },
+                new Coordinate { X = first.X, Y = first.Y } // need to be ring
             }));
         }
 

@@ -23,7 +23,7 @@ namespace map_app.Services
         public GridMemoryProvider(IReadOnlyViewport viewport, IObservable<bool> isActive)
         {
             _viewport = viewport;
-            isActive.Subscribe(x => _isActive = x);
+            isActive.Subscribe(x => _isActive = x); // todo: remove isActive try implement via layer enable property
             _viewport.ViewportChanged += (_, _) => { if (_isActive) DataHasChanged(); };
         }
 

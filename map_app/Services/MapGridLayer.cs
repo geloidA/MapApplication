@@ -12,14 +12,14 @@ using Mapsui.Styles;
 
 namespace map_app.Services;
 
-public class GridLayer : BaseLayer
+public class MapGridLayer : BaseLayer
 {
     private GridMemoryProvider _dataSource;
     private readonly List<IFeature> _gridLines;
 
     public double KilometerInterval { get; set; }
 
-    public GridLayer(GridMemoryProvider dataSource)
+    public MapGridLayer(GridMemoryProvider dataSource)
     {
         _dataSource = dataSource ?? throw new ArgumentException(nameof(dataSource));
         _gridLines = new List<IFeature>();

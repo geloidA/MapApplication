@@ -36,7 +36,7 @@ public class MainViewModel : ViewModelBase
 
     internal MapControl MapControl { get; }
 
-    internal OwnWritableLayer Graphics { get; }
+    internal GraphicsLayer Graphics { get; }
     
     internal EditManager EditManager { get; }
 
@@ -65,8 +65,7 @@ public class MainViewModel : ViewModelBase
     {
         MapControl = mapControl;
         MapControl.Map = MapCreator.Create();
-        Graphics = (OwnWritableLayer)MapControl.Map!.Layers.First(l => l.Name == "Graphic Layer");
-        Graphics.Clear();
+        Graphics = (GraphicsLayer)MapControl.Map!.Layers.First(l => l.Name == "Graphic Layer");
         EditManager = new EditManager(Graphics);
         EditManager.Extent = new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap);
         GraphicsPopupViewModel = new GraphicsPopupViewModel(this);
@@ -92,7 +91,7 @@ public class MainViewModel : ViewModelBase
             await ShowGraphicEditingDialog.Handle(vm);
         }, canExecute);
         ShowSaveGraphicStateDialog = new Interaction<Unit, string?>();
-        Graphics.LayersFeatureChanged += (_, _) => HaveGraphics = Graphics.Any();
+        Graphics.LayersFeatureChanged += (_, _) => HaveGraphics = Graphics.Features.Any();
         var canSave = this.WhenAnyValue(x => x.HaveGraphics);
         SaveGraphicStateInFile = ReactiveCommand.CreateFromTask(SaveGraphicStateInFileImpl, canSave);
         ShowOpenFileDialogAsync = new Interaction<List<string>, string?>();
@@ -274,7 +273,7 @@ public class MainViewModel : ViewModelBase
 
     private void LoadGraphicsInLayer(List<BaseGraphic> newGraphics, string loadLocation)
     {
-        Graphics!.Clear();
+        Graphics.Clear();
         Graphics.AddRange(newGraphics);
         LastFilePath = loadLocation;
         LoadedFileName = Path.GetFileName(loadLocation);
@@ -292,7 +291,7 @@ public class MainViewModel : ViewModelBase
 
     private async Task SaveGraphic(string location)
     {
-        await BaseGraphicJsonMarshaller.SaveAsync(Graphics!.Cast<BaseGraphic>(), location);
+        await BaseGraphicJsonMarshaller.SaveAsync(Graphics.Features, location);
         LoadedFileName = Path.GetFileName(location);
     }
 }

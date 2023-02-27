@@ -10,6 +10,7 @@ using System.Linq;
 using System;
 using System.IO;
 using System.Collections.Generic;
+using map_app.Services.Renders;
 
 namespace map_app.Views;
 
@@ -18,6 +19,7 @@ public partial class MainView : ReactiveWindow<MainViewModel>
     public MainView()
     {
         InitializeComponent();
+        MapControl.Renderer.StyleRenderers.Add(typeof(LabelDistanceStyle), new SkiaLabelDistanceStyleRenderer());
         var vm = new MainViewModel(MapControl); // todo: remove mapcontrol dependency
         DataContext = vm;
         MapControl.PointerMoved += vm.MapControlOnPointerMoved;

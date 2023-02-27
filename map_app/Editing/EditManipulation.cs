@@ -66,10 +66,10 @@ namespace map_app.Editing
                 case MouseState.DoubleClick:
                     _inDoubleClick = true;
                     if (editManager.EditMode != EditMode.Modify)
-                        return editManager.EndEdit();                        
+                        return editManager.EndEdit();
                     return false;
                 default:
-                    throw new Exception();
+                    throw new Exception("Unknown mouse state");
             }
         }
 

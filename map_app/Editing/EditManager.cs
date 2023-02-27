@@ -15,7 +15,7 @@ namespace map_app.Editing
 {
     public class EditManager
     {
-        public OwnWritableLayer Layer { get; set; }
+        public GraphicsLayer Layer { get; set; }
         public double CurrentOpacity { get; set; }
         public Color CurrentColor { get; set; }
         public MRect? Extent { get; set; }
@@ -25,7 +25,7 @@ namespace map_app.Editing
         private readonly RotateInfo _rotateInfo = new();
         private readonly ScaleInfo _scaleInfo = new();
 
-        public EditManager(OwnWritableLayer layer)
+        public EditManager(GraphicsLayer layer)
         {
             Layer = layer;
             CurrentColor = Color.Black;
@@ -39,6 +39,7 @@ namespace map_app.Editing
         public bool EndEdit()
         {
             if (_addInfo.Feature is null) return false;
+            if (_addInfo.Feature.Extent is null) return false;
             if (_addInfo.Vertices is null) return false;
             if (_addInfo.Feature is IHoveringGraphic feature)
                 feature.HoverVertex = null;
@@ -105,7 +106,9 @@ namespace map_app.Editing
             var graphic = CreateGraphic(graphicType);
             _addInfo.Feature = graphic;
             _addInfo.Vertex = worldPosition.Copy();
-            (graphic as IHoveringGraphic).HoverVertex = _addInfo.Vertex;
+            if (graphic is not IHoveringGraphic hoveringGraphic)
+                throw new ArgumentException($"Type of graphic {graphicType} must implement IHoveringGraphic");
+            hoveringGraphic.HoverVertex = _addInfo.Vertex;
             Layer.Add(_addInfo.Feature);
             Layer.LayersFeatureHasChanged();
             EditMode = drawingMode;

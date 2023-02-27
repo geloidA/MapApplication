@@ -13,6 +13,7 @@ using Mapsui.Projections;
 using Mapsui.UI;
 using Mapsui.Widgets;
 using Mapsui.Widgets.ScaleBar;
+using map_app.Services.Renders;
 
 namespace map_app.Services;
 
@@ -87,7 +88,7 @@ public class MapCreator
 
     private static ILayer CreateTargetWritableLayer()
     {
-        return new OwnWritableLayer
+        return new GraphicsLayer
         {
             Name = "Graphic Layer",
             IsMapInfoLayer = true,
@@ -101,6 +102,7 @@ public class MapCreator
         var style = new StyleCollection();
         style.Styles = new System.Collections.ObjectModel.Collection<IStyle>
         {
+            new LabelDistanceStyle(),
             new VectorStyle
             {
                 Fill = null,

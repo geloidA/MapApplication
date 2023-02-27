@@ -21,7 +21,7 @@ namespace map_app.ViewModels.Controls;
 
 internal class NavigationPanelViewModel : ViewModelBase
 {
-    private readonly OwnWritableLayer _graphics;
+    private readonly GraphicsLayer _graphics;
     private readonly EditManager _editManager;
     private readonly MapControl _mapControl;
 
@@ -93,11 +93,9 @@ internal class NavigationPanelViewModel : ViewModelBase
         _editManager.EditMode = mode;
     }
 
-    private static IEnumerable<IFeature> GetClearedSavedFeatures(OwnWritableLayer layer)
+    private static IEnumerable<IFeature> GetClearedSavedFeatures(GraphicsLayer layer)
     {
-        var features = layer.GetFeatures()
-            .Cast<BaseGraphic>()
-            .Copy() ?? Array.Empty<IFeature>();
+        var features = layer.Features.Copy() ?? Array.Empty<IFeature>();
         foreach (var feature in features)
             feature.RenderedGeometry.Clear();
         return features;
