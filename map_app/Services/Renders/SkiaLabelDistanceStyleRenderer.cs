@@ -1,5 +1,5 @@
 using System;
-using System.Linq;
+using map_app.Models;
 using map_app.Models.Extensions;
 using Mapsui;
 using Mapsui.Layers;
@@ -16,14 +16,14 @@ public class SkiaLabelDistanceStyleRenderer : ISkiaStyleRenderer
     public bool Draw(SKCanvas canvas, IReadOnlyViewport viewport, 
         ILayer layer, IFeature feature, IStyle style, ISymbolCache symbolCache, long iteration)
     {
-        if (layer is not GraphicsLayer graphicLayer)
+        if (feature is not BaseGraphic graphic)
             return false;
-        if (style is not LabelDistanceStyle labelStyle)
+        if (feature.Extent is null)
             return false;
-        if (labelStyle.Enabled == false)
+        if (layer.Enabled == false)
             return false;
 
-        foreach (var segment in graphicLayer.Features.SelectMany(x => x.GetSegments()))
+        foreach (var segment in graphic.GetSegments())
         {
             var screenStart = viewport.WorldToScreen(segment.Start.ToWorldPosition().ToMPoint());
             var screenEnd = viewport.WorldToScreen(segment.End.ToWorldPosition().ToMPoint());
@@ -31,18 +31,28 @@ public class SkiaLabelDistanceStyleRenderer : ISkiaStyleRenderer
             var x = (float)(screenStart.X + screenEnd.X) / 2;
             var y = (float)(screenStart.Y + screenEnd.Y) / 2;
             canvas.RotateRadians((float)angle, x, y);
-            using (var textPaint = new SKPaint())
-            {
-                textPaint.Color = SKColors.Black;
-                textPaint.IsAntialias = true;
-                textPaint.TextSize = 12;
-                textPaint.TextAlign = SKTextAlign.Center;
-                canvas.DrawText($"{segment.Distance:f2} km", new SKPoint(x, y), textPaint);
-            }
+            DrawDistanceLabel($"{angle:f1} {segment.Distance:f2} km", new SKPoint(x, y), canvas);
             canvas.Restore();
             canvas.Save();
         }
 
         return true;
+    }
+
+    private void DrawDistanceLabel(string text, SKPoint point, SKCanvas canvas)
+    {
+        using (var paint = new SKPaint())
+        {
+            paint.IsAntialias = true;
+            paint.TextAlign = SKTextAlign.Center;
+            paint.TextSize = 10;
+            paint.Style = SKPaintStyle.StrokeAndFill;
+            paint.Color = SKColors.White;
+            paint.StrokeWidth = 2f;
+            canvas.DrawText(text, point, paint);
+            paint.Color = SKColors.Black;
+            paint.StrokeWidth = 0.5f;
+            canvas.DrawText(text, point, paint);
+        }
     }
 }

@@ -58,7 +58,6 @@ namespace map_app.Models
             } 
         }
 
-
         public void AddPoint(Coordinate worldCoordinate)
         {
             _orthodromes.AddLast(new Orthodrome(_orthodromes.Last!.Value.End, worldCoordinate.ToGeoPoint()));
@@ -66,10 +65,7 @@ namespace map_app.Models
             Geometry = RenderGeometry();
         }
 
-        public override OrthodromeGraphic Copy()
-        {
-            return new OrthodromeGraphic(this);
-        }
+        public override OrthodromeGraphic Copy() => new OrthodromeGraphic(this);
 
         protected override Geometry RenderGeometry()
         {

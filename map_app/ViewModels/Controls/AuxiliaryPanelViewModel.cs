@@ -1,12 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using map_app.Editing.Extensions;
-using map_app.Models;
 using map_app.Services;
 using map_app.Services.Renders;
-using Mapsui;
 using Mapsui.Styles;
 using Mapsui.UI.Avalonia;
 using ReactiveUI;
@@ -72,6 +68,7 @@ public class AuxiliaryPanelViewModel : ViewModelBase
     {
         IsRulerActivated ^= true;
         _graphicLabels.Enabled = IsRulerActivated;
+        _mapControl.RefreshGraphics();
     }
 
     private void ZoomIn() => _mapControl!.Navigator!.ZoomIn(200);

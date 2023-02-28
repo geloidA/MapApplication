@@ -132,6 +132,7 @@ public class MainViewModel : ViewModelBase
         var point = args.GetCurrentPoint(MapControl);
         var screenPosition = args.GetPosition(MapControl).ToMapsui();
         var worldPosition = MapControl.Viewport.ScreenToWorld(screenPosition);
+        
 
         if (point.Properties.IsLeftButtonPressed)
         {

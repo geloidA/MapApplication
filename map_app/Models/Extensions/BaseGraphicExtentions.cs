@@ -22,6 +22,10 @@ public static class BaseGraphicExtentions
     {
         if (graphic is OrthodromeGraphic)
             return graphic.GeoPoints;
-        return graphic.Geometry!.Coordinates.Select(x => x.ToGeoPoint());
+        if (graphic is PolygonGraphic && graphic.Geometry.Coordinates.Length == 3)
+            return graphic.Geometry.Coordinates
+                .SkipLast(1)
+                .Select(x => x.ToGeoPoint());
+        return graphic.Geometry.Coordinates.Select(x => x.ToGeoPoint());
     }
 }

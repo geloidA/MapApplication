@@ -129,7 +129,7 @@ namespace map_app.Editing
             if (_addInfo.Vertices is null) return;
 
             // Set the final position of the 'hover' vertex (that was already part of the geometry)
-            _addInfo.Vertex.SetXY(worldPosition); // maybe doesn't need
+            _addInfo.Vertex.SetXY(worldPosition);
             _addInfo.Vertex = worldPosition.Copy(); // and create a new hover vertex
             _addInfo.Vertices.Add(_addInfo.Vertex);
             target.AddPoint(worldPosition);
@@ -166,7 +166,11 @@ namespace map_app.Editing
 
         public bool DraggingEntirely(Point? worldPosition)
         {
-            if (EditMode != EditMode.Modify || _dragInfo.Feature == null || worldPosition == null || _dragInfo.StartOffsetsToVertexes == null) return false;
+            if (EditMode != EditMode.Modify || 
+                _dragInfo.Feature == null || 
+                worldPosition == null || 
+                _dragInfo.StartOffsetsToVertexes == null) 
+                return false;
 
             var i = 0;
             foreach (var coordinate in _dragInfo.Feature.Coordinates)
@@ -175,7 +179,6 @@ namespace map_app.Editing
                 i++;
             }            
             _dragInfo.Feature.RerenderGeometry();
-
             return true;
         }
 

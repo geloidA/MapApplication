@@ -38,10 +38,7 @@ namespace map_app.Models
             Geometry = RenderGeometry();
         }
 
-        public override PolygonGraphic Copy()
-        {
-            return new PolygonGraphic(this);
-        }
+        public override PolygonGraphic Copy() => new PolygonGraphic(this);
 
         protected override Geometry RenderGeometry()
         {

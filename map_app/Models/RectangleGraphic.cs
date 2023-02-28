@@ -31,10 +31,7 @@ namespace map_app.Models
 
         public Coordinate? HoverVertex { get; set; }
 
-        public override RectangleGraphic Copy()
-        {
-            return new RectangleGraphic(this);
-        }
+        public override RectangleGraphic Copy() => new RectangleGraphic(this);
 
         protected override Geometry RenderGeometry()
         {

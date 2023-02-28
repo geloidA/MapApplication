@@ -33,6 +33,17 @@ public class BaseGraphicExtentionsTests
         TestDistances(expected, polygon);     
     }
 
+
+    [Test]
+    public void GetSegments_ShouldReturnOneDistance_WhenIsPolygonHaveTwoCoordinates()
+    {
+        var expected = new[] { 157.25 };
+        var polygon = new PolygonGraphic(new[] { new GeoPoint(), new GeoPoint(1, 1) }
+                .ToWorldPositions()
+                .ToList());
+        TestDistances(expected, polygon);     
+    }
+    
     [Test]
     public void GetSegments_ShouldReturnRingDistances_WhenIsRectangle()
     {
