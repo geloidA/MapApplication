@@ -1,4 +1,3 @@
-using System;
 using map_app.Models;
 using map_app.Models.Extensions;
 using Mapsui;
@@ -11,29 +10,24 @@ using SkiaSharp;
 
 namespace map_app.Services.Renders;
 
-public class SkiaLabelDistanceStyleRenderer : ISkiaStyleRenderer
+public class LabelDistanceStyleRenderer : ISkiaStyleRenderer
 {
     public bool Draw(SKCanvas canvas, IReadOnlyViewport viewport, 
         ILayer layer, IFeature feature, IStyle style, ISymbolCache symbolCache, long iteration)
     {
-        if (feature is not BaseGraphic graphic)
-            return false;
         if (feature.Extent is null)
             return false;
         if (layer.Enabled == false)
             return false;
 
+        var graphic = (BaseGraphic)feature;
         foreach (var segment in graphic.GetSegments())
         {
             var screenStart = viewport.WorldToScreen(segment.Start.ToWorldPosition().ToMPoint());
             var screenEnd = viewport.WorldToScreen(segment.End.ToWorldPosition().ToMPoint());
-            var angle = Math.Atan2(screenEnd.Y - screenStart.Y, screenEnd.X - screenStart.X);
             var x = (float)(screenStart.X + screenEnd.X) / 2;
             var y = (float)(screenStart.Y + screenEnd.Y) / 2;
-            canvas.RotateRadians((float)angle, x, y);
-            DrawDistanceLabel($"{angle:f1} {segment.Distance:f2} km", new SKPoint(x, y), canvas);
-            canvas.Restore();
-            canvas.Save();
+            DrawDistanceLabel($"{segment.Distance:f2} km", new SKPoint(x, y), canvas);
         }
 
         return true;
@@ -48,7 +42,7 @@ public class SkiaLabelDistanceStyleRenderer : ISkiaStyleRenderer
             paint.TextSize = 10;
             paint.Style = SKPaintStyle.StrokeAndFill;
             paint.Color = SKColors.White;
-            paint.StrokeWidth = 2f;
+            paint.StrokeWidth = 2.3f;
             canvas.DrawText(text, point, paint);
             paint.Color = SKColors.Black;
             paint.StrokeWidth = 0.5f;

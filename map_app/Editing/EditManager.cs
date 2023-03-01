@@ -10,6 +10,8 @@ using NetTopologySuite.Geometries;
 using Mapsui.Styles;
 using map_app.Services;
 using Mapsui;
+using map_app.ViewModels;
+using map_app.Services.Renders;
 
 namespace map_app.Editing
 {
@@ -24,10 +26,12 @@ namespace map_app.Editing
         private readonly AddInfo _addInfo = new();
         private readonly RotateInfo _rotateInfo = new();
         private readonly ScaleInfo _scaleInfo = new();
+        private readonly MainViewModel _mainViewModel;
 
-        public EditManager(GraphicsLayer layer)
+        public EditManager(MainViewModel main)
         {
-            Layer = layer;
+            _mainViewModel = main;
+            Layer = main.Graphics;            
             CurrentColor = Color.Black;
             CurrentOpacity = 1;
         }
@@ -120,6 +124,9 @@ namespace map_app.Editing
                 ?? throw new Exception($"Activator can not create instance of type \"{graphicType}\"");
             graphic.StyleColor = CurrentColor;
             graphic.Opacity = CurrentOpacity;
+            var distanceLabels = graphic.Styles.FirstOrDefault(x => x is LabelDistanceStyle);
+            if (distanceLabels is not null)
+                distanceLabels.Enabled = _mainViewModel.IsRulerActivated;
             return graphic;
         }
 
@@ -130,10 +137,10 @@ namespace map_app.Editing
 
             // Set the final position of the 'hover' vertex (that was already part of the geometry)
             _addInfo.Vertex.SetXY(worldPosition);
-            _addInfo.Vertex = worldPosition.Copy(); // and create a new hover vertex
+            target.HoverVertex = worldPosition.Copy();
+            _addInfo.Vertex = target.HoverVertex;
             _addInfo.Vertices.Add(_addInfo.Vertex);
             target.AddPoint(worldPosition);
-            target.HoverVertex = _addInfo.Vertex;
 
             _addInfo.Feature?.RenderedGeometry.Clear();
             Layer.DataHasChanged();

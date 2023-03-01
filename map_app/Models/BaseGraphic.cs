@@ -6,16 +6,15 @@ using Newtonsoft.Json;
 using Mapsui.Styles;
 using map_app.Editing.Extensions;
 using NetTopologySuite.Geometries;
+using map_app.Services.Renders;
 
 namespace map_app.Models;
 
 [JsonObject(MemberSerialization.OptIn)]
 public abstract class BaseGraphic : GeometryFeature
 {
-    private Color _color;
+    private Color _color = new(Color.Black);
     private double _opacity = 1;
-
-    private VectorStyle _graphicStyle = new VectorStyle();
     protected List<Coordinate> _coordinates = new();
 
     protected BaseGraphic(BaseGraphic source) 
@@ -31,35 +30,30 @@ public abstract class BaseGraphic : GeometryFeature
 
     public BaseGraphic()
     {
-        _color = new Color(Color.Black);            
-        Styles.Add(GraphicStyle);
+        InitializeStyles();
     }
 
     public BaseGraphic(GeometryFeature geometryFeature) : base(geometryFeature) 
     {
-        Styles.Add(GraphicStyle);
-        _color = new Color(Color.Black);
+        InitializeStyles();
     }
     
-    public BaseGraphic(Geometry? geometry) : base(geometry) 
+    public BaseGraphic(Geometry? geometry) : base(geometry)
+    {
+        InitializeStyles();
+    }
+
+    private void InitializeStyles()
     {
         Styles.Add(GraphicStyle);
-        _color = new Color(Color.Black);
+        if (this.GetType() != typeof(PointGraphic)) 
+            Styles.Add(new LabelDistanceStyle());
     }
 
     [JsonProperty]
     public abstract GraphicType Type { get; }
 
-    public virtual VectorStyle GraphicStyle 
-    { 
-        get => _graphicStyle; 
-        set
-        {
-            Styles.Remove(_graphicStyle);
-            _graphicStyle = value;
-            Styles.Add(_graphicStyle);
-        }
-    }
+    public virtual VectorStyle GraphicStyle { get; set; } = new();
 
     [JsonProperty]
     public Dictionary<string, string>? UserTags { get; set; }
@@ -123,8 +117,5 @@ public abstract class BaseGraphic : GeometryFeature
 
     public abstract BaseGraphic Copy();
     
-    public void RerenderGeometry()
-    {
-        Geometry = RenderGeometry();
-    }
+    public void RerenderGeometry() => Geometry = RenderGeometry();
 }

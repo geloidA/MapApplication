@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using Mapsui.Nts;
 using Mapsui.Nts.Extensions;
 using Mapsui.Styles;
@@ -11,6 +10,8 @@ namespace map_app.Models
 {
     public class PointGraphic : BaseGraphic
     {
+        private VectorStyle _style = new();
+
         [JsonProperty]
         public string? Image { get; set; }
 
@@ -32,15 +33,20 @@ namespace map_app.Models
         public PointGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
         public PointGraphic(Geometry? geometry) : base(geometry) { }
 
-        protected override Geometry RenderGeometry()
-        {
-            return _coordinates[0].ToPoint();
+        public override VectorStyle GraphicStyle 
+        { 
+            get => _style; 
+            set
+            {
+                Styles.Remove(_style);
+                _style = value;
+                Styles.Add(_style);
+            } 
         }
 
-        public override PointGraphic Copy()
-        {
-            return new PointGraphic(this);
-        }
+        protected override Geometry RenderGeometry() => _coordinates[0].ToPoint();
+
+        public override PointGraphic Copy() => new PointGraphic(this);
 
         public override void Dispose()
         {

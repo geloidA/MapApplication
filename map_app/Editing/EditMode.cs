@@ -4,8 +4,6 @@ namespace map_app.Editing
     {
         None,
         AddPoint,
-        AddLine,
-        DrawingLine,
         AddPolygon,
         DrawingPolygon,
         Modify,

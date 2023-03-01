@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using map_app.Models;
 using map_app.Services;
 using map_app.Services.Renders;
 using Mapsui.Styles;
@@ -16,15 +17,15 @@ public class AuxiliaryPanelViewModel : ViewModelBase
     private readonly MainViewModel _mainViewModel;
     private readonly GridMemoryProvider _gridLinesProvider;
     private readonly MapControl _mapControl;
+    private readonly GraphicsLayer _graphicsLayer;
     private readonly Color LineColor = new Color(0, 0, 255, 100);
-    private readonly IStyle _graphicLabels;
     private double _kilometerInterval;
 
     public AuxiliaryPanelViewModel(MainViewModel mainViewModel)
     {
         _mapControl = mainViewModel.MapControl;
+        _graphicsLayer = (GraphicsLayer)_mapControl.Map!.Layers.FindLayer("Graphic Layer").Single();
         _mainViewModel = mainViewModel;
-        _graphicLabels = (mainViewModel.Graphics.Style as StyleCollection)!.Styles.First(x => x is LabelDistanceStyle);
         _gridLinesProvider = new GridMemoryProvider(_mapControl.Viewport, this.WhenAnyValue(x => x.IsGridActivated));
         _mapControl.Navigator!.Navigated += (_, _) => KilometerInterval = _mapControl.Viewport.Resolution / 25;
         _gridLayer = new MapGridLayer(_gridLinesProvider)
@@ -66,8 +67,13 @@ public class AuxiliaryPanelViewModel : ViewModelBase
 
     private void EnableRuler()
     {
-        IsRulerActivated ^= true;
-        _graphicLabels.Enabled = IsRulerActivated;
+        IsRulerActivated = (_mainViewModel.IsRulerActivated ^= true);
+        // because layer styles draw first, distance labels must be in graphic feature for escape overlapping
+        foreach (var graphic in _graphicsLayer.Features.Where(x => x is not PointGraphic))
+        {
+            var lableStyle = graphic.Styles.First(x => x is LabelDistanceStyle);
+            lableStyle.Enabled = IsRulerActivated;
+        }
         _mapControl.RefreshGraphics();
     }
 

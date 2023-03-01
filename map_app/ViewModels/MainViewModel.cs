@@ -34,6 +34,8 @@ public class MainViewModel : ViewModelBase
 
     public bool IsBaseGraphicUnderPointer => _isBaseGraphicUnderPointer.Value;
 
+    internal bool IsRulerActivated { get; set; }
+
     internal MapControl MapControl { get; }
 
     internal GraphicsLayer Graphics { get; }
@@ -65,8 +67,8 @@ public class MainViewModel : ViewModelBase
     {
         MapControl = mapControl;
         MapControl.Map = MapCreator.Create();
-        Graphics = (GraphicsLayer)MapControl.Map!.Layers.First(l => l.Name == "Graphic Layer");
-        EditManager = new EditManager(Graphics);
+        Graphics = (GraphicsLayer)MapControl.Map!.Layers.FindLayer("Graphic Layer").Single();
+        EditManager = new EditManager(this);
         EditManager.Extent = new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap);
         GraphicsPopupViewModel = new GraphicsPopupViewModel(this);
         NavigationPanelViewModel = new NavigationPanelViewModel(this);

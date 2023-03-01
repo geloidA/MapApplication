@@ -7,16 +7,14 @@ using NetTopologySuite.Geometries;
 
 namespace map_app.Services
 {
-    public static class MapAlgorithms // todo: bug when draw right to left
+    public static class MapAlgorithms
     {
         private const double EarthKmRadius = 6371;
 
         public static List<GeoPoint> GetOrthodromePath(Coordinate worldPoint1, Coordinate worldPoint2)
-        {
-            return GetOrthodromePath(worldPoint1.ToGeoPoint(), worldPoint2.ToGeoPoint());
-        }
+            => GetOrthodromePath(worldPoint1.ToGeoPoint(), worldPoint2.ToGeoPoint());
 
-        public static List<GeoPoint> GetOrthodromePath(GeoPoint degPoint1, GeoPoint degPoint2, double f = 0.01)
+        public static List<GeoPoint> GetOrthodromePath(GeoPoint degPoint1, GeoPoint degPoint2, double interval = 0.01)
         {
             var points = new List<GeoPoint>();
             var comparer = new ThreeDimentionalPointEqualityComparer();
@@ -28,7 +26,7 @@ namespace map_app.Services
             var lon2 = Algorithms.DegreesToRadians(degPoint2.Longtitude);
             var d = Haversine(degPoint1, degPoint2) / 6371;
             
-            for (var i = 0.0; i <= 1.0; i += f)
+            for (var i = 0.0; i <= 1.0; i += interval)
             {
                 var A = Math.Sin((1 - i) * d) / Math.Sin(d);
                 var B = Math.Sin(i * d) / Math.Sin(d);

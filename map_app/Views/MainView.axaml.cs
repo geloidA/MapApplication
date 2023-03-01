@@ -19,7 +19,8 @@ public partial class MainView : ReactiveWindow<MainViewModel>
     public MainView()
     {
         InitializeComponent();
-        MapControl.Renderer.StyleRenderers.Add(typeof(LabelDistanceStyle), new SkiaLabelDistanceStyleRenderer());
+        MapControl.Renderer.WidgetRenders.Add(typeof(ScalePeaceWidget), new ScalePeaceWidgetRenderer());
+        MapControl.Renderer.StyleRenderers.Add(typeof(LabelDistanceStyle), new LabelDistanceStyleRenderer());
         var vm = new MainViewModel(MapControl); // todo: remove mapcontrol dependency
         DataContext = vm;
         MapControl.PointerMoved += vm.MapControlOnPointerMoved;
