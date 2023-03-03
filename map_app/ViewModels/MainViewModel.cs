@@ -67,7 +67,7 @@ public class MainViewModel : ViewModelBase
     {
         MapControl = mapControl;
         MapControl.Map = MapCreator.Create();
-        Graphics = (GraphicsLayer)MapControl.Map!.Layers.FindLayer("Graphic Layer").Single();
+        Graphics = (GraphicsLayer)MapControl.Map!.Layers.FindLayer(nameof(GraphicsLayer)).Single();
         EditManager = new EditManager(this);
         EditManager.Extent = new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap);
         GraphicsPopupViewModel = new GraphicsPopupViewModel(this);

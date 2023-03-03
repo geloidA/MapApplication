@@ -39,7 +39,7 @@ namespace map_app.ViewModels
         public GraphicAddEditViewModel(GraphicsLayer target, GraphicType pointType) : this(GraphicCreator.Create(pointType)) 
         { 
             _graphicPool = target;
-            _isAddMode = true; 
+            _isAddMode = true;
         }
 
         public GraphicAddEditViewModel(BaseGraphic editGraphic)
@@ -52,6 +52,7 @@ namespace map_app.ViewModels
             Tags = new ObservableCollection<Tag>(_editGraphic.UserTags?.Select(x => new Tag() { Name = x.Key, Value = x.Value })
                 ?? new List<Tag>());
             Opacity = _editGraphic.Opacity;
+            GraphicName = _editGraphic.Name;
             GraphicType = _editGraphic.Type;            
             GraphicColor = _editGraphic.StyleColor is null
                 ? Colors.Black
@@ -98,16 +99,19 @@ namespace map_app.ViewModels
         }
 
         [Reactive]
-        public string? Header1 { get; set; }
+        public string? CoordinateHeader1 { get; set; }
 
         [Reactive]
-        public string? Header2 { get; set; }
+        public string? CoordinateHeader2 { get; set; }
 
         [Reactive]
-        public string? Header3 { get; set; }
+        public string? CoordinateHeader3 { get; set; }
 
         [Reactive]
         public string? ImagePath { get; set; }
+
+        [Reactive]
+        public string? GraphicName { get; set; }
 
         public ObservableCollection<Tag> Tags { get; }
 
@@ -172,10 +176,11 @@ namespace map_app.ViewModels
         {
             _editGraphic.Coordinates = _linear.ToCoordinates().ToList();
             var color = GraphicColor;
-            if (_editGraphic is PointGraphic point && point.Image != ImagePath)            
-                await ChangePointStyle(point, ImagePath); 
+            if (_editGraphic is PointGraphic point && point.Image != ImagePath)
+                await ChangePointStyle(point, ImagePath);
             _editGraphic.StyleColor = new Mapsui.Styles.Color(red: color.R, green: color.G, blue: color.B, alpha: color.A);
             _editGraphic.Opacity = Opacity;
+            _editGraphic.Name = GraphicName;
             _editGraphic.UserTags = Tags.ToDictionary(t => t.Name, t => t.Value ?? string.Empty);
                        
         }
@@ -232,11 +237,13 @@ namespace map_app.ViewModels
         }
 
         private bool HaveTagDuplicates
-            => Tags.GroupBy(x => x.Name)
+            => Tags
+                .GroupBy(x => x.Name)
                 .Any(g => g.Count() > 1);
 
         private bool IsCoordinatesIncorrect 
-            => _geo.Where(g => IsCoordinateIncorrect(g))
+            => _geo
+                .Where(g => IsCoordinateIncorrect(g))
                 .Any();
 
         private bool IsCoordinateIncorrect(GeoPoint point) // need check z and altitude
@@ -287,9 +294,9 @@ namespace map_app.ViewModels
 
         private void SetNames(string[] names)
         {
-            Header1 = names[0];
-            Header2 = names[1];
-            Header3 = names[2];
+            CoordinateHeader1 = names[0];
+            CoordinateHeader2 = names[1];
+            CoordinateHeader3 = names[2];
         }
 
         private void ChangeCoordinate(Cell? cell)

@@ -46,6 +46,7 @@ namespace map_app.Services
             graphic.StyleColor = jsonGraphic.Color.ToObject<Color?>();
             graphic.UserTags = JsonConvert.DeserializeObject<Dictionary<string, string>>(((JToken)jsonGraphic.UserTags).ToString());
             graphic.Opacity = jsonGraphic.Opacity.ToObject<double>();
+            graphic.Name = jsonGraphic.Name.ToObject<string>();
         }
     }
 }

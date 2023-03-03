@@ -51,6 +51,9 @@ public abstract class BaseGraphic : GeometryFeature
     }
 
     [JsonProperty]
+    public string? Name { get; set; }
+
+    [JsonProperty]
     public abstract GraphicType Type { get; }
 
     public virtual VectorStyle GraphicStyle { get; set; } = new();

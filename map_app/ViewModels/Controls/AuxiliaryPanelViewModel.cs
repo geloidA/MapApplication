@@ -24,7 +24,7 @@ public class AuxiliaryPanelViewModel : ViewModelBase
     public AuxiliaryPanelViewModel(MainViewModel mainViewModel)
     {
         _mapControl = mainViewModel.MapControl;
-        _graphicsLayer = (GraphicsLayer)_mapControl.Map!.Layers.FindLayer("Graphic Layer").Single();
+        _graphicsLayer = (GraphicsLayer)_mapControl.Map!.Layers.FindLayer(nameof(GraphicsLayer)).Single();
         _mainViewModel = mainViewModel;
         _gridLinesProvider = new GridMemoryProvider(_mapControl.Viewport, this.WhenAnyValue(x => x.IsGridActivated));
         _mapControl.Navigator!.Navigated += (_, _) => KilometerInterval = _mapControl.Viewport.Resolution / 25;

@@ -32,7 +32,12 @@ namespace map_app.ViewModels
             
             SaveAndClose = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
             Layers = new ObservableCollection<ILayer>(map.Layers);
-            _map.Layers.Changed += (s, e) => { Layers.Clear(); Layers.AddRange(map.Layers.Where(l => l.Tag?.ToString() == "User")); };
+            _map.Layers.Changed += (s, e) => 
+            { 
+                Layers.Clear(); 
+                Layers.AddRange(map.Layers.Where(l => l.Tag?.ToString() == "User")); 
+                Layers.Add(map.Layers.FindLayer(nameof(GraphicsLayer)));
+            };
 
             #region Commands init
 

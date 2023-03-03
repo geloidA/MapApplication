@@ -17,7 +17,7 @@ public class GraphicSerializerTests
                 StyleColor = Mapsui.Styles.Color.Black,
                 Opacity = 0
             }, 
-            "{\"Type\":2,\"UserTags\":{},\"Color\":{\"R\":0,\"G\":0,\"B\":0,\"A\":255},\"Opacity\":0.0,\"GeoPoints\":[{\"Lon\":0.0,\"Lat\":0.0,\"Alt\":0.0},{\"Lon\":0.0,\"Lat\":8.983152840993817E-06,\"Alt\":1.0}],\"LinearPoints\":[{\"X\":0.0,\"Y\":0.0,\"Z\":0.0},{\"X\":0.0,\"Y\":1.0,\"Z\":1.0}]}"
+            "{\"Type\":2,\"Name\":null,\"UserTags\":{},\"Color\":{\"R\":0,\"G\":0,\"B\":0,\"A\":255},\"Opacity\":0.0,\"GeoPoints\":[{\"Lon\":0.0,\"Lat\":0.0,\"Alt\":0.0},{\"Lon\":0.0,\"Lat\":8.983152840993817E-06,\"Alt\":1.0}],\"LinearPoints\":[{\"X\":0.0,\"Y\":0.0,\"Z\":0.0},{\"X\":0.0,\"Y\":1.0,\"Z\":1.0}]}"
         },
         new object[] 
         { 
@@ -27,7 +27,7 @@ public class GraphicSerializerTests
                 StyleColor = Mapsui.Styles.Color.Black, 
                 Opacity = 0
             }, 
-            "{\"Image\":null,\"Type\":0,\"UserTags\":{},\"Color\":{\"R\":0,\"G\":0,\"B\":0,\"A\":255},\"Opacity\":0.0,\"GeoPoints\":[{\"Lon\":0.0,\"Lat\":0.0,\"Alt\":0.0}],\"LinearPoints\":[{\"X\":0.0,\"Y\":0.0,\"Z\":0.0}]}"
+            "{\"Image\":null,\"Type\":0,\"Name\":null,\"UserTags\":{},\"Color\":{\"R\":0,\"G\":0,\"B\":0,\"A\":255},\"Opacity\":0.0,\"GeoPoints\":[{\"Lon\":0.0,\"Lat\":0.0,\"Alt\":0.0}],\"LinearPoints\":[{\"X\":0.0,\"Y\":0.0,\"Z\":0.0}]}"
         },
         new object[] 
         { 
@@ -37,7 +37,7 @@ public class GraphicSerializerTests
                 StyleColor = Mapsui.Styles.Color.Black, 
                 Opacity = 0
             }, 
-            "{\"Type\":3,\"UserTags\":{},\"Color\":{\"R\":0,\"G\":0,\"B\":0,\"A\":255},\"Opacity\":0.0,\"GeoPoints\":[{\"Lon\":0.0,\"Lat\":0.0,\"Alt\":0.0},{\"Lon\":0.0,\"Lat\":0.0,\"Alt\":0.0},{\"Lon\":0.0,\"Lat\":0.0,\"Alt\":0.0}],\"LinearPoints\":[{\"X\":0.0,\"Y\":0.0,\"Z\":0.0},{\"X\":0.0,\"Y\":0.0,\"Z\":0.0},{\"X\":0.0,\"Y\":0.0,\"Z\":0.0}]}"
+            "{\"Type\":3,\"Name\":null,\"UserTags\":{},\"Color\":{\"R\":0,\"G\":0,\"B\":0,\"A\":255},\"Opacity\":0.0,\"GeoPoints\":[{\"Lon\":0.0,\"Lat\":0.0,\"Alt\":0.0},{\"Lon\":0.0,\"Lat\":0.0,\"Alt\":0.0},{\"Lon\":0.0,\"Lat\":0.0,\"Alt\":0.0}],\"LinearPoints\":[{\"X\":0.0,\"Y\":0.0,\"Z\":0.0},{\"X\":0.0,\"Y\":0.0,\"Z\":0.0},{\"X\":0.0,\"Y\":0.0,\"Z\":0.0}]}"
         },
         new object[] 
         { 
@@ -53,7 +53,7 @@ public class GraphicSerializerTests
                 StyleColor = Mapsui.Styles.Color.Black, 
                 Opacity = 0
             }, 
-            "{\"Type\":1,\"UserTags\":{\"a\":\"1\",\"b\":\"[1,2,3]\",\"c\":\"string\",\"d\":\"[1.2,2.3,3.4]\"},\"Color\":{\"R\":0,\"G\":0,\"B\":0,\"A\":255},\"Opacity\":0.0,\"GeoPoints\":[{\"Lon\":0.0,\"Lat\":0.0,\"Alt\":0.0},{\"Lon\":0.0,\"Lat\":0.0,\"Alt\":0.0}],\"LinearPoints\":[{\"X\":0.0,\"Y\":0.0,\"Z\":0.0},{\"X\":0.0,\"Y\":0.0,\"Z\":0.0}]}"
+            "{\"Type\":1,\"Name\":null,\"UserTags\":{\"a\":\"1\",\"b\":\"[1,2,3]\",\"c\":\"string\",\"d\":\"[1.2,2.3,3.4]\"},\"Color\":{\"R\":0,\"G\":0,\"B\":0,\"A\":255},\"Opacity\":0.0,\"GeoPoints\":[{\"Lon\":0.0,\"Lat\":0.0,\"Alt\":0.0},{\"Lon\":0.0,\"Lat\":0.0,\"Alt\":0.0}],\"LinearPoints\":[{\"X\":0.0,\"Y\":0.0,\"Z\":0.0},{\"X\":0.0,\"Y\":0.0,\"Z\":0.0}]}"
         }
     };
 

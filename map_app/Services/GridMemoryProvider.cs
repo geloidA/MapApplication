@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using map_app.Models;
 using Mapsui;
 using Mapsui.Fetcher;
 using Mapsui.Layers;
 using Mapsui.Nts;
+using Mapsui.Projections;
 using Mapsui.Providers;
 using NetTopologySuite.Geometries;
 
@@ -58,15 +58,15 @@ namespace map_app.Services
             {
                 for (var i = xStart; i < extent.TopRight.X; i += meterStep)
                 {
-                    var point1 = new MyPoint(i, extent.TopRight.Y);
-                    var point2 = new MyPoint(i, extent.BottomLeft.Y);
+                    var point1 = new Coordinate(i, extent.TopRight.Y);
+                    var point2 = new Coordinate(i, extent.BottomLeft.Y);
                     gridLines.Add(CreateLine(point1, point2));
                 }
 
                 for (var i = yStart; i < extent.TopRight.Y; i += meterStep)
                 {
-                    var point1 = new MyPoint(extent.TopRight.X, i);
-                    var point2 = new MyPoint(extent.BottomLeft.X, i);
+                    var point1 = new Coordinate(extent.TopRight.X, i);
+                    var point2 = new Coordinate(extent.BottomLeft.X, i);
                     gridLines.Add(CreateLine(point1, point2));
                 }
             });
@@ -74,17 +74,8 @@ namespace map_app.Services
             return gridLines;
         }
 
-        private static GeometryFeature CreateLine(MyPoint p1, MyPoint p2)
-        {
-            return new GeometryFeature 
-            { 
-                Geometry = new LineString(new[] 
-                { 
-                    new Coordinate(p1.X, p1.Y),
-                    new Coordinate(p2.X, p2.Y)
-                }) 
-            };
-        }
+        private static GeometryFeature CreateLine(Coordinate p1, Coordinate p2)
+            => new GeometryFeature { Geometry = new LineString(new[] { p1, p2 }) };
 
         public void DataHasChanged() => DataChanged?.Invoke(this, new DataChangedEventArgs());
     }

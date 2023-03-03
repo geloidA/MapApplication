@@ -52,7 +52,7 @@ namespace map_app.ViewModels
         }
 
         [Reactive]
-        public double Opacity { get; set; }
+        public double Opacity { get; set; } = 1;
 
         [Reactive]
         public string? Name { get; set; }
@@ -78,7 +78,7 @@ namespace map_app.ViewModels
             var index = _map.Layers.IndexOf(_toEdit);
             _map.Layers.Remove(_toEdit!);
             _map.Layers.Insert(index, changed);
-            _map.Layers.Move(_map.Layers.Count - 1, _map.Layers.First(l => l.Tag?.ToString() == "Graphic"));
+            _map.Layers.Move(_map.Layers.Count - 1, _map.Layers.FindLayer(nameof(GraphicsLayer)).Single());
             _undoStack.Push(() =>
             {
                 _map.Layers.Remove(changed);

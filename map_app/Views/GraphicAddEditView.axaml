@@ -32,15 +32,19 @@
 
     <Grid >
         <Grid RowDefinitions="75,50,*,*,0.45*,0.4*">
+
+            <!-- Graphic Type Label -->
             <ContentControl Content="{Binding GraphicType, Converter={StaticResource enumConverter}}"
                 VerticalAlignment="Top" HorizontalAlignment="Center" FontSize="16" Margin="0 10 0 0" />
 
+            <!-- Color -->
             <StackPanel Margin="0 15 0 15" Orientation="Horizontal" HorizontalAlignment="Right"
                 VerticalAlignment="Center" >
                 <TextBlock Text="Цвет" Margin="0 0 10 0" />
                 <controls:PopupColorPicker Color="{Binding GraphicColor, Mode=TwoWay}"/>
             </StackPanel>
 
+            <!-- Image -->
             <StackPanel Margin="0 15 0 15" Orientation="Horizontal" HorizontalAlignment="Left"
                 VerticalAlignment="Center" IsVisible="{Binding GraphicType, Converter={StaticResource onlyPointPassedConverter}}" >
                 <Border BorderBrush="Black" Margin="5 0 0 0" BorderThickness="1" Width="60" Height="50">
@@ -52,23 +56,32 @@
                 </Button>
             </StackPanel>
 
+            <!-- Points Type Selector -->
             <ComboBox Items="{Binding PointTypes}" Grid.Row="1" 
                 SelectedItem="{Binding SelectedPointType, Mode=TwoWay, Converter={StaticResource enumConverter}}"
                 VerticalAlignment="Center" HorizontalAlignment="Left" 
                 Margin="5 0 0 0" Width="120"/>
 
+            <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Center"
+                Margin="0 0 5 0" >
+                <TextBlock Text="Имя объекта" Margin="0 0 10 0" VerticalAlignment="Center"/>
+                <TextBox Text="{Binding GraphicName}" CornerRadius="0" Height="20" Width="150" />
+            </StackPanel>
+
+            <!-- Points Data Grid -->
             <Grid Grid.Row="2" Margin="5" >
                 <controls:MyDataGrid SelectedIndex="{Binding SelectedPointIndex}" Items="{Binding Points}"
                     CurrentCell="{Binding ChangedCell, Mode=TwoWay}"
                     CanUserReorderColumns="False" ColumnWidth="*" Grid.Column="1"
                     CanUserSortColumns="False" CanUserResizeColumns="False" >
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="{Binding $parent.DataContext.Header1}" Binding="{Binding First}"/>
-                        <DataGridTextColumn Header="{Binding $parent.DataContext.Header2}" Binding="{Binding Second}"/>
-                        <DataGridTextColumn Header="{Binding $parent.DataContext.Header3}" Binding="{Binding Third}"/>
+                        <DataGridTextColumn Header="{Binding $parent.DataContext.CoordinateHeader1}" Binding="{Binding First}"/>
+                        <DataGridTextColumn Header="{Binding $parent.DataContext.CoordinateHeader2}" Binding="{Binding Second}"/>
+                        <DataGridTextColumn Header="{Binding $parent.DataContext.CoordinateHeader3}" Binding="{Binding Third}"/>
                     </DataGrid.Columns>
                 </controls:MyDataGrid>
 
+                <!-- Add Delete Buttons -->
                 <StackPanel Orientation="Horizontal" Height="30"
                     HorizontalAlignment="Right" VerticalAlignment="Top" >
                     <Button Classes="dataGrid" Width="40" Height="40"
@@ -82,9 +95,10 @@
                 </StackPanel>
             </Grid>
 
+            <!-- User Tags Data Grid -->
             <Grid Grid.Row="3" Margin="5" >
                 <DataGrid Items="{Binding Tags}" ColumnWidth="*" CanUserReorderColumns="False"
-                    CanUserSortColumns="False" CanUserResizeColumns="False"
+                    CanUserSortColumns="False" CanUserResizeColumns="True"
                     SelectedIndex="{Binding SelectedTagIndex}" >
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Метка" Binding="{Binding Name}"/>
@@ -92,6 +106,7 @@
                     </DataGrid.Columns>          
                 </DataGrid>
 
+                <!-- Add Delete Buttons -->
                 <StackPanel Orientation="Horizontal" Height="30"
                     HorizontalAlignment="Right" VerticalAlignment="Top" >
                     <Button Classes="dataGrid" Width="40" Height="40"
@@ -105,6 +120,7 @@
                 </StackPanel>
             </Grid>
 
+            <!-- Opacity -->
             <Grid HorizontalAlignment="Center" Grid.Row="4" ColumnDefinitions="*,*,100"
                 VerticalAlignment="Center" >
                 <TextBlock Text="Прозрачность:" VerticalAlignment="Center" Margin="0 0 10 0" />
@@ -114,6 +130,7 @@
                         Text="{Binding Opacity, Mode=TwoWay}" TextAlignment="Center" />
             </Grid>
 
+            <!-- Buttons OK Cancel -->
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="5">
                 <Button Classes="dialog" Content="Ок" Command="{Binding SaveChanges}" CommandParameter="{Binding ElementName=thisWindow}" />
                 <Button Classes="dialog" Content="Отмена" Command="{Binding Cancel}" CommandParameter="{Binding ElementName=thisWindow}" />

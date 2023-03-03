@@ -12,7 +12,7 @@ using map_app.Network;
 using Mapsui.Projections;
 using Mapsui.UI;
 using Mapsui.Widgets;
-using map_app.Services.Renders;
+using Mapsui.Widgets.ScaleBar;
 
 namespace map_app.Services;
 
@@ -42,7 +42,7 @@ public class MapCreator
 
     private static IWidget GetScaleWidget(Mapsui.Map map)
     {
-        var scaleWidget = new ScalePeaceWidget(map);
+        var scaleWidget = new ScaleBarWidget(map);
         scaleWidget.HorizontalAlignment = HorizontalAlignment.Right;
         scaleWidget.MarginX = 150f;
         scaleWidget.MarginY = 25f;
@@ -89,7 +89,7 @@ public class MapCreator
     {
         return new GraphicsLayer
         {
-            Name = "Graphic Layer",
+            Name = nameof(GraphicsLayer),
             IsMapInfoLayer = true,
             Tag = "Graphic",
             Style = CreateTargetLayerStyle()
