@@ -3,7 +3,6 @@ using map_app.Services;
 using map_app.Services.IO;
 using map_app.Tests.Utils;
 using NetTopologySuite.Geometries;
-using Newtonsoft.Json;
 
 namespace map_app.Tests.TestsIO
 {

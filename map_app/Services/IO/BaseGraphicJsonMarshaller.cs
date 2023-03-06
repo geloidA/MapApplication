@@ -7,7 +7,7 @@ namespace map_app.Services.IO
 {
     public class BaseGraphicJsonMarshaller
     {
-        public static async Task<bool> TryLoadAsync(List<BaseGraphic> target, string loadLocation)
+        public static async Task<bool> TryLoadAsync(List<BaseGraphic> target, string loadLocation) // todo: refactor via IAsyncEnumerable
         {
             using (var reader = new StreamReader(loadLocation))
             {

@@ -124,10 +124,7 @@ public class MainViewModel : ViewModelBase
     
     public Interaction<List<string>, string?> ShowOpenFileDialogAsync { get; }
 
-    internal void AccessOnlyGraphic(object? sender, CancelEventArgs e)
-    {
-        e.Cancel = !NavigationPanelViewModel.IsEditMode || !IsBaseGraphicUnderPointer;
-    }
+    internal void AccessOnlyGraphic(object? sender, CancelEventArgs e) => e.Cancel = !IsBaseGraphicUnderPointer;
 
     internal void MapControlOnPointerMoved(object? sender, PointerEventArgs args)
     {

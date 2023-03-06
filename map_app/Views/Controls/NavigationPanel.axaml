@@ -7,6 +7,13 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="map_app.Views.Controls.NavigationPanel">
+
+    <UserControl.Styles>
+        <Style Selector="ToggleButton.main">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="CornerRadius" Value="15" />
+        </Style>
+    </UserControl.Styles>
              
     <UserControl.Resources>
         <svg:Svg x:Key="point" Path="Resources/Assets/point.svg" Width="20" Height="20" />
@@ -26,10 +33,10 @@
             Height="35" >
             <Grid ColumnDefinitions="Auto,0.1*">
                 <StackPanel Orientation="Horizontal">
-                    <Button CornerRadius="15" Content="{StaticResource rectangle}" Command="{Binding EnableRectangleMode}" Background="White" ToolTip.Tip="Квадрат" />
-                    <Button CornerRadius="15" Content="{StaticResource orthodrome}" Command="{Binding EnableOrthodromeMode}" Background="White" ToolTip.Tip="Ортодромия" />
-                    <Button CornerRadius="15" Content="{StaticResource polygon}" Command="{Binding EnablePolygonMode}" Background="White" ToolTip.Tip="Полигон" />
-                    <Button CornerRadius="15" Content="{StaticResource point}" Command="{Binding EnablePointMode}" Background="White" ToolTip.Tip="Точка" />
+                    <ToggleButton Classes="main" IsChecked="{Binding IsRectangleMode}" Content="{StaticResource rectangle}" Command="{Binding EnableRectangleMode}" ToolTip.Tip="Квадрат" />
+                    <ToggleButton Classes="main" IsChecked="{Binding IsOrthodromeMode}" Content="{StaticResource orthodrome}" Command="{Binding EnableOrthodromeMode}" ToolTip.Tip="Ортодромия" />
+                    <ToggleButton Classes="main" IsChecked="{Binding IsPolygonMode}" Content="{StaticResource polygon}" Command="{Binding EnablePolygonMode}" ToolTip.Tip="Полигон" />
+                    <ToggleButton Classes="main" IsChecked="{Binding IsPointMode}" Content="{StaticResource point}" Command="{Binding EnablePointMode}" ToolTip.Tip="Точка" />
                     <controls:SimpleColorPicker Margin="35 0 0 0" />
                 </StackPanel>
 
@@ -37,8 +44,7 @@
                     <Button.Flyout>
                         <MenuFlyout Placement="Top" >
                             <MenuItem Header="Отмена" Command="{Binding CancelDrawingChanges}" />
-                            <MenuItem Header="Modify" Command="{Binding OnModify}" />
-                            <CheckBox IsChecked="{Binding IsEditMode}" Content="Редактирование" />
+                            <MenuItem Header="Переместить" Command="{Binding OnModify}" />
                         </MenuFlyout>
                     </Button.Flyout>
                 </Button>

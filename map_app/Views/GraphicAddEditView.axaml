@@ -6,8 +6,8 @@
         xmlns:controls="clr-namespace:map_app.Views.Controls;assembly=map_app"
         xmlns:convrts="clr-namespace:map_app.Services.Converters;assembly=map_app"
         mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="500"
-        MinWidth="600" MinHeight="600"
-        Width="600" Height="600"
+        MinWidth="650" MinHeight="650"
+        Width="650" Height="650"
         Name="thisWindow"
         x:Class="map_app.Views.GraphicAddEditView"
         Title="Обзор">
@@ -18,13 +18,13 @@
     </Window.Resources>
 
     <Window.Styles>
-        <Style Selector="Button.dataGrid">
+        <Style Selector="Button.animated">
             <Setter Property="Background" Value="Transparent" />
         </Style>
         <Style Selector="Button:disabled /template/ ContentPresenter">
             <Setter Property="Background" Value="Transparent" />
         </Style>
-        <Style Selector="Button.dataGrid:pointerover /template/ ContentPresenter">
+        <Style Selector="Button.animated:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="RenderTransform" Value="scale(1.11)" />
         </Style>
@@ -50,23 +50,33 @@
                 <Border BorderBrush="Black" Margin="5 0 0 0" BorderThickness="1" Width="60" Height="50">
                     <Image Source="{Binding ImagePath, Converter={StaticResource bitmapConverter}}" />
                 </Border>
-                <Button Classes="dataGrid" Width="35" Height="35" VerticalAlignment="Bottom"
+                <Button Classes="animated" Width="35" Height="35" VerticalAlignment="Bottom"
                         Command="{Binding SelectImageAsync}" Margin="0 35 0 0" >
                         <Image Source="{svg:SvgImage Resources/Assets/selectimage.svg}" />
                 </Button>
+                <Button Classes="animated" Width="35" Height="35" VerticalAlignment="Center"
+                        Command="{Binding RemoveImage}" Margin="0 35 0 0" >
+                        <Image Source="{svg:SvgImage Resources/Assets/deleteimage.svg}" />
+                </Button>
             </StackPanel>
 
-            <!-- Points Type Selector -->
-            <ComboBox Items="{Binding PointTypes}" Grid.Row="1" 
-                SelectedItem="{Binding SelectedPointType, Mode=TwoWay, Converter={StaticResource enumConverter}}"
-                VerticalAlignment="Center" HorizontalAlignment="Left" 
-                Margin="5 0 0 0" Width="120"/>
+            <UniformGrid Columns="3" Grid.Row="1" Margin="5" >
+                <!-- Points Type Selector -->
+                <ComboBox Items="{Binding PointTypes}" Margin="5 0 0 0"
+                    SelectedItem="{Binding SelectedPointType, Mode=TwoWay, Converter={StaticResource enumConverter}}"
+                    VerticalAlignment="Center" HorizontalAlignment="Left" Width="120"/>
 
-            <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Center"
-                Margin="0 0 5 0" >
-                <TextBlock Text="Имя объекта" Margin="0 0 10 0" VerticalAlignment="Center"/>
-                <TextBox Text="{Binding GraphicName}" CornerRadius="0" Height="20" Width="150" />
-            </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="5 0 0 0" IsVisible="{Binding GraphicType, Converter={StaticResource onlyPointPassedConverter}}">
+                    <TextBlock Text="Диаметр" Margin="0 0 10 0"  VerticalAlignment="Center" />
+                    <TextBox Text="{Binding PointDiameter}" CornerRadius="0" Height="20" Width="100" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="5 0 0 0" >
+                    <TextBlock Text="Имя объекта" Margin="0 0 10 0" VerticalAlignment="Center"/>
+                    <TextBox Text="{Binding GraphicName}" CornerRadius="0" Height="20" Width="100" />
+                </StackPanel>
+            </UniformGrid>
+
 
             <!-- Points Data Grid -->
             <Grid Grid.Row="2" Margin="5" >
@@ -84,11 +94,11 @@
                 <!-- Add Delete Buttons -->
                 <StackPanel Orientation="Horizontal" Height="30"
                     HorizontalAlignment="Right" VerticalAlignment="Top" >
-                    <Button Classes="dataGrid" Width="40" Height="40"
+                    <Button Classes="animated" Width="40" Height="40"
                         Command="{Binding AddPoint}">
                         <Image Source="{svg:SvgImage Resources/Assets/datagridplus.svg}" />
                     </Button>
-                    <Button Classes="dataGrid" Width="40" Height="40"
+                    <Button Classes="animated" Width="40" Height="40"
                         Command="{Binding RemoveSelectedPoint}">
                         <Image Source="{svg:SvgImage Resources/Assets/datagridminus.svg}" />
                     </Button>
@@ -109,11 +119,11 @@
                 <!-- Add Delete Buttons -->
                 <StackPanel Orientation="Horizontal" Height="30"
                     HorizontalAlignment="Right" VerticalAlignment="Top" >
-                    <Button Classes="dataGrid" Width="40" Height="40"
+                    <Button Classes="animated" Width="40" Height="40"
                         Command="{Binding AddTag}">
                         <Image Source="{svg:SvgImage Resources/Assets/datagridplus.svg}" />
                     </Button>
-                    <Button Classes="dataGrid" Width="40" Height="40"
+                    <Button Classes="animated" Width="40" Height="40"
                         Command="{Binding RemoveSelectedTag}">
                         <Image Source="{svg:SvgImage Resources/Assets/datagridminus.svg}" />
                     </Button>

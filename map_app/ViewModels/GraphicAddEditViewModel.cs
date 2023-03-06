@@ -22,7 +22,6 @@ using System.Reactive;
 using System.Threading.Tasks;
 using Mapsui.Styles;
 using Mapsui.Extensions;
-using System.IO;
 using map_app.Services.IO;
 #endregion
 
@@ -96,6 +95,10 @@ namespace map_app.ViewModels
             Cancel = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
             SaveChanges = ReactiveCommand.Create<ICloseable>(SaveChangesImpl, canSave);
             SelectImageAsync = ReactiveCommand.CreateFromTask(SelectImageAsyncImpl);
+            var isImageInit = this
+                .WhenAnyValue(x => x.ImagePath)
+                .Select(x => !string.IsNullOrEmpty(x));
+            RemoveImage = ReactiveCommand.Create(() => ImagePath = null, isImageInit);
         }
 
         [Reactive]
@@ -109,6 +112,9 @@ namespace map_app.ViewModels
 
         [Reactive]
         public string? ImagePath { get; set; }
+
+        [Reactive]
+        public double PointDiameter { get; set; }
 
         [Reactive]
         public string? GraphicName { get; set; }
@@ -142,6 +148,7 @@ namespace map_app.ViewModels
         internal Interaction<List<string>, string?> ShowOpenFileDialog { get; }
 
         public ICommand? RemoveSelectedPoint { get; private set; }
+        public ICommand? RemoveImage { get; private set; }
         public ICommand? SaveChanges { get; private set; }
         public ICommand? RemoveSelectedTag { get; private set; }
         public ICommand? AddTag { get; private set; }
@@ -190,7 +197,7 @@ namespace map_app.ViewModels
             point.Image = newImagePath;
             if (point.Image is null)
             {
-                point.GraphicStyle = new VectorStyle();
+                point.GraphicStyle = new SymbolStyle();
                 return;
             }
             var bitmapId = await ImageRegister.RegisterAsync(point.Image);
@@ -199,7 +206,7 @@ namespace map_app.ViewModels
                 ShowMessageIncorrectData("Файл не существует");
                 return;
             }
-            point.GraphicStyle = new SymbolStyle { BitmapId = bitmapId.Value, SymbolScale = 0.1 };
+            point.GraphicStyle = new SymbolStyle { BitmapId = bitmapId.Value, SymbolScale = 0.05 };
         }
 
         private void AddPoint()

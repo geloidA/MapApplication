@@ -11,6 +11,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using map_app.Services.Renders;
+using Avalonia.Input;
 
 namespace map_app.Views;
 
@@ -31,6 +32,21 @@ public partial class MainView : ReactiveWindow<MainViewModel>
         this.WhenActivated(d => d(ViewModel!.GraphicsPopupViewModel.ShowAddEditGraphicDialog.RegisterHandler(DoShowGraphicAddEditDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ShowSaveGraphicStateDialog.RegisterHandler(DoShowSaveGraphicStateDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ShowOpenFileDialogAsync.RegisterHandler(DoShowOpenFileDialogAsync)));
+    }
+
+    protected override void OnKeyUp(KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+            MapControl.RefreshGraphics();
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            var vm = (MainViewModel?)DataContext;
+            vm?.EditManager.CancelDrawing();
+        }
     }
 
     protected override void OnClosed(EventArgs e)

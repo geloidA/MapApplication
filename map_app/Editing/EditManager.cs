@@ -62,7 +62,6 @@ namespace map_app.Editing
             _addInfo.Feature = null;
             _addInfo.Vertex = null;
             EditMode = nextMode;
-            Layer.LayersFeatureHasChanged();
             return false;
         }
 
@@ -332,6 +331,18 @@ namespace map_app.Editing
             {
                 _scaleInfo.Feature.Geometry?.GeometryChanged();
                 _scaleInfo.Feature = null;
+            }
+        }
+
+        internal void CancelDrawing()
+        {
+            if (EditMode == EditMode.DrawingOrthodromeLine ||
+            EditMode == EditMode.DrawingPolygon ||
+            EditMode == EditMode.DrawingRectangle)
+            {
+                if (_addInfo.Feature is null) return;
+                Layer.TryRemove(_addInfo.Feature);
+                EndEdit();
             }
         }
     }

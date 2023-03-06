@@ -1,15 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using map_app.Editing;
-using map_app.Models;
 using map_app.Services;
-using map_app.Services.Extensions;
-using Mapsui;
-using Mapsui.Styles;
 using Mapsui.UI.Avalonia;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -21,6 +16,13 @@ namespace map_app.ViewModels.Controls;
 
 internal class NavigationPanelViewModel : ViewModelBase
 {
+    private readonly string[] _modesNames = new[]
+    {
+        nameof(IsPointMode),
+        nameof(IsOrthodromeMode),
+        nameof(IsPolygonMode),
+        nameof(IsRectangleMode)
+    };
     private readonly GraphicsLayer _graphics;
     private readonly EditManager _editManager;
     private readonly MapControl _mapControl;
@@ -33,27 +35,27 @@ internal class NavigationPanelViewModel : ViewModelBase
         _mapControl = mainViewModel.MapControl;
         _editManager = mainViewModel.EditManager;
         _graphics = mainViewModel.Graphics;
-        var canEdit = this.WhenAnyValue(x => x.IsEditMode);
-        EnablePointMode = ReactiveCommand.Create(() => EnableDrawingMode(EditMode.AddPoint), canEdit);
-        EnablePolygonMode = ReactiveCommand.Create(() => EnableDrawingMode(EditMode.AddPolygon), canEdit);
-        EnableOrthodromeMode = ReactiveCommand.Create(() => EnableDrawingMode(EditMode.AddOrthodromeLine), canEdit);
-        EnableRectangleMode = ReactiveCommand.Create(() => EnableDrawingMode(EditMode.AddRectangle), canEdit);
-        
-        this.WhenAnyValue(x => x.IsEditMode) // comboBox for edit mode
-            .Subscribe(isEdit => 
-            {
-                if (!isEdit)
-                    None();
-                ChangeFeaturesBorderLine();
-            });
+        EnablePointMode = ReactiveCommand.Create(() => SwitchDrawingMode(nameof(IsPointMode), EditMode.AddPoint));
+        EnablePolygonMode = ReactiveCommand.Create(() => SwitchDrawingMode(nameof(IsPolygonMode), EditMode.AddPolygon));
+        EnableOrthodromeMode = ReactiveCommand.Create(() => SwitchDrawingMode(nameof(IsOrthodromeMode), EditMode.AddOrthodromeLine));
+        EnableRectangleMode = ReactiveCommand.Create(() => SwitchDrawingMode(nameof(IsRectangleMode), EditMode.AddRectangle));
 
-        ChooseColor = ReactiveCommand.Create<ImmutableSolidColorBrush>(brush => CurrentColor = brush.Color, canEdit);
+        ChooseColor = ReactiveCommand.Create<ImmutableSolidColorBrush>(brush => CurrentColor = brush.Color);
         this.WhenAnyValue(x => x.CurrentColor)
             .Subscribe(c => _editManager.CurrentColor = new MColor(c.R, c.G, c.B, c.A));
     }
 
     [Reactive]
-    public bool IsEditMode { get; set; } = true;
+    public bool IsPointMode { get; set; }
+
+    [Reactive]
+    public bool IsRectangleMode { get; set; }
+
+    [Reactive]
+    public bool IsPolygonMode { get; set; }
+
+    [Reactive]
+    public bool IsOrthodromeMode { get; set; }
 
     [Reactive]
     public AColor CurrentColor { get; set; } = Colors.Gray;
@@ -68,37 +70,33 @@ internal class NavigationPanelViewModel : ViewModelBase
 
     public ICommand ChooseColor { get; }
 
-    private void ChangeFeaturesBorderLine()
-    {
-        if (_graphics.Style is not VectorStyle style)
-            return;
-
-        if (IsEditMode)
-        {                
-            style.Outline = EditOutlineStyle;
-            style.Line = EditLineStyle;
-        }
-        else
-        {
-            style.Outline = null;
-            style.Line = null;
-        }
-    }
-
     private void None() => _editManager.EditMode = EditMode.None;
 
     private void EnableDrawingMode(EditMode mode)
     {
-        GetClearedSavedFeatures(_graphics);
+        ClearGraphicsLayerRenderedGeometry(_graphics);
         _editManager.EditMode = mode;
     }
 
-    private static IEnumerable<IFeature> GetClearedSavedFeatures(GraphicsLayer layer)
+    private static void ClearGraphicsLayerRenderedGeometry(GraphicsLayer layer)
     {
-        var features = layer.Features.Copy() ?? Array.Empty<IFeature>();
-        foreach (var feature in features)
+        foreach (var feature in layer.Features)
             feature.RenderedGeometry.Clear();
-        return features;
+    }
+
+    private void SwitchDrawingMode(string modeName, EditMode editMode)
+    {
+        var toSwitch = this.GetType().GetProperty(modeName);
+        var isTurnOn = !(bool)toSwitch?.GetValue(this)! ^ true;
+        toSwitch?.SetValue(this, isTurnOn);
+        
+        foreach (var mode in _modesNames.Where(x => x != modeName))
+        {
+            var prop = this.GetType().GetProperty(mode);
+            prop?.SetValue(this, false);
+        }
+        if (isTurnOn) ClearGraphicsLayerRenderedGeometry(_graphics);
+        _editManager.EditMode = isTurnOn ? editMode : EditMode.None;
     }
     
     private void OnModify()

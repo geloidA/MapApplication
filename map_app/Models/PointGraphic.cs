@@ -10,7 +10,7 @@ namespace map_app.Models
 {
     public class PointGraphic : BaseGraphic
     {
-        private VectorStyle _style = new();
+        private SymbolStyle _style = new();
 
         [JsonProperty]
         public string? Image { get; set; }
@@ -28,7 +28,7 @@ namespace map_app.Models
             if (points.Count != 1)
                 throw new ArgumentException($"List need contain one point, but was {points.Count}");
             _coordinates = points;
-            Geometry = RenderGeometry(); 
+            Geometry = RenderGeometry();
         }
         public PointGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
         public PointGraphic(Geometry? geometry) : base(geometry) { }
@@ -38,8 +38,10 @@ namespace map_app.Models
             get => _style; 
             set
             {
+                if (value is not SymbolStyle smblStyle) 
+                    throw new ArgumentException("PointGraphic's style only can be SymbolStyle");
                 Styles.Remove(_style);
-                _style = value;
+                _style = smblStyle;
                 Styles.Add(_style);
             } 
         }

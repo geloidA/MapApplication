@@ -92,7 +92,7 @@ public class MapCreator
             Name = nameof(GraphicsLayer),
             IsMapInfoLayer = true,
             Tag = "Graphic",
-            Style = CreateTargetLayerStyle()
+            Style = null
         };
     }
 
