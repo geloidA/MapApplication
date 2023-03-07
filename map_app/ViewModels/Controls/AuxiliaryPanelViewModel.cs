@@ -35,7 +35,7 @@ public class AuxiliaryPanelViewModel : ViewModelBase
         IsGridActivated = false;
     }
 
-    [Range(0.1, 1000, ErrorMessage = "Пожалуйста введите число между 0.1 и 1000")]
+    [Range(0.1, 1000, ErrorMessage = "Введите число между 0.1 и 1000")]
     public double KilometerInterval 
     {
         get => _kilometerInterval;
@@ -68,7 +68,7 @@ public class AuxiliaryPanelViewModel : ViewModelBase
     private void EnableRuler()
     {
         IsRulerActivated = (_mainViewModel.IsRulerActivated ^= true);
-        // because layer styles draw first, distance labels must be in graphic feature for escape overlapping
+        // because layer's styles draw first, distance labels must be in graphic feature for escape overlapping
         foreach (var graphic in _graphicsLayer.Features.Where(x => x is not PointGraphic))
         {
             var lableStyle = graphic.Styles.First(x => x is LabelDistanceStyle);

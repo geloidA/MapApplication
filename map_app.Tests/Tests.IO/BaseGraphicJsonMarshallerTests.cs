@@ -39,9 +39,9 @@ namespace map_app.Tests.TestsIO
         }
 
         [Test]
-        public async Task SaveAsync_ShouldSaveEmptyFile_WhenGraphicsIsEmpty()
+        public async Task SaveAsync_ShouldSaveEmptyFile_WhenGraphicsIsEmpty() // delete?
         {
-            await BaseGraphicJsonMarshaller.SaveAsync(Array.Empty<BaseGraphic>(), fileName);
+            await BaseGraphicJsonMarshaller.SaveAsync(new MapState(), fileName);
             var text = GetTextFromFile(new FileInfo(fileName));
             Assert.IsEmpty(text);
         }
@@ -87,7 +87,7 @@ namespace map_app.Tests.TestsIO
 
         private async Task SaveFile()
         {
-            await BaseGraphicJsonMarshaller.SaveAsync(graphics, fileName);
+            await BaseGraphicJsonMarshaller.SaveAsync(new MapState { Graphics = graphics }, fileName);
         }
 
         private string GetTextFromFile(FileInfo file)

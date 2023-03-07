@@ -32,6 +32,7 @@ namespace map_app.ViewModels
         private BaseGraphic _editGraphic;
         private List<LinearPoint> _linear;
         private List<GeoPoint> _geo;
+        private double _pointDiameter;
         private readonly bool _isAddMode;
         private readonly GraphicsLayer? _graphicPool;
 
@@ -48,8 +49,8 @@ namespace map_app.ViewModels
             _linear = new List<LinearPoint>(_editGraphic.LinearPoints);
             _geo = new List<GeoPoint>(_editGraphic.GeoPoints);
             Points = new ObservableCollection<IThreeDimensionalPoint>(_linear);
-            Tags = new ObservableCollection<Tag>(_editGraphic.UserTags?.Select(x => new Tag() { Name = x.Key, Value = x.Value })
-                ?? new List<Tag>());
+            Tags = new ObservableCollection<UserTag>(_editGraphic.UserTags?.Select(x => new UserTag() { Name = x.Key, Value = x.Value })
+                ?? new List<UserTag>());
             Opacity = _editGraphic.Opacity;
             GraphicName = _editGraphic.Name;
             GraphicType = _editGraphic.Type;            
@@ -67,7 +68,10 @@ namespace map_app.ViewModels
             this.WhenAnyValue(x => x.ChangedCell)
                 .Subscribe(ChangeCoordinate);
             if (_editGraphic is PointGraphic point)
+            {
                 ImagePath = point.Image;
+                PointDiameter = ((SymbolStyle)point.GraphicStyle).SymbolScale; 
+            }
         }
 
         private void InitializeCommands()
@@ -76,7 +80,7 @@ namespace map_app.ViewModels
                 .WhenAnyValue(x => x.SelectedTagIndex)
                 .Select(x => IsIndexValid(x, Tags.Count));
             RemoveSelectedTag = ReactiveCommand.Create(() => Tags.RemoveAt(SelectedTagIndex), canRemoveTag);
-            AddTag = ReactiveCommand.Create(() => Tags.Add(new Tag()));
+            AddTag = ReactiveCommand.Create(() => Tags.Add(new UserTag()));
             var canRemovePoint = this
                 .WhenAnyValue(x => x.SelectedPointIndex)
                 .Select(x => IsIndexValid(x, Points.Count));
@@ -86,14 +90,14 @@ namespace map_app.ViewModels
                 _geo.RemoveAt(SelectedPointIndex);
                 Points.RemoveAt(SelectedPointIndex);
             }, canRemovePoint);
-            var canSave = Tags
+            var isTagsValid = Tags
                 .ToObservableChangeSet()
                 .AutoRefresh(m => m.Name)
                 .ToCollection()
                 .Select(x => !x.Any() || x.All(y => !y.HasErrors))
                 .StartWith(true);
             Cancel = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
-            SaveChanges = ReactiveCommand.Create<ICloseable>(SaveChangesImpl, canSave);
+            SaveChanges = ReactiveCommand.Create<ICloseable>(SaveChangesImpl, isTagsValid);
             SelectImageAsync = ReactiveCommand.CreateFromTask(SelectImageAsyncImpl);
             var isImageInit = this
                 .WhenAnyValue(x => x.ImagePath)
@@ -113,13 +117,21 @@ namespace map_app.ViewModels
         [Reactive]
         public string? ImagePath { get; set; }
 
-        [Reactive]
-        public double PointDiameter { get; set; }
+        public double PointDiameter 
+        {
+            get => _pointDiameter;
+            set
+            {
+                if (value < 0.1 || value > 1)
+                    throw new ArgumentException("Введите число между 0.1 и 1", nameof(PointDiameter));
+                this.RaiseAndSetIfChanged(ref _pointDiameter, value);
+            }
+        }
 
         [Reactive]
         public string? GraphicName { get; set; }
 
-        public ObservableCollection<Tag> Tags { get; }
+        public ObservableCollection<UserTag> Tags { get; }
 
         [Reactive]
         public int SelectedTagIndex { get; set; }
@@ -183,8 +195,12 @@ namespace map_app.ViewModels
         {
             _editGraphic.Coordinates = _linear.ToCoordinates().ToList();
             var color = GraphicColor;
-            if (_editGraphic is PointGraphic point && point.Image != ImagePath)
-                await ChangePointStyle(point, ImagePath);
+            if (_editGraphic is PointGraphic point)
+            {
+                point.Scale = PointDiameter;
+                if (point.Image != ImagePath)
+                    await ChangePointStyle(point, ImagePath);
+            }
             _editGraphic.StyleColor = new Mapsui.Styles.Color(red: color.R, green: color.G, blue: color.B, alpha: color.A);
             _editGraphic.Opacity = Opacity;
             _editGraphic.Name = GraphicName;
@@ -206,7 +222,7 @@ namespace map_app.ViewModels
                 ShowMessageIncorrectData("Файл не существует");
                 return;
             }
-            point.GraphicStyle = new SymbolStyle { BitmapId = bitmapId.Value, SymbolScale = 0.05 };
+            point.GraphicStyle = new SymbolStyle { BitmapId = bitmapId.Value, SymbolScale = PointDiameter };
         }
 
         private void AddPoint()

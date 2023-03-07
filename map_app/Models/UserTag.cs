@@ -4,12 +4,12 @@ using System.ComponentModel;
 
 namespace map_app.Models
 {
-    public class Tag : INotifyDataErrorInfo, INotifyPropertyChanged
+    public class UserTag : INotifyDataErrorInfo, INotifyPropertyChanged
     {
         private string _name;
         private bool _hasErrors = false;
 
-        public Tag()
+        public UserTag()
         {
             _name = "New";
         }

@@ -1,14 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Mapsui;
-using Mapsui.Animations;
 using Mapsui.Extensions;
 using Mapsui.Fetcher;
 using Mapsui.Layers;
-using Mapsui.Providers;
-using Mapsui.Styles;
 
 namespace map_app.Services;
 

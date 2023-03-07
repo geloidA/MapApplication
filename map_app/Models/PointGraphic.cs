@@ -11,13 +11,26 @@ namespace map_app.Models
     public class PointGraphic : BaseGraphic
     {
         private SymbolStyle _style = new();
+        private double _scale = 1;
 
         [JsonProperty]
         public string? Image { get; set; }
 
+        [JsonProperty]
+        public double Scale 
+        {
+            get => _scale; 
+            set
+            {
+                _scale = value;
+                _style.SymbolScale = _scale;
+            }
+        }
+
         private PointGraphic(PointGraphic source) : base(source)
         {
             Image = source.Image;
+            Scale = source.Scale;
         }
 
         public override GraphicType Type => GraphicType.Point;
@@ -43,7 +56,7 @@ namespace map_app.Models
                 Styles.Remove(_style);
                 _style = smblStyle;
                 Styles.Add(_style);
-            } 
+            }
         }
 
         protected override Geometry RenderGeometry() => _coordinates[0].ToPoint();

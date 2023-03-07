@@ -101,7 +101,7 @@ public class MainViewModel : ViewModelBase
         var canSaveOpened = this
             .WhenAnyValue(x => x.LastFilePath)
             .Select(file => !string.IsNullOrEmpty(file));
-        SaveGraphicStateInOpenedFile = ReactiveCommand.CreateFromTask(async () => await SaveGraphic(LastFilePath!), canSaveOpened);
+        SaveGraphicStateInOpenedFile = ReactiveCommand.CreateFromTask(async () => await SaveGraphics(LastFilePath!, GetCurrentState()), canSaveOpened);
     }
 
     public ICommand OpenLayersManageView { get; }
@@ -278,7 +278,7 @@ public class MainViewModel : ViewModelBase
         LastFilePath = loadLocation;
         LoadedFileName = Path.GetFileName(loadLocation);
         MapControl.Refresh();
-    }        
+    }
 
     private async Task SaveGraphicStateInFileImpl()
     {
@@ -286,12 +286,17 @@ public class MainViewModel : ViewModelBase
         if (saveLocation is null)
             return;
         LastFilePath = saveLocation;
-        await SaveGraphic(saveLocation);
+        await SaveGraphics(saveLocation, GetCurrentState());
     }
 
-    private async Task SaveGraphic(string location)
+    private async Task SaveGraphics(string location, MapState state)
     {
-        await BaseGraphicJsonMarshaller.SaveAsync(Graphics.Features, location);
+        await BaseGraphicJsonMarshaller.SaveAsync(state, location);
         LoadedFileName = Path.GetFileName(location);
     }
+
+    private MapState GetCurrentState() => new MapState
+    {
+        Graphics = Graphics.Features.ToList()
+    };
 }

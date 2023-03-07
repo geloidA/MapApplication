@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using map_app.Models;
+using Newtonsoft.Json;
 
 namespace map_app.Services.IO
 {
@@ -23,13 +24,12 @@ namespace map_app.Services.IO
             return true;
         }
 
-        public static async Task SaveAsync(IEnumerable<BaseGraphic> graphics, string saveLocation)
+        public static async Task SaveAsync(MapState state, string saveLocation)
         {
-            var graphicsString = GraphicSerializer.Serialize(graphics);
+            var graphicsString = JsonConvert.SerializeObject(state);
             using (var writer = new StreamWriter(saveLocation, false))
             {
-                foreach (var graphic in graphicsString)
-                    await writer.WriteLineAsync(graphic);
+                await writer.WriteLineAsync(graphicsString);
             }
         }
 
@@ -40,10 +40,7 @@ namespace map_app.Services.IO
             {
                 graphic = GraphicSerializer.Deserialize(json);
             }
-            catch
-            {
-                return false;
-            }
+            catch { return false; }            
             return true;
         }
     }

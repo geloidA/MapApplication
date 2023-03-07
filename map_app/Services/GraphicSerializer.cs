@@ -32,7 +32,11 @@ namespace map_app.Services
             graphic = (GraphicType)jsonGraphic.Type switch
             {
                 GraphicType.Orthodrome => new OrthodromeGraphic(points.ToCoordinates().ToList()),
-                GraphicType.Point => new PointGraphic(points.ToCoordinates().ToList()) { Image = jsonGraphic.Image.ToObject<string?>() },
+                GraphicType.Point => new PointGraphic(points.ToCoordinates().ToList()) 
+                { 
+                    Image = jsonGraphic.Image.ToObject<string?>(),
+                    Scale = jsonGraphic.Scale.ToObject<double>()
+                },
                 GraphicType.Rectangle => new RectangleGraphic(points.ToCoordinates().ToList()),
                 GraphicType.Polygon => new PolygonGraphic(points.ToCoordinates().ToList()),
                 _ => throw new NotImplementedException()

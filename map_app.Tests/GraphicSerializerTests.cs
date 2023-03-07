@@ -25,9 +25,10 @@ public class GraphicSerializerTests
             { 
                 UserTags = new Dictionary<string, string>(), 
                 StyleColor = Mapsui.Styles.Color.Black, 
+                Scale = 0.5,
                 Opacity = 0
             }, 
-            "{\"Image\":null,\"Type\":0,\"Name\":null,\"UserTags\":{},\"Color\":{\"R\":0,\"G\":0,\"B\":0,\"A\":255},\"Opacity\":0.0,\"GeoPoints\":[{\"Lon\":0.0,\"Lat\":0.0,\"Alt\":0.0}],\"LinearPoints\":[{\"X\":0.0,\"Y\":0.0,\"Z\":0.0}]}"
+            "{\"Image\":null,\"Scale\":0.5,\"Type\":0,\"Name\":null,\"UserTags\":{},\"Color\":{\"R\":0,\"G\":0,\"B\":0,\"A\":255},\"Opacity\":0.0,\"GeoPoints\":[{\"Lon\":0.0,\"Lat\":0.0,\"Alt\":0.0}],\"LinearPoints\":[{\"X\":0.0,\"Y\":0.0,\"Z\":0.0}]}"
         },
         new object[] 
         { 

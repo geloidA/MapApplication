@@ -6,7 +6,6 @@ using Mapsui;
 using Mapsui.Fetcher;
 using Mapsui.Layers;
 using Mapsui.Nts;
-using Mapsui.Projections;
 using Mapsui.Providers;
 using NetTopologySuite.Geometries;
 
