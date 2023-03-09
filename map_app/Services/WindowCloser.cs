@@ -7,9 +7,12 @@ namespace map_app.Services
     {
         public static void Close(ICloseable view)
         {
-            var wnd = view as Window;
-            if (wnd != null)
-                wnd.Close();
+            if (view is Window wnd) wnd.Close();
+        }
+
+        public static void Close(ICloseable view, object? dialogResult)
+        {
+            if (view is Window wnd) wnd.Close(dialogResult);
         }
     }
 }

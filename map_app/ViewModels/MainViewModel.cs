@@ -12,7 +12,6 @@ using map_app.Models;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 using map_app.ViewModels.Controls;
-using System.Reactive;
 using map_app.Services.IO;
 using System.IO;
 using System.Threading.Tasks;
@@ -92,7 +91,7 @@ public class MainViewModel : ViewModelBase
             var vm = new GraphicAddEditViewModel(FeatureUnderPointer ?? throw new NullReferenceException());
             await ShowGraphicEditingDialog.Handle(vm);
         }, canExecute);
-        ShowSaveGraphicStateDialog = new Interaction<Unit, string?>();
+        ShowSaveGraphicStateDialog = new Interaction<MapStateSaveViewModel, string?>();
         Graphics.LayersFeatureChanged += (_, _) => HaveGraphics = Graphics.Features.Any();
         var canSave = this.WhenAnyValue(x => x.HaveGraphics);
         SaveGraphicStateInFile = ReactiveCommand.CreateFromTask(SaveGraphicStateInFileImpl, canSave);
@@ -120,7 +119,7 @@ public class MainViewModel : ViewModelBase
 
     public Interaction<GraphicAddEditViewModel, MainViewModel> ShowGraphicEditingDialog { get; }
 
-    public Interaction<Unit, string?> ShowSaveGraphicStateDialog { get; }
+    public Interaction<MapStateSaveViewModel, string?> ShowSaveGraphicStateDialog { get; }
     
     public Interaction<List<string>, string?> ShowOpenFileDialogAsync { get; }
 
@@ -197,12 +196,11 @@ public class MainViewModel : ViewModelBase
 
     private async Task LoadGraphicStateAsyncImpl()
     {
-        var loadLocation = await ShowOpenFileDialogAsync.Handle(new List<string> { "txt" });
+        var loadLocation = await ShowOpenFileDialogAsync.Handle(new List<string> { "json" });
         if (loadLocation is null)
             return;
-        var graphics = new List<BaseGraphic>();
-        var isLoadSuccess = await BaseGraphicJsonMarshaller.TryLoadAsync(graphics, loadLocation);
-        if (!isLoadSuccess)
+        var state = await MapStateJsonMarshaller.LoadAsync(loadLocation);
+        if (state is null || !state.IsInitialized)
         {
             ShowNotification(
                 "Выбранный файл не удалось преобразовать в объекты", 
@@ -210,16 +208,16 @@ public class MainViewModel : ViewModelBase
                 Colors.Red);
             return;
         }
-        await LoadPointImagesAsync(graphics);
+        await LoadPointImagesAsync(state.Graphics);
         if (_unregisteredImages.Any())
         {
             ShowImageNotification("Проблема загрузки изображений", "Информация", Colors.LightBlue);
             _unregisteredImages.Clear();
         }
-        LoadGraphicsInLayer(graphics, loadLocation);
+        LoadGraphicsInLayer(state.Graphics, loadLocation);
     }
 
-    private async Task LoadPointImagesAsync(List<BaseGraphic> graphics)
+    private async Task LoadPointImagesAsync(IEnumerable<BaseGraphic> graphics)
     {
         foreach (var graphic in graphics.Where(x => x is PointGraphic))
         {
@@ -271,7 +269,7 @@ public class MainViewModel : ViewModelBase
             .Queue();
     }
 
-    private void LoadGraphicsInLayer(List<BaseGraphic> newGraphics, string loadLocation)
+    private void LoadGraphicsInLayer(IEnumerable<BaseGraphic> newGraphics, string loadLocation)
     {
         Graphics.Clear();
         Graphics.AddRange(newGraphics);
@@ -282,17 +280,16 @@ public class MainViewModel : ViewModelBase
 
     private async Task SaveGraphicStateInFileImpl()
     {
-        var saveLocation = await ShowSaveGraphicStateDialog.Handle(Unit.Default);
-        if (saveLocation is null)
-            return;
+        var vm = new MapStateSaveViewModel(Graphics.Features);
+        var saveLocation = await ShowSaveGraphicStateDialog.Handle(vm);
+        if (saveLocation is null) return;
         LastFilePath = saveLocation;
-        await SaveGraphics(saveLocation, GetCurrentState());
+        LoadedFileName = Path.GetFileName(saveLocation);
     }
 
     private async Task SaveGraphics(string location, MapState state)
     {
-        await BaseGraphicJsonMarshaller.SaveAsync(state, location);
-        LoadedFileName = Path.GetFileName(location);
+        await MapStateJsonMarshaller.SaveAsync(state, location);
     }
 
     private MapState GetCurrentState() => new MapState

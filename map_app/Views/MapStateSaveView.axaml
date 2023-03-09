@@ -3,7 +3,21 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        MinWidth="450" MinHeight="500"
+        MaxWidth="650" MaxHeight="700"
+        Name="MapStateView"
         x:Class="map_app.Views.MapStateSaveView"
         Title="MapStateSaveView">
-  Welcome to Avalonia!
+    <Grid RowDefinitions="*,0.5*">
+        <Grid RowDefinitions="*,50,*" ColumnDefinitions="*,*" VerticalAlignment="Center" HorizontalAlignment="Center" >
+            <TextBlock Text="Название задания" VerticalAlignment="Center" />
+            <TextBox Text="{Binding Name}" CornerRadius="0" Width="150" Margin="10 0 0 0" Grid.Column="1" />
+            <TextBlock Grid.Row="2" Text="Описание" VerticalAlignment="Top" />
+            <TextBox Text="{Binding Description}" TextWrapping="Wrap" Height="110" CornerRadius="0" Width="150" Margin="10 0 0 0" Grid.Column="1" Grid.Row="2" />
+        </Grid>
+        <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal" >
+            <Button Content="Сохранить" Width="100" Classes="dialog" Command="{Binding ShowSaveFileDialog}" CommandParameter="{Binding ElementName=MapStateView}" />
+            <Button Content="Отмена" Margin="20 0 0 0" Classes="dialog" Command="{Binding Cancel}" CommandParameter="{Binding ElementName=MapStateView}" />
+        </StackPanel>
+    </Grid>
 </Window>

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Windows.Input;
 using Avalonia.Controls;
@@ -67,7 +68,7 @@ internal class GraphicsPopupViewModel : ViewModelBase
             Graphics.AddRange(GetSavedGraphics);
         };
 
-        ShowAddEditGraphicDialog = new Interaction<GraphicAddEditViewModel, GraphicsPopupViewModel>();
+        ShowAddEditGraphicDialog = new Interaction<GraphicAddEditViewModel, Unit>();
         
         OpenEditGraphicView = ReactiveCommand.CreateFromTask(async () =>
         {
@@ -82,7 +83,7 @@ internal class GraphicsPopupViewModel : ViewModelBase
         });
     }
 
-    public Interaction<GraphicAddEditViewModel, GraphicsPopupViewModel> ShowAddEditGraphicDialog { get; }
+    public Interaction<GraphicAddEditViewModel, Unit> ShowAddEditGraphicDialog { get; }
 
     public Image ArrowImage => _arrowImage.Value;
 

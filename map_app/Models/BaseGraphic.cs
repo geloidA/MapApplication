@@ -62,7 +62,7 @@ public abstract class BaseGraphic : GeometryFeature
     public Dictionary<string, string>? UserTags { get; set; }
 
     [JsonProperty("Color")]
-    public Color StyleColor 
+    public Color StyleColor
     {
         get => _color;
         set

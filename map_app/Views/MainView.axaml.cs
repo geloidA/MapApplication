@@ -3,7 +3,6 @@ using map_app.ViewModels;
 using Avalonia.ReactiveUI;
 using System.Threading.Tasks;
 using ReactiveUI;
-using map_app.ViewModels.Controls;
 using System.Reactive;
 using Avalonia.Controls;
 using System.Linq;
@@ -75,20 +74,20 @@ public partial class MainView : ReactiveWindow<MainViewModel>
         interaction.SetOutput(result);
     }
 
-    private async Task DoShowGraphicAddEditDialogAsync(InteractionContext<GraphicAddEditViewModel, GraphicsPopupViewModel> interaction)
+    private async Task DoShowGraphicAddEditDialogAsync(InteractionContext<GraphicAddEditViewModel, Unit> interaction)
     {
         var dialog = new GraphicAddEditView();
         dialog.DataContext = interaction.Input;
 
-        var result = await dialog.ShowDialog<GraphicsPopupViewModel>(this);
+        var result = await dialog.ShowDialog<Unit>(this);
         interaction.SetOutput(result);
     }
 
-    private async Task DoShowSaveGraphicStateDialogAsync(InteractionContext<Unit, string?> interaction)
+    private async Task DoShowSaveGraphicStateDialogAsync(InteractionContext<MapStateSaveViewModel, string?> interaction)
     {
-        var dialog = new SaveFileDialog();
-        dialog.DefaultExtension = ".txt";
-        var result = await dialog.ShowAsync(this);
+        var dialog = new MapStateSaveView();
+        dialog.DataContext = interaction.Input;
+        var result = await dialog.ShowDialog<string?>(this);
 
         interaction.SetOutput(result);
     }
