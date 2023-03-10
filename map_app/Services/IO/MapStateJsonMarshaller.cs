@@ -8,7 +8,7 @@ namespace map_app.Services.IO
     {
         public static async Task<MapState?> LoadAsync(string loadLocation)
         {
-            return JsonConvert.DeserializeObject<MapState>(await File.ReadAllTextAsync(loadLocation), new BaseGraphicConverter());
+            return JsonConvert.DeserializeObject<MapState>(await File.ReadAllTextAsync(loadLocation));
         }
 
         public static async Task SaveAsync(MapState state, string saveLocation)

@@ -27,6 +27,7 @@ public class MainViewModel : ViewModelBase
     private bool _isRightWasPressed;
     private readonly List<string> _unregisteredImages = new();
     private const double LeftBorderMap = -20037494;
+    private MapState? _lastSavedMapState;
     private readonly EditManipulation _editManipulation = new();
     private readonly ObservableAsPropertyHelper<bool> _isBaseGraphicUnderPointer;
     #endregion
@@ -91,7 +92,7 @@ public class MainViewModel : ViewModelBase
             var vm = new GraphicAddEditViewModel(FeatureUnderPointer ?? throw new NullReferenceException());
             await ShowGraphicEditingDialog.Handle(vm);
         }, canExecute);
-        ShowSaveGraphicStateDialog = new Interaction<MapStateSaveViewModel, string?>();
+        ShowSaveGraphicStateDialog = new Interaction<MapStateSaveViewModel, MapState?>();
         Graphics.LayersFeatureChanged += (_, _) => HaveGraphics = Graphics.Features.Any();
         var canSave = this.WhenAnyValue(x => x.HaveGraphics);
         SaveGraphicStateInFile = ReactiveCommand.CreateFromTask(SaveGraphicStateInFileImpl, canSave);
@@ -100,7 +101,7 @@ public class MainViewModel : ViewModelBase
         var canSaveOpened = this
             .WhenAnyValue(x => x.LastFilePath)
             .Select(file => !string.IsNullOrEmpty(file));
-        SaveGraphicStateInOpenedFile = ReactiveCommand.CreateFromTask(async () => await SaveGraphics(LastFilePath!, GetCurrentState()), canSaveOpened);
+        SaveGraphicStateInOpenedFile = ReactiveCommand.CreateFromTask(async () => await SaveGraphics(_lastSavedMapState!), canSaveOpened);
     }
 
     public ICommand OpenLayersManageView { get; }
@@ -119,7 +120,7 @@ public class MainViewModel : ViewModelBase
 
     public Interaction<GraphicAddEditViewModel, MainViewModel> ShowGraphicEditingDialog { get; }
 
-    public Interaction<MapStateSaveViewModel, string?> ShowSaveGraphicStateDialog { get; }
+    public Interaction<MapStateSaveViewModel, MapState?> ShowSaveGraphicStateDialog { get; }
     
     public Interaction<List<string>, string?> ShowOpenFileDialogAsync { get; }
 
@@ -208,7 +209,8 @@ public class MainViewModel : ViewModelBase
                 Colors.Red);
             return;
         }
-        await LoadPointImagesAsync(state.Graphics);
+        await LoadPointImagesAsync(state.Graphics?.Where(x => x is PointGraphic) 
+            ?? Enumerable.Empty<BaseGraphic>());
         if (_unregisteredImages.Any())
         {
             ShowImageNotification("Проблема загрузки изображений", "Информация", Colors.LightBlue);
@@ -219,7 +221,7 @@ public class MainViewModel : ViewModelBase
 
     private async Task LoadPointImagesAsync(IEnumerable<BaseGraphic> graphics)
     {
-        foreach (var graphic in graphics.Where(x => x is PointGraphic))
+        foreach (var graphic in graphics)
         {
             var point = (PointGraphic)graphic;
             if (point.Image != null)
@@ -232,8 +234,8 @@ public class MainViewModel : ViewModelBase
                 }
                 point.GraphicStyle = new Mapsui.Styles.SymbolStyle 
                 { 
-                    BitmapId = bitmapId.Value, 
-                    SymbolScale = 0.1 
+                    BitmapId = bitmapId.Value,
+                    SymbolScale = point.Scale
                 };
             }
         }
@@ -269,10 +271,10 @@ public class MainViewModel : ViewModelBase
             .Queue();
     }
 
-    private void LoadGraphicsInLayer(IEnumerable<BaseGraphic> newGraphics, string loadLocation)
+    private void LoadGraphicsInLayer(IEnumerable<BaseGraphic>? newGraphics, string loadLocation)
     {
         Graphics.Clear();
-        Graphics.AddRange(newGraphics);
+        if (newGraphics != null) Graphics.AddRange(newGraphics);
         LastFilePath = loadLocation;
         LoadedFileName = Path.GetFileName(loadLocation);
         MapControl.Refresh();
@@ -281,19 +283,15 @@ public class MainViewModel : ViewModelBase
     private async Task SaveGraphicStateInFileImpl()
     {
         var vm = new MapStateSaveViewModel(Graphics.Features);
-        var saveLocation = await ShowSaveGraphicStateDialog.Handle(vm);
-        if (saveLocation is null) return;
-        LastFilePath = saveLocation;
-        LoadedFileName = Path.GetFileName(saveLocation);
+        var mapState = await ShowSaveGraphicStateDialog.Handle(vm);
+        if (mapState is null) return;
+        _lastSavedMapState = mapState;
+        LastFilePath = mapState.FileLocation;
+        LoadedFileName = Path.GetFileName(mapState.FileLocation);
     }
 
-    private async Task SaveGraphics(string location, MapState state)
+    private async Task SaveGraphics(MapState state)
     {
-        await MapStateJsonMarshaller.SaveAsync(state, location);
+        await MapStateJsonMarshaller.SaveAsync(state, state.FileLocation);
     }
-
-    private MapState GetCurrentState() => new MapState
-    {
-        Graphics = Graphics.Features.ToList()
-    };
 }

@@ -28,18 +28,20 @@ public class MapStateSaveViewModel : ViewModelBase
         ShowSaveGraphicsDialog = new Interaction<Unit, string?>();
         ShowSaveFileDialog = ReactiveCommand.CreateFromTask<ICloseable>(async closeble =>
         {
+            MapState? state = null;
             var saveLocation = await ShowSaveGraphicsDialog.Handle(Unit.Default);
             if (saveLocation is not null)
             {
-                var state = new MapState
+                state = new MapState
                 {
                     Name = this.Name,
                     Description = this.Description,
-                    Graphics = this._graphics.ToList()
+                    Graphics = this._graphics.ToList(),
+                    FileLocation = saveLocation
                 };
                 await MapStateJsonMarshaller.SaveAsync(state, saveLocation);
             }
-            WindowCloser.Close(closeble, saveLocation);
+            WindowCloser.Close(closeble, state);
         });
         Cancel = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
     }

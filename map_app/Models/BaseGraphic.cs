@@ -7,10 +7,12 @@ using Mapsui.Styles;
 using map_app.Editing.Extensions;
 using NetTopologySuite.Geometries;
 using map_app.Services.Renders;
+using map_app.Services.IO;
 
 namespace map_app.Models;
 
 [JsonObject(MemberSerialization.OptIn)]
+[JsonConverter(typeof(BaseGraphicConverter))]
 public abstract class BaseGraphic : GeometryFeature
 {
     private Color _color = new(Color.Black);

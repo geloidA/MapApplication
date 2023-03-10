@@ -11,6 +11,7 @@ using System.IO;
 using System.Collections.Generic;
 using map_app.Services.Renders;
 using Avalonia.Input;
+using map_app.Services;
 
 namespace map_app.Views;
 
@@ -83,11 +84,11 @@ public partial class MainView : ReactiveWindow<MainViewModel>
         interaction.SetOutput(result);
     }
 
-    private async Task DoShowSaveGraphicStateDialogAsync(InteractionContext<MapStateSaveViewModel, string?> interaction)
+    private async Task DoShowSaveGraphicStateDialogAsync(InteractionContext<MapStateSaveViewModel, MapState?> interaction)
     {
         var dialog = new MapStateSaveView();
         dialog.DataContext = interaction.Input;
-        var result = await dialog.ShowDialog<string?>(this);
+        var result = await dialog.ShowDialog<MapState?>(this);
 
         interaction.SetOutput(result);
     }

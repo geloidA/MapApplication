@@ -18,7 +18,7 @@ public partial class MapStateSaveView : ReactiveWindow<MapStateSaveViewModel>
     private async Task DoShowSaveGraphicStateDialogAsync(InteractionContext<Unit, string?> interaction)
     {
         var dialog = new SaveFileDialog();
-        dialog.DefaultExtension = "*.json";
+        dialog.DefaultExtension = "json";
         var result = await dialog.ShowAsync(this);
         interaction.SetOutput(result);
     }

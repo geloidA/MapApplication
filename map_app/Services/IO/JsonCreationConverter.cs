@@ -31,6 +31,7 @@ public abstract class JsonCreationConverter<T> : JsonConverter
         // Create target object based on JObject
         var target = Create(objectType, jObject);
         // Populate the object properties
+        serializer.ObjectCreationHandling = ObjectCreationHandling.Replace;
         serializer.Populate(jObject.CreateReader(), target);
 
         return target;

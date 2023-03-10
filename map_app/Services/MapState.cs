@@ -17,4 +17,6 @@ public class MapState
     public IEnumerable<BaseGraphic>? Graphics { get; set; }
 
     public bool IsInitialized => Name != null || Description != null || Graphics != null;
+    
+    public string FileLocation { get; set; } = string.Empty;
 }
