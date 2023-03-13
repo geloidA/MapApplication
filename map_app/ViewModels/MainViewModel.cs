@@ -1,3 +1,4 @@
+# region usings
 using System;
 using Mapsui.UI.Avalonia;
 using map_app.Services;
@@ -18,6 +19,8 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Avalonia.Notification;
 using Avalonia.Media;
+using System.Reactive;
+#endregion
 
 namespace map_app.ViewModels;
 
@@ -27,7 +30,7 @@ public class MainViewModel : ViewModelBase
     private bool _isRightWasPressed;
     private readonly List<string> _unregisteredImages = new();
     private const double LeftBorderMap = -20037494;
-    private MapState? _lastSavedMapState;
+    private MapState? _currentFileMapState;
     private readonly EditManipulation _editManipulation = new();
     private readonly ObservableAsPropertyHelper<bool> _isBaseGraphicUnderPointer;
     #endregion
@@ -72,57 +75,71 @@ public class MainViewModel : ViewModelBase
         EditManager.Extent = new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap);
         GraphicsPopupViewModel = new GraphicsPopupViewModel(this);
         NavigationPanelViewModel = new NavigationPanelViewModel(this);
-        AuxiliaryPanelViewModel = new AuxiliaryPanelViewModel(this);
-        ShowLayersManageDialog = new Interaction<LayersManageViewModel, MainViewModel>();
-        OpenLayersManageView = ReactiveCommand.CreateFromTask(async () =>
-        {
-            var manager = new LayersManageViewModel(MapControl.Map);
-            await ShowLayersManageDialog.Handle(manager);
-        });
-
+        AuxiliaryPanelViewModel = new AuxiliaryPanelViewModel(this);        
         _isBaseGraphicUnderPointer = this
             .WhenAnyValue(x => x.FeatureUnderPointer)
             .Select(f => f as BaseGraphic != null)
-            .ToProperty(this, x => x.IsBaseGraphicUnderPointer);
+            .ToProperty(this, x => x.IsBaseGraphicUnderPointer);        
+        Graphics.LayersFeatureChanged += (_, _) => HaveGraphics = Graphics.Features.Any();
+        InitializeCommands();
+    }
 
+    private void InitializeCommands()
+    {
+        OpenLayersManageView = ReactiveCommand.CreateFromTask(async () =>
+        {
+            var manager = new LayersManageViewModel(MapControl!.Map!);
+            await ShowLayersManageDialog.Handle(manager);
+        });
         var canExecute = this.WhenAnyValue(x => x.IsBaseGraphicUnderPointer);
-        ShowGraphicEditingDialog = new Interaction<GraphicAddEditViewModel, MainViewModel>();
         OpenGraphicEditingView = ReactiveCommand.CreateFromTask(async () =>
         {
             var vm = new GraphicAddEditViewModel(FeatureUnderPointer ?? throw new NullReferenceException());
             await ShowGraphicEditingDialog.Handle(vm);
         }, canExecute);
-        ShowSaveGraphicStateDialog = new Interaction<MapStateSaveViewModel, MapState?>();
-        Graphics.LayersFeatureChanged += (_, _) => HaveGraphics = Graphics.Features.Any();
         var canSave = this.WhenAnyValue(x => x.HaveGraphics);
         SaveGraphicStateInFile = ReactiveCommand.CreateFromTask(SaveGraphicStateInFileImpl, canSave);
-        ShowOpenFileDialogAsync = new Interaction<List<string>, string?>();
         LoadGraphicStateAsync = ReactiveCommand.CreateFromTask(LoadGraphicStateAsyncImpl);
         var canSaveOpened = this
             .WhenAnyValue(x => x.LastFilePath)
             .Select(file => !string.IsNullOrEmpty(file));
-        SaveGraphicStateInOpenedFile = ReactiveCommand.CreateFromTask(async () => await SaveGraphics(_lastSavedMapState!), canSaveOpened);
+        SaveGraphicStateInOpenedFile = ReactiveCommand.CreateFromTask(async () => 
+        {
+            _currentFileMapState!.Graphics = Graphics.Features;
+            await SaveGraphics(_currentFileMapState);
+        }, canSaveOpened);
+        ImportImages = ReactiveCommand.CreateFromTask(async () => 
+        { 
+            var paths = await ShowImportImagesDialogAsync.Handle(Unit.Default);
+            if (paths is null) return;
+            foreach (var path in paths)
+                ImageRegister.EmbedImage(path);
+        });
     }
 
-    public ICommand OpenLayersManageView { get; }
+    public ICommand? OpenLayersManageView { get; private set; }
 
-    public ICommand OpenGraphicEditingView { get; }
+    public ICommand? OpenGraphicEditingView { get; private set; }
 
-    public ICommand SaveGraphicStateInOpenedFile { get; }
+    public ICommand? SaveGraphicStateInOpenedFile { get; private set; }
 
-    public ICommand SaveGraphicStateInFile { get; }
+    public ICommand? SaveGraphicStateInFile { get; private set; }
 
-    public ICommand LoadGraphicStateAsync { get; }
+    public ICommand? LoadGraphicStateAsync { get; private set; }
+
+    public ICommand? ImportImages { get; private set; }
 
     public INotificationMessageManager Manager { get; } = new NotificationMessageManager();
 
-    public Interaction<LayersManageViewModel, MainViewModel> ShowLayersManageDialog { get; }
+    public Interaction<LayersManageViewModel, MainViewModel> ShowLayersManageDialog { get; } = new();
 
-    public Interaction<GraphicAddEditViewModel, MainViewModel> ShowGraphicEditingDialog { get; }
+    public Interaction<GraphicAddEditViewModel, MainViewModel> ShowGraphicEditingDialog { get; } = new();
 
-    public Interaction<MapStateSaveViewModel, MapState?> ShowSaveGraphicStateDialog { get; }
+    public Interaction<MapStateSaveViewModel, MapState?> ShowSaveGraphicStateDialog { get; } = new();
     
-    public Interaction<List<string>, string?> ShowOpenFileDialogAsync { get; }
+    public Interaction<List<string>, string?> ShowOpenFileDialogAsync { get; } = new();
+
+    public Interaction<Unit, string[]?> ShowImportImagesDialogAsync { get; } = new();
 
     internal void AccessOnlyGraphic(object? sender, CancelEventArgs e) => e.Cancel = !IsBaseGraphicUnderPointer;
 
@@ -216,7 +233,9 @@ public class MainViewModel : ViewModelBase
             ShowImageNotification("Проблема загрузки изображений", "Информация", Colors.LightBlue);
             _unregisteredImages.Clear();
         }
+        state.FileLocation = loadLocation;
         LoadGraphicsInLayer(state.Graphics, loadLocation);
+        _currentFileMapState = state;
     }
 
     private async Task LoadPointImagesAsync(IEnumerable<BaseGraphic> graphics)
@@ -285,7 +304,7 @@ public class MainViewModel : ViewModelBase
         var vm = new MapStateSaveViewModel(Graphics.Features);
         var mapState = await ShowSaveGraphicStateDialog.Handle(vm);
         if (mapState is null) return;
-        _lastSavedMapState = mapState;
+        _currentFileMapState = mapState;
         LastFilePath = mapState.FileLocation;
         LoadedFileName = Path.GetFileName(mapState.FileLocation);
     }

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
@@ -19,13 +18,15 @@ public partial class GraphicAddEditView : ReactiveWindow<GraphicAddEditViewModel
 
     private async Task DoShowOpenFileDialogAsync(InteractionContext<List<string>, string?> interaction)
     {
-        var dialog = new OpenFileDialog();
-        dialog.Filters = new List<FileDialogFilter> 
+        var dialog = new OpenFileDialog
         {
-            new FileDialogFilter { Extensions = interaction.Input }
+            Directory = App.ImportImagesLocation,
+            Filters = new List<FileDialogFilter>
+            {
+                new FileDialogFilter { Extensions = interaction.Input }
+            }
         };
         var path = await dialog.ShowAsync(this);
         interaction.SetOutput(path?.First());
     }
-    
 }

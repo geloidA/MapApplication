@@ -169,7 +169,7 @@ namespace map_app.ViewModels
 
         private async Task SelectImageAsyncImpl()
         {
-            var imagePath = await ShowOpenFileDialog.Handle(new List<string> { "png", "webp", "jpg", "gif", "ico" });
+            var imagePath = await ShowOpenFileDialog.Handle(new List<string> { "png", "webp", "jpg", "jpeg" });
             if (imagePath is null)
                 return;
             ImagePath = imagePath;
@@ -191,16 +191,11 @@ namespace map_app.ViewModels
             Cancel?.Execute(wnd);
         }
 
-        private async void ConfirmChanges()
+        private void ConfirmChanges()
         {
             _editGraphic.Coordinates = _linear.ToCoordinates().ToList();
             var color = GraphicColor;
-            if (_editGraphic is PointGraphic point)
-            {
-                point.Scale = PointDiameter;
-                if (point.Image != ImagePath)
-                    await ChangePointStyle(point, ImagePath);
-            }
+            if (_editGraphic is PointGraphic point) UpdatePointStyle(point);
             _editGraphic.StyleColor = new Mapsui.Styles.Color(red: color.R, green: color.G, blue: color.B, alpha: color.A);
             _editGraphic.Opacity = Opacity;
             _editGraphic.Name = GraphicName;
@@ -208,21 +203,25 @@ namespace map_app.ViewModels
                        
         }
 
-        private async Task ChangePointStyle(PointGraphic point, string? newImagePath)
+        private async void UpdatePointStyle(PointGraphic point)
         {
-            point.Image = newImagePath;
-            if (point.Image is null)
+            if (point.Image != ImagePath)
             {
-                point.GraphicStyle = new SymbolStyle();
-                return;
+                var style = await GetNewPointStyle(point);
+                if (style is null) 
+                    ShowMessageIncorrectData("Файла нет");
+                else
+                    point.GraphicStyle = style;
             }
+            point.Scale = PointDiameter;
+        }
+
+        private async Task<VectorStyle?> GetNewPointStyle(PointGraphic point)
+        {
+            point.Image = ImagePath;
+            if (point.Image is null) return new SymbolStyle();
             var bitmapId = await ImageRegister.RegisterAsync(point.Image);
-            if (bitmapId is null)
-            {
-                ShowMessageIncorrectData("Файл не существует");
-                return;
-            }
-            point.GraphicStyle = new SymbolStyle { BitmapId = bitmapId.Value, SymbolScale = PointDiameter };
+            return bitmapId is not null ? new SymbolStyle { BitmapId = bitmapId.Value } : null;
         }
 
         private void AddPoint()

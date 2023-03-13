@@ -6,8 +6,6 @@ using ReactiveUI;
 using System.Reactive;
 using Avalonia.Controls;
 using System.Linq;
-using System;
-using System.IO;
 using System.Collections.Generic;
 using map_app.Services.Renders;
 using Avalonia.Input;
@@ -32,6 +30,7 @@ public partial class MainView : ReactiveWindow<MainViewModel>
         this.WhenActivated(d => d(ViewModel!.GraphicsPopupViewModel.ShowAddEditGraphicDialog.RegisterHandler(DoShowGraphicAddEditDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ShowSaveGraphicStateDialog.RegisterHandler(DoShowSaveGraphicStateDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ShowOpenFileDialogAsync.RegisterHandler(DoShowOpenFileDialogAsync)));
+        this.WhenActivated(d => d(ViewModel!.ShowImportImagesDialogAsync.RegisterHandler(DoImportImagesDialogAsync)));
     }
 
     protected override void OnKeyUp(KeyEventArgs e)
@@ -47,14 +46,6 @@ public partial class MainView : ReactiveWindow<MainViewModel>
             var vm = (MainViewModel?)DataContext;
             vm?.EditManager.CancelDrawing();
         }
-    }
-
-    protected override void OnClosed(EventArgs e)
-    {
-        base.OnClosed(e);
-        var sessionUserImages = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "SessionUserImages"));
-        foreach (var file in sessionUserImages.GetFiles())
-            file.Delete();
     }
 
     private async Task DoShowLayersManageDialogAsync(InteractionContext<LayersManageViewModel, MainViewModel> interaction)
@@ -103,5 +94,25 @@ public partial class MainView : ReactiveWindow<MainViewModel>
         var result = await dialog.ShowAsync(this);
 
         interaction.SetOutput(result?.First());
+    }
+
+    private async Task DoImportImagesDialogAsync(InteractionContext<Unit, string[]?> interaction)
+    {
+        var dialog = new OpenFileDialog
+        {
+            AllowMultiple = true,
+            Filters = new List<FileDialogFilter>
+            { 
+                new FileDialogFilter
+                { 
+                    Extensions = new List<string>
+                    { 
+                        "png", "webp", "jpg", "jpeg"
+                    } 
+                }
+            }
+        };
+        var result = await dialog.ShowAsync(this);
+        interaction.SetOutput(result);
     }
 }

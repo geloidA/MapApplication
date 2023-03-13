@@ -13,7 +13,8 @@
             "args": [],
             "cwd": "${workspaceFolder}/map_app",
             "console": "internalConsole",
-            "stopAtEntry": false
+            "stopAtEntry": false,
+            "requireExactSource": false
         },
         {
             "name": ".NET Core Attach",
