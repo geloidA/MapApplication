@@ -19,7 +19,7 @@ namespace map_app.Network
 
         public event DataChangedEventHandler? DataChanged;
 
-        public void AddAircraft(AircraftClient aircraft)
+        public void Add(AircraftClient aircraft)
         {
             aircraft.DataChanged += (s, e) => DataHasChanged();
             _clients.Add(aircraft);

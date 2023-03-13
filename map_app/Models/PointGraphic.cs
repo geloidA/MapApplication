@@ -11,7 +11,7 @@ namespace map_app.Models
     public class PointGraphic : BaseGraphic
     {
         private SymbolStyle _style = new();
-        private double _scale;
+        private double _scale = 1;
 
         [JsonProperty]
         public string? Image { get; set; }

@@ -25,7 +25,7 @@ namespace map_app.Network
             return aircraft;
         }
 
-        public override async Task ProcessAsync()
+        public override async Task ProcessClientAsync()
         {
             while (true)
             {

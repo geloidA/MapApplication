@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using Avalonia.Notification;
 using Avalonia.Media;
 using System.Reactive;
+using map_app.Network;
 #endregion
 
 namespace map_app.ViewModels;
@@ -33,6 +34,7 @@ public class MainViewModel : ViewModelBase
     private MapState? _currentFileMapState;
     private readonly EditManipulation _editManipulation = new();
     private readonly ObservableAsPropertyHelper<bool> _isBaseGraphicUnderPointer;
+    private readonly MapStateServer _mapStateServer;
     #endregion
 
     public bool IsBaseGraphicUnderPointer => _isBaseGraphicUnderPointer.Value;
@@ -68,6 +70,9 @@ public class MainViewModel : ViewModelBase
 
     public MainViewModel(MapControl mapControl)
     {
+        _mapStateServer = new MapStateServer(int.Parse(App.Config["default_port"] 
+            ?? throw new NullReferenceException()));
+        _mapStateServer.RunAsync(() => true);
         MapControl = mapControl;
         MapControl.Map = MapCreator.Create();
         Graphics = (GraphicsLayer)MapControl.Map!.Layers.FindLayer(nameof(GraphicsLayer)).Single();
@@ -240,9 +245,8 @@ public class MainViewModel : ViewModelBase
 
     private async Task LoadPointImagesAsync(IEnumerable<BaseGraphic> graphics)
     {
-        foreach (var graphic in graphics)
+        foreach (var point in graphics.Cast<PointGraphic>())
         {
-            var point = (PointGraphic)graphic;
             if (point.Image != null)
             {
                 var bitmapId = await ImageRegister.RegisterAsync(point.Image);
@@ -313,4 +317,6 @@ public class MainViewModel : ViewModelBase
     {
         await MapStateJsonMarshaller.SaveAsync(state, state.FileLocation);
     }
+
+    public void StopMapStateListener() => _mapStateServer.Stop();
 }

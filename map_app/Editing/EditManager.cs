@@ -22,6 +22,8 @@ namespace map_app.Editing
         public Color CurrentColor { get; set; }
         public MRect? Extent { get; set; }
 
+        public bool HaveHoverVertex => _addInfo.Vertex is not null;
+
         private readonly DragInfo _dragInfo = new();
         private readonly AddInfo _addInfo = new();
         private readonly RotateInfo _rotateInfo = new();
@@ -39,6 +41,13 @@ namespace map_app.Editing
         public EditMode EditMode { get; set; }
 
         public int VertexRadius { get; set; } = 12;
+
+        public void EndIncompleteEditing()
+        {
+            if (_addInfo.Vertex is null) return;
+            AddVertex(_addInfo.Vertex);
+            EndEdit();
+        }
 
         public bool EndEdit()
         {

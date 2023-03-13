@@ -68,7 +68,7 @@
 
                 <StackPanel Orientation="Horizontal" Margin="5 0 0 0" IsVisible="{Binding GraphicType, Converter={StaticResource onlyPointPassedConverter}}">
                     <TextBlock Text="Диаметр" Margin="0 0 10 0"  VerticalAlignment="Center" />
-                    <TextBox Text="{Binding PointDiameter}" CornerRadius="0" Height="20" Width="100" />
+                    <TextBox Text="{Binding PointScale}" CornerRadius="0" Height="20" Width="100" />
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="5 0 0 0" >

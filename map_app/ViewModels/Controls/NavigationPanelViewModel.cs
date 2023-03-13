@@ -16,22 +16,14 @@ namespace map_app.ViewModels.Controls;
 
 internal class NavigationPanelViewModel : ViewModelBase
 {
-    private readonly string[] _modesNames = new[]
-    {
-        nameof(IsPointMode),
-        nameof(IsOrthodromeMode),
-        nameof(IsPolygonMode),
-        nameof(IsRectangleMode)
-    };
+    private readonly string[] _modesNames;
     private readonly GraphicsLayer _graphics;
     private readonly EditManager _editManager;
     private readonly MapControl _mapControl;
-
-    private readonly Mapsui.Styles.Pen EditOutlineStyle = new(Mapsui.Styles.Color.Red, 3);
-    private readonly Mapsui.Styles.Pen EditLineStyle = new(Mapsui.Styles.Color.Red, 3);
     
     public NavigationPanelViewModel(MainViewModel mainViewModel)
     {
+        _modesNames = GetModeNames();
         _mapControl = mainViewModel.MapControl;
         _editManager = mainViewModel.EditManager;
         _graphics = mainViewModel.Graphics;
@@ -39,23 +31,32 @@ internal class NavigationPanelViewModel : ViewModelBase
         EnablePolygonMode = ReactiveCommand.Create(() => SwitchDrawingMode(nameof(IsPolygonMode), EditMode.AddPolygon));
         EnableOrthodromeMode = ReactiveCommand.Create(() => SwitchDrawingMode(nameof(IsOrthodromeMode), EditMode.AddOrthodromeLine));
         EnableRectangleMode = ReactiveCommand.Create(() => SwitchDrawingMode(nameof(IsRectangleMode), EditMode.AddRectangle));
+        EnableModifyMode = ReactiveCommand.Create(() => SwitchDrawingMode(nameof(IsModifyMode), EditMode.Modify));
 
         ChooseColor = ReactiveCommand.Create<ImmutableSolidColorBrush>(brush => CurrentColor = brush.Color);
         this.WhenAnyValue(x => x.CurrentColor)
             .Subscribe(c => _editManager.CurrentColor = new MColor(c.R, c.G, c.B, c.A));
     }
 
+    [Mode]
     [Reactive]
     public bool IsPointMode { get; set; }
 
+    [Mode]
     [Reactive]
     public bool IsRectangleMode { get; set; }
 
+    [Mode]
     [Reactive]
     public bool IsPolygonMode { get; set; }
 
+    [Mode]
     [Reactive]
     public bool IsOrthodromeMode { get; set; }
+
+    [Mode]
+    [Reactive]
+    public bool IsModifyMode { get; set; }
 
     [Reactive]
     public AColor CurrentColor { get; set; } = Colors.Gray;
@@ -68,15 +69,9 @@ internal class NavigationPanelViewModel : ViewModelBase
 
     public ICommand EnableRectangleMode { get; }
 
+    public ICommand EnableModifyMode { get; }
+
     public ICommand ChooseColor { get; }
-
-    private void None() => _editManager.EditMode = EditMode.None;
-
-    private void EnableDrawingMode(EditMode mode)
-    {
-        ClearGraphicsLayerRenderedGeometry(_graphics);
-        _editManager.EditMode = mode;
-    }
 
     private static void ClearGraphicsLayerRenderedGeometry(GraphicsLayer layer)
     {
@@ -86,21 +81,27 @@ internal class NavigationPanelViewModel : ViewModelBase
 
     private void SwitchDrawingMode(string modeName, EditMode editMode)
     {
-        var toSwitch = this.GetType().GetProperty(modeName);
-        var isTurnOn = !(bool)toSwitch?.GetValue(this)! ^ true;
-        toSwitch?.SetValue(this, isTurnOn);
+        var drawingMode = this.GetType().GetProperty(modeName);
+        var isCurrentModeOn = !(bool)drawingMode?.GetValue(this)! ^ true;
+        drawingMode?.SetValue(this, isCurrentModeOn);
         
         foreach (var mode in _modesNames.Where(x => x != modeName))
         {
             var prop = this.GetType().GetProperty(mode);
             prop?.SetValue(this, false);
         }
-        if (isTurnOn) ClearGraphicsLayerRenderedGeometry(_graphics);
-        _editManager.EditMode = isTurnOn ? editMode : EditMode.None;
+        if (isCurrentModeOn) ClearGraphicsLayerRenderedGeometry(_graphics);
+        if (_editManager.HaveHoverVertex)
+            _editManager.EndIncompleteEditing();
+        _editManager.EditMode = isCurrentModeOn ? editMode : EditMode.None;
     }
-    
-    private void OnModify()
+
+    private static string[] GetModeNames()
     {
-        _editManager.EditMode = EditMode.Modify;
+        return typeof(NavigationPanelViewModel)
+            .GetProperties()
+            .Where(x => x.CustomAttributes.Any(a => a.AttributeType == typeof(ModeAttribute)))
+            .Select(x => x.Name)
+            .ToArray();
     }
 }

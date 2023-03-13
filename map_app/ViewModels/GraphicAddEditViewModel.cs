@@ -32,7 +32,7 @@ namespace map_app.ViewModels
         private BaseGraphic _editGraphic;
         private List<LinearPoint> _linear;
         private List<GeoPoint> _geo;
-        private double _pointDiameter;
+        private double _pointScale = 1;
         private readonly bool _isAddMode;
         private readonly GraphicsLayer? _graphicPool;
 
@@ -70,7 +70,7 @@ namespace map_app.ViewModels
             if (_editGraphic is PointGraphic point)
             {
                 ImagePath = point.Image;
-                PointDiameter = ((SymbolStyle)point.GraphicStyle).SymbolScale; 
+                PointScale = ((SymbolStyle)point.GraphicStyle).SymbolScale; 
             }
         }
 
@@ -117,14 +117,14 @@ namespace map_app.ViewModels
         [Reactive]
         public string? ImagePath { get; set; }
 
-        public double PointDiameter 
+        public double PointScale 
         {
-            get => _pointDiameter;
+            get => _pointScale;
             set
             {
                 if (value < 0.1 || value > 1)
-                    throw new ArgumentException("Введите число между 0.1 и 1", nameof(PointDiameter));
-                this.RaiseAndSetIfChanged(ref _pointDiameter, value);
+                    throw new ArgumentException("Введите число между 0.1 и 1", nameof(PointScale));
+                this.RaiseAndSetIfChanged(ref _pointScale, value);
             }
         }
 
@@ -195,7 +195,11 @@ namespace map_app.ViewModels
         {
             _editGraphic.Coordinates = _linear.ToCoordinates().ToList();
             var color = GraphicColor;
-            if (_editGraphic is PointGraphic point) UpdatePointStyle(point);
+            if (_editGraphic is PointGraphic point)
+            {
+                point.Scale = PointScale;
+                 UpdatePointStyle(point);
+            }
             _editGraphic.StyleColor = new Mapsui.Styles.Color(red: color.R, green: color.G, blue: color.B, alpha: color.A);
             _editGraphic.Opacity = Opacity;
             _editGraphic.Name = GraphicName;
@@ -213,7 +217,6 @@ namespace map_app.ViewModels
                 else
                     point.GraphicStyle = style;
             }
-            point.Scale = PointDiameter;
         }
 
         private async Task<VectorStyle?> GetNewPointStyle(PointGraphic point)

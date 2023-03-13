@@ -21,6 +21,7 @@
         <svg:Svg x:Key="rectangle" Path="Resources/Assets/rectangle.svg" Width="20" Height="20" />
         <svg:Svg x:Key="angle-up" Path="Resources/Assets/angle-up.svg" Width="20" Height="20" />
         <svg:Svg x:Key="orthodrome" Path="Resources/Assets/orthodrome.svg" Width="20" Height="20" />
+        <svg:Svg x:Key="modify" Path="Resources/Assets/modify.svg" Width="20" Height="20" />
     </UserControl.Resources>
 
     <Border BoxShadow="0 3 8 0 Black"
@@ -37,18 +38,9 @@
                     <ToggleButton Classes="main" IsChecked="{Binding IsOrthodromeMode}" Content="{StaticResource orthodrome}" Command="{Binding EnableOrthodromeMode}" ToolTip.Tip="Ортодромия" />
                     <ToggleButton Classes="main" IsChecked="{Binding IsPolygonMode}" Content="{StaticResource polygon}" Command="{Binding EnablePolygonMode}" ToolTip.Tip="Полигон" />
                     <ToggleButton Classes="main" IsChecked="{Binding IsPointMode}" Content="{StaticResource point}" Command="{Binding EnablePointMode}" ToolTip.Tip="Точка" />
+                    <ToggleButton Classes="main" IsChecked="{Binding IsModifyMode}" Content="{StaticResource modify}" Command="{Binding EnableModifyMode}" ToolTip.Tip="Перемещение" />
                     <controls:SimpleColorPicker Margin="35 0 0 0" />
                 </StackPanel>
-
-                <Button Grid.Column="1" CornerRadius="15" Content="{StaticResource angle-up}" HorizontalAlignment="Right" Background="White" ToolTip.Tip="Разное" >
-                    <Button.Flyout>
-                        <MenuFlyout Placement="Top" >
-                            <MenuItem Header="Отмена" Command="{Binding CancelDrawingChanges}" />
-                            <MenuItem Header="Переместить" Command="{Binding OnModify}" />
-                        </MenuFlyout>
-                    </Button.Flyout>
-                </Button>
-            </Grid>        
-    </Border>
-        
+            </Grid> 
+    </Border>        
 </UserControl>

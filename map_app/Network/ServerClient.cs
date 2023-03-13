@@ -13,7 +13,7 @@ namespace map_app.Network
             stream = client.GetStream();
         }
 
-        public abstract Task ProcessAsync();
+        public abstract Task ProcessClientAsync();
 
         public async Task<(byte[] Buf, int Count)> ReadFromStreamAsync(int bufSize)
         {

@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using map_app.Services.Renders;
 using Avalonia.Input;
 using map_app.Services;
+using System;
 
 namespace map_app.Views;
 
@@ -46,6 +47,12 @@ public partial class MainView : ReactiveWindow<MainViewModel>
             var vm = (MainViewModel?)DataContext;
             vm?.EditManager.CancelDrawing();
         }
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        base.OnClosed(e);
+        ViewModel?.StopMapStateListener();
     }
 
     private async Task DoShowLayersManageDialogAsync(InteractionContext<LayersManageViewModel, MainViewModel> interaction)

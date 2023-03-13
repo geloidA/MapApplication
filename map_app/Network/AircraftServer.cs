@@ -16,8 +16,8 @@ namespace map_app.Network
         {
             using (var aircraft = new AircraftClient(c))
             {
-                _aircraftSource.AddAircraft(aircraft);
-                await aircraft.ProcessAsync();
+                _aircraftSource.Add(aircraft);
+                await aircraft.ProcessClientAsync();
             }
         }
     }
