@@ -21,6 +21,8 @@ using Avalonia.Notification;
 using Avalonia.Media;
 using System.Reactive;
 using map_app.Network;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 #endregion
 
 namespace map_app.ViewModels;
@@ -29,7 +31,6 @@ public class MainViewModel : ViewModelBase
 {
     #region Private members
     private bool _isRightWasPressed;
-    private readonly List<string> _unregisteredImages = new();
     private const double LeftBorderMap = -20037494;
     private MapState? _currentFileMapState;
     private readonly EditManipulation _editManipulation = new();
@@ -37,7 +38,7 @@ public class MainViewModel : ViewModelBase
     private readonly MapStateServer _mapStateServer;
     #endregion
 
-    public bool IsBaseGraphicUnderPointer => _isBaseGraphicUnderPointer.Value;
+    internal bool IsBaseGraphicUnderPointer => _isBaseGraphicUnderPointer.Value;
 
     internal bool IsRulerActivated { get; set; }
 
@@ -48,13 +49,10 @@ public class MainViewModel : ViewModelBase
     internal EditManager EditManager { get; }
 
     [Reactive]
-    private string? LastFilePath { get; set; }
+    private BaseGraphic? UnderPointerFeature { get; set; }
 
     [Reactive]
-    private BaseGraphic? FeatureUnderPointer { get; set; }
-
-    [Reactive]
-    public string? LoadedFileName { get; set; }
+    internal string? LoadedFileName { get; set; }
 
     [Reactive]
     private bool HaveGraphics { get; set; }
@@ -69,20 +67,20 @@ public class MainViewModel : ViewModelBase
     internal AuxiliaryPanelViewModel AuxiliaryPanelViewModel { get; set; }
 
     public MainViewModel(MapControl mapControl)
-    {
-        _mapStateServer = new MapStateServer(int.Parse(App.Config["default_port"] 
-            ?? throw new NullReferenceException()));
-        _mapStateServer.RunAsync(() => true);
+    {        
         MapControl = mapControl;
         MapControl.Map = MapCreator.Create();
         Graphics = (GraphicsLayer)MapControl.Map!.Layers.FindLayer(nameof(GraphicsLayer)).Single();
+        _mapStateServer = new MapStateServer(int.Parse(App.Config["default_port"]
+                                                       ?? throw new NullReferenceException()), this);
+        _mapStateServer.RunAsync(() => true);
         EditManager = new EditManager(this);
         EditManager.Extent = new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap);
         GraphicsPopupViewModel = new GraphicsPopupViewModel(this);
         NavigationPanelViewModel = new NavigationPanelViewModel(this);
         AuxiliaryPanelViewModel = new AuxiliaryPanelViewModel(this);        
         _isBaseGraphicUnderPointer = this
-            .WhenAnyValue(x => x.FeatureUnderPointer)
+            .WhenAnyValue(x => x.UnderPointerFeature)
             .Select(f => f as BaseGraphic != null)
             .ToProperty(this, x => x.IsBaseGraphicUnderPointer);        
         Graphics.LayersFeatureChanged += (_, _) => HaveGraphics = Graphics.Features.Any();
@@ -99,14 +97,14 @@ public class MainViewModel : ViewModelBase
         var canExecute = this.WhenAnyValue(x => x.IsBaseGraphicUnderPointer);
         OpenGraphicEditingView = ReactiveCommand.CreateFromTask(async () =>
         {
-            var vm = new GraphicAddEditViewModel(FeatureUnderPointer ?? throw new NullReferenceException());
+            var vm = new GraphicAddEditViewModel(UnderPointerFeature ?? throw new NullReferenceException());
             await ShowGraphicEditingDialog.Handle(vm);
         }, canExecute);
         var canSave = this.WhenAnyValue(x => x.HaveGraphics);
         SaveGraphicStateInFile = ReactiveCommand.CreateFromTask(SaveGraphicStateInFileImpl, canSave);
         LoadGraphicStateAsync = ReactiveCommand.CreateFromTask(LoadGraphicStateAsyncImpl);
         var canSaveOpened = this
-            .WhenAnyValue(x => x.LastFilePath)
+            .WhenAnyValue(x => x.LoadedFileName)
             .Select(file => !string.IsNullOrEmpty(file));
         SaveGraphicStateInOpenedFile = ReactiveCommand.CreateFromTask(async () => 
         {
@@ -120,31 +118,41 @@ public class MainViewModel : ViewModelBase
             foreach (var path in paths)
                 ImageRegister.EmbedImage(path);
         });
+        ExitApp = ReactiveCommand.Create(() =>
+        {
+            if (App.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                desktop.MainWindow.Close();
+        });
+        // SendViaLAN = ReactiveCommand.Create();
     }
 
-    public ICommand? OpenLayersManageView { get; private set; }
+    internal ICommand? OpenLayersManageView { get; private set; }
 
-    public ICommand? OpenGraphicEditingView { get; private set; }
+    internal ICommand? OpenGraphicEditingView { get; private set; }
 
-    public ICommand? SaveGraphicStateInOpenedFile { get; private set; }
+    internal ICommand? SaveGraphicStateInOpenedFile { get; private set; }
 
-    public ICommand? SaveGraphicStateInFile { get; private set; }
+    internal ICommand? SaveGraphicStateInFile { get; private set; }
 
-    public ICommand? LoadGraphicStateAsync { get; private set; }
+    internal ICommand? LoadGraphicStateAsync { get; private set; }
 
-    public ICommand? ImportImages { get; private set; }
-
-    public INotificationMessageManager Manager { get; } = new NotificationMessageManager();
-
-    public Interaction<LayersManageViewModel, MainViewModel> ShowLayersManageDialog { get; } = new();
-
-    public Interaction<GraphicAddEditViewModel, MainViewModel> ShowGraphicEditingDialog { get; } = new();
-
-    public Interaction<MapStateSaveViewModel, MapState?> ShowSaveGraphicStateDialog { get; } = new();
+    internal ICommand? ExitApp { get; private set; }
     
-    public Interaction<List<string>, string?> ShowOpenFileDialogAsync { get; } = new();
+    internal ICommand? ImportImages { get; private set; }
 
-    public Interaction<Unit, string[]?> ShowImportImagesDialogAsync { get; } = new();
+    internal ICommand? SendViaLAN { get; private set; }
+
+    internal INotificationMessageManager Manager { get; } = new NotificationMessageManager();
+
+    internal Interaction<LayersManageViewModel, MainViewModel> ShowLayersManageDialog { get; } = new();
+
+    internal Interaction<GraphicAddEditViewModel, MainViewModel> ShowGraphicEditingDialog { get; } = new();
+
+    internal Interaction<MapStateSaveViewModel, MapState?> ShowSaveGraphicStateDialog { get; } = new();
+    
+    internal Interaction<List<string>, string?> ShowOpenFileDialogAsync { get; } = new();
+
+    internal Interaction<Unit, string[]?> ShowImportImagesDialogAsync { get; } = new();
 
     internal void AccessOnlyGraphic(object? sender, CancelEventArgs e) => e.Cancel = !IsBaseGraphicUnderPointer;
 
@@ -193,7 +201,7 @@ public class MainViewModel : ViewModelBase
         {
             _isRightWasPressed = true;
             var infoArgs = MapControl.GetMapInfo(args.GetPosition(MapControl).ToMapsui());
-            FeatureUnderPointer = infoArgs?.Feature as BaseGraphic;
+            UnderPointerFeature = infoArgs?.Feature as BaseGraphic;
             return;
         }
 
@@ -212,9 +220,9 @@ public class MainViewModel : ViewModelBase
 
     private void DeleteGraphic()
     {
-        if (FeatureUnderPointer is null)
+        if (UnderPointerFeature is null)
             throw new NullReferenceException("Graphic was null");
-        EditManager.Layer.TryRemove(FeatureUnderPointer);
+        EditManager.Layer.TryRemove(UnderPointerFeature);
     }
 
     private async Task LoadGraphicStateAsyncImpl()
@@ -231,40 +239,49 @@ public class MainViewModel : ViewModelBase
                 Colors.Red);
             return;
         }
-        await LoadPointImagesAsync(state.Graphics?.Where(x => x is PointGraphic) 
-            ?? Enumerable.Empty<BaseGraphic>());
-        if (_unregisteredImages.Any())
-        {
-            ShowImageNotification("Проблема загрузки изображений", "Информация", Colors.LightBlue);
-            _unregisteredImages.Clear();
-        }
+        UpdateGraphics(state.Graphics ?? Enumerable.Empty<BaseGraphic>());
         state.FileLocation = loadLocation;
-        LoadGraphicsInLayer(state.Graphics, loadLocation);
-        _currentFileMapState = state;
+        UpdateCurrentState(state);
+        MapControl.RefreshGraphics();
     }
 
-    private async Task LoadPointImagesAsync(IEnumerable<BaseGraphic> graphics)
+    internal async void UpdateGraphics(IEnumerable<BaseGraphic> newGraphics, bool clearing = true)
     {
-        foreach (var point in graphics.Cast<PointGraphic>())
+        var haveFailed = await LoadPointImagesAsync(newGraphics.Where(x => x is PointGraphic));
+        if (haveFailed) 
+            ShowNotification("Некоторых изображений - нет", "Информация", Colors.LightBlue);
+        if (clearing) 
+            Graphics.Clear();
+        Graphics.AddRange(newGraphics);
+    }
+
+    private async Task<bool> LoadPointImagesAsync(IEnumerable<BaseGraphic> graphics)
+    {
+        var haveFailedImagesPaths = false;
+        foreach (var point in graphics.Cast<PointGraphic>().Where(x => x.Image != null))
         {
-            if (point.Image != null)
+            var bitmapId = await ImageRegister.RegisterAsync(point.Image!);
+            if (bitmapId is null)
             {
-                var bitmapId = await ImageRegister.RegisterAsync(point.Image);
-                if (bitmapId is null)
-                {
-                    _unregisteredImages.Add(point.Image);
-                    continue;
-                }
-                point.GraphicStyle = new Mapsui.Styles.SymbolStyle 
-                { 
-                    BitmapId = bitmapId.Value,
-                    SymbolScale = point.Scale
-                };
+                haveFailedImagesPaths = true;
+                continue;
             }
+            point.GraphicStyle = new Mapsui.Styles.SymbolStyle 
+            { 
+                BitmapId = bitmapId.Value,
+                SymbolScale = point.Scale
+            };
         }
+        return haveFailedImagesPaths;
     }
 
-    private void ShowNotification(string message, string badge, Color color)
+    private void UpdateCurrentState(MapState state)
+    {
+        _currentFileMapState = state;
+        LoadedFileName = Path.GetFileName(state.FileLocation);
+    }
+
+    internal void ShowNotification(string message, string badge, Color color)
     {
         var accentBrush = new SolidColorBrush(color);
         this.Manager
@@ -277,30 +294,6 @@ public class MainViewModel : ViewModelBase
             .Dismiss()
             .WithButton("OK", _ => { })
             .Queue();
-    }
-
-    private void ShowImageNotification(string message, string badge, Color color)
-    {
-        var accentBrush = new SolidColorBrush(color);
-        this.Manager
-            .CreateMessage()
-            .Accent(accentBrush)
-            .Animates(true)
-            .Background("#333")
-            .HasBadge(badge)
-            .HasMessage(message)
-            .Dismiss()
-            .WithButton("OK", _ => { })
-            .Queue();
-    }
-
-    private void LoadGraphicsInLayer(IEnumerable<BaseGraphic>? newGraphics, string loadLocation)
-    {
-        Graphics.Clear();
-        if (newGraphics != null) Graphics.AddRange(newGraphics);
-        LastFilePath = loadLocation;
-        LoadedFileName = Path.GetFileName(loadLocation);
-        MapControl.Refresh();
     }
 
     private async Task SaveGraphicStateInFileImpl()
@@ -308,15 +301,8 @@ public class MainViewModel : ViewModelBase
         var vm = new MapStateSaveViewModel(Graphics.Features);
         var mapState = await ShowSaveGraphicStateDialog.Handle(vm);
         if (mapState is null) return;
-        _currentFileMapState = mapState;
-        LastFilePath = mapState.FileLocation;
-        LoadedFileName = Path.GetFileName(mapState.FileLocation);
+        UpdateCurrentState(mapState);
     }
 
-    private async Task SaveGraphics(MapState state)
-    {
-        await MapStateJsonMarshaller.SaveAsync(state, state.FileLocation);
-    }
-
-    public void StopMapStateListener() => _mapStateServer.Stop();
+    private async Task SaveGraphics(MapState state) => await MapStateJsonMarshaller.SaveAsync(state, state.FileLocation);
 }

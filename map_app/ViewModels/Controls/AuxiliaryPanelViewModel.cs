@@ -19,7 +19,7 @@ public class AuxiliaryPanelViewModel : ViewModelBase
     private readonly MapControl _mapControl;
     private readonly GraphicsLayer _graphicsLayer;
     private readonly Color LineColor = new Color(0, 0, 255, 100);
-    private double _kilometerInterval;
+    private double _kilometerInterval = 1000;
 
     public AuxiliaryPanelViewModel(MainViewModel mainViewModel)
     {

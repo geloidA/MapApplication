@@ -30,20 +30,11 @@ public abstract class BaseGraphic : GeometryFeature
         Geometry = source.Geometry;
     }
 
-    public BaseGraphic()
-    {
-        InitializeStyles();
-    }
+    public BaseGraphic() => InitializeStyles();
 
-    public BaseGraphic(GeometryFeature geometryFeature) : base(geometryFeature) 
-    {
-        InitializeStyles();
-    }
-    
-    public BaseGraphic(Geometry? geometry) : base(geometry)
-    {
-        InitializeStyles();
-    }
+    public BaseGraphic(GeometryFeature geometryFeature) : base(geometryFeature) => InitializeStyles();
+
+    public BaseGraphic(Geometry? geometry) : base(geometry) => InitializeStyles();
 
     private void InitializeStyles()
     {

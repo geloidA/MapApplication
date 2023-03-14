@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using map_app.Services.Attributes;
 using Mapsui.Nts;
 using Mapsui.Nts.Extensions;
 using Mapsui.Styles;
@@ -8,6 +9,7 @@ using Newtonsoft.Json;
 
 namespace map_app.Models
 {
+    [Label("Точка")]
     public class PointGraphic : BaseGraphic
     {
         private SymbolStyle _style = new();

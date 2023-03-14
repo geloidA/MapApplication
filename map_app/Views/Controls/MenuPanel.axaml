@@ -9,11 +9,13 @@
         <MenuItem Header="Открыть" Command="{Binding LoadGraphicStateAsync}"/>
         <MenuItem Header="Сохранить" Command="{Binding SaveGraphicStateInOpenedFile}"/>
         <MenuItem Header="Сохранить как..." Command="{Binding SaveGraphicStateInFile}"/>
+        <MenuItem Header="Отправить по локальной сети" Command="{Binding SendViaLAN}" />
         <Separator/>
         <MenuItem Header="Выход" Command="{Binding ExitApp}"/>
     </MenuItem>
-    <MenuItem Header="Управление слоями карты" Command="{Binding OpenLayersManageView}" />
-    <MenuItem Header="Импорт картинок" Command="{Binding ImportImages}" />
+    <MenuItem Header="Cлои" Command="{Binding OpenLayersManageView}" />
+    <MenuItem Header="Импорт изображений" Command="{Binding ImportImages}" />
+    <MenuItem Header="Настройки" Command="{Binding OpenSettings}" />
     <TextBlock Text="{Binding LoadedFileName}" FontStyle="Italic" />
   </Menu>
 </UserControl>

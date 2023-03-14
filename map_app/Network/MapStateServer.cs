@@ -1,19 +1,25 @@
 using System;
+using System.Linq;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Media;
+using map_app.Models;
+using map_app.Services;
+using map_app.ViewModels;
 
 namespace map_app.Network;
 
 public class MapStateServer
 {
-    private int _port;
     private bool _active;
-    private TcpListener _listener;
+    private readonly MainViewModel _mainVM;
+    private readonly TcpListener _listener;
 
-    public MapStateServer(int port)
+    public MapStateServer(int port, MainViewModel vm)
     {
-        _port = port;
-        _listener = TcpListener.Create(_port);
+        _listener = TcpListener.Create(port);
+        _mainVM = vm;
     }
     
     public async void RunAsync(Func<bool> stopPredicate)
@@ -21,22 +27,37 @@ public class MapStateServer
         if (_active) throw new InvalidOperationException("The server is already running");
         _listener.Start();
         _active = true;
-        while (stopPredicate())
+        try
         {
-            var tcpClient = await _listener.AcceptTcpClientAsync();
-            await ProcessClientAsync(tcpClient);
+            while (stopPredicate())
+                await Accept(await _listener.AcceptTcpClientAsync());
         }
+        finally { _listener.Stop(); }
     }
 
-    private async Task ProcessClientAsync(TcpClient client)
+    private async Task Accept(TcpClient client)
     {
-        var clientStream = client.GetStream();
-        
+        var state = await ProcessClientAsync(client);
+        if (state is not null)
+            _mainVM.UpdateGraphics(state.Graphics ?? Enumerable.Empty<BaseGraphic>(), false);
+        else _mainVM.ShowNotification("Не удалось загрузить данные по сети", "Информация", Colors.LightBlue);
     }
 
-    public void Stop()
+    private async Task<MapState?> ProcessClientAsync(TcpClient client)
     {
-        if (!_active) throw new InvalidOperationException("The server is not running");
-        _listener.Stop();
+        MapState? state = null;
+        using (var stream = client.GetStream())
+        {
+            var buffer = new byte[1024];
+            var jsonBuilder = new StringBuilder();
+            var numberOfBytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+            while (numberOfBytesRead > 0)
+            {
+                jsonBuilder.Append(Encoding.UTF8.GetString(buffer, 0, numberOfBytesRead));
+                numberOfBytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+            }
+            state = MapStateJsonSerializer.Deserialize(jsonBuilder.ToString());
+        }
+        return state;
     }
 }

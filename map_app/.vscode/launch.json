@@ -12,8 +12,7 @@
             "program": "${workspaceFolder}/bin/Debug/net6.0/map_app.dll",
             "args": [],
             "cwd": "${workspaceFolder}",
-            "console": "internalConsole",
-            "stopAtEntry": false
+            "console": "internalConsole"
         },
         {
             "name": ".NET Core Attach",

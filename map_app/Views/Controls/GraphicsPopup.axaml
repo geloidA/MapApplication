@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:models="clr-namespace:map_app.Models;assembly=map_app"
+             xmlns:c="clr-namespace:map_app.Services.Converters;assembly=map_app"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="map_app.Views.Controls.GraphicsPopup">
     <UserControl.Styles>
@@ -26,6 +27,9 @@
           <Setter Property="HorizontalAlignment" Value="Center" />
         </Style>
     </UserControl.Styles>
+    <UserControl.Resources>
+        <c:BaseGraphicToLabelConverter x:Key="graphicConverter" />
+    </UserControl.Resources>
     <Border 
       BoxShadow="0 3 8 0 Black"
       CornerRadius="0 5 5 0"
@@ -43,7 +47,7 @@
                 <ListBox Items="{Binding Graphics}" SelectedItem="{Binding SelectedGraphic}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Type}" />
+                            <TextBlock Text="{Binding, Converter={StaticResource graphicConverter}}" />
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                     <ListBox.ContextMenu>

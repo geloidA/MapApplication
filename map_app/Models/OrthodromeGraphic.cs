@@ -5,9 +5,11 @@ using System.Linq;
 using Mapsui.Nts;
 using NetTopologySuite.Geometries;
 using System;
+using map_app.Services.Attributes;
 
 namespace map_app.Models
 {
+    [Label("Ортодромия")]
     public class OrthodromeGraphic : BaseGraphic, IHoveringGraphic
     {
         private LinkedList<Orthodrome> _orthodromes;

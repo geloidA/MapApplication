@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using map_app.Services.Attributes;
 using Mapsui.Nts;
 using NetTopologySuite.Geometries;
 
 namespace map_app.Models
 {
+    [Label("Прямоугольник")]
     public class RectangleGraphic : BaseGraphic, IHoveringGraphic
     {
         private RectangleGraphic(RectangleGraphic source) : base(source) { }

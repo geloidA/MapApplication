@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using map_app.Services.Attributes;
 using Mapsui.Nts;
 using NetTopologySuite.Geometries;
 
 namespace map_app.Models
 {
+    [Label("Полигон")]
     public class PolygonGraphic : BaseGraphic, IHoveringGraphic
     {
         private PolygonGraphic(PolygonGraphic source) : base(source) { }
