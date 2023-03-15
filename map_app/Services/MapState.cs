@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text;
 using map_app.Models;
 using Newtonsoft.Json;
 
@@ -19,4 +20,10 @@ public class MapState
     public bool IsInitialized => Name != null || Description != null || Graphics != null;
     
     public string FileLocation { get; set; } = string.Empty;
+
+    public byte[] ToJsonBytes()
+    {
+        var json = MapStateJsonSerializer.Serialize(this);
+        return Encoding.UTF8.GetBytes(json);
+    }
 }

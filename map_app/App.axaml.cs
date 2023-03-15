@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Data.Core;
+using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using map_app.Views;
 using Microsoft.Extensions.Configuration;
@@ -37,6 +39,7 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        ExpressionObserver.DataValidators.RemoveAll(x => x is DataAnnotationsValidationPlugin);
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new MainView();

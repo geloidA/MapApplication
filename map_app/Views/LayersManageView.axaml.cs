@@ -1,8 +1,4 @@
-using System;
 using System.Threading.Tasks;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using map_app.ViewModels;
 using ReactiveUI;
@@ -19,10 +15,7 @@ public partial class LayersManageView : ReactiveWindow<LayersManageViewModel>
 
     private async Task DoShowAddDialogAsync(InteractionContext<LayerAddEditViewModel, LayersManageViewModel> interaction)
     {
-        var dialog = new LayerAddEditView();
-        dialog.DataContext = interaction.Input;
-
-        var result = await dialog.ShowDialog<LayersManageViewModel>(this);
-        interaction.SetOutput(result);
+        var dialog = new LayerAddEditView { DataContext = interaction.Input };
+        interaction.SetOutput(await dialog.ShowDialog<LayersManageViewModel>(this));
     }
 }

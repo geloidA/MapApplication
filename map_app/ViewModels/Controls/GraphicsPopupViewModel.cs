@@ -67,8 +67,6 @@ internal class GraphicsPopupViewModel : ViewModelBase
             Graphics.Clear();
             Graphics.AddRange(GetSavedGraphics);
         };
-
-        ShowAddEditGraphicDialog = new Interaction<GraphicAddEditViewModel, Unit>();
         
         OpenEditGraphicView = ReactiveCommand.CreateFromTask(async () =>
         {
@@ -83,7 +81,7 @@ internal class GraphicsPopupViewModel : ViewModelBase
         });
     }
 
-    public Interaction<GraphicAddEditViewModel, Unit> ShowAddEditGraphicDialog { get; }
+    internal readonly Interaction<GraphicAddEditViewModel, Unit> ShowAddEditGraphicDialog = new();
 
     public Image ArrowImage => _arrowImage.Value;
 

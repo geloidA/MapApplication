@@ -1,4 +1,3 @@
-# region usings
 using System;
 using Mapsui.UI.Avalonia;
 using map_app.Services;
@@ -21,18 +20,19 @@ using Avalonia.Notification;
 using Avalonia.Media;
 using System.Reactive;
 using map_app.Network;
-using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-#endregion
+using System.Net.Sockets;
+using System.Net;
 
 namespace map_app.ViewModels;
 
 public class MainViewModel : ViewModelBase
 {
-    #region Private members
+    #region private members
     private bool _isRightWasPressed;
     private const double LeftBorderMap = -20037494;
     private MapState? _currentFileMapState;
+    private int _deliveryPort;
     private readonly EditManipulation _editManipulation = new();
     private readonly ObservableAsPropertyHelper<bool> _isBaseGraphicUnderPointer;
     private readonly MapStateServer _mapStateServer;
@@ -45,11 +45,20 @@ public class MainViewModel : ViewModelBase
     internal MapControl MapControl { get; }
 
     internal GraphicsLayer Graphics { get; }
-    
+
     internal EditManager EditManager { get; }
 
     [Reactive]
     private BaseGraphic? UnderPointerFeature { get; set; }
+
+    [Reactive]
+    internal string? DeliveryIPAddress { get; set; }
+
+    public int DeliveryPort 
+    { 
+        get => _deliveryPort;
+        internal set => this.RaiseAndSetIfChanged(ref _deliveryPort, value); 
+    }
 
     [Reactive]
     internal string? LoadedFileName { get; set; }
@@ -67,22 +76,23 @@ public class MainViewModel : ViewModelBase
     internal AuxiliaryPanelViewModel AuxiliaryPanelViewModel { get; set; }
 
     public MainViewModel(MapControl mapControl)
-    {        
+    {
         MapControl = mapControl;
         MapControl.Map = MapCreator.Create();
         Graphics = (GraphicsLayer)MapControl.Map!.Layers.FindLayer(nameof(GraphicsLayer)).Single();
-        _mapStateServer = new MapStateServer(int.Parse(App.Config["default_port"]
-                                                       ?? throw new NullReferenceException()), this);
+        _deliveryPort = int.Parse(App.Config["default_port"] 
+            ?? throw new InvalidOperationException("Can't find default port from appsettings.json"));
+        _mapStateServer = new MapStateServer(_deliveryPort, this);
         _mapStateServer.RunAsync(() => true);
         EditManager = new EditManager(this);
         EditManager.Extent = new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap);
         GraphicsPopupViewModel = new GraphicsPopupViewModel(this);
         NavigationPanelViewModel = new NavigationPanelViewModel(this);
-        AuxiliaryPanelViewModel = new AuxiliaryPanelViewModel(this);        
+        AuxiliaryPanelViewModel = new AuxiliaryPanelViewModel(this);
         _isBaseGraphicUnderPointer = this
             .WhenAnyValue(x => x.UnderPointerFeature)
             .Select(f => f as BaseGraphic != null)
-            .ToProperty(this, x => x.IsBaseGraphicUnderPointer);        
+            .ToProperty(this, x => x.IsBaseGraphicUnderPointer);
         Graphics.LayersFeatureChanged += (_, _) => HaveGraphics = Graphics.Features.Any();
         InitializeCommands();
     }
@@ -94,25 +104,33 @@ public class MainViewModel : ViewModelBase
             var manager = new LayersManageViewModel(MapControl!.Map!);
             await ShowLayersManageDialog.Handle(manager);
         });
-        var canExecute = this.WhenAnyValue(x => x.IsBaseGraphicUnderPointer);
+        OpenSettingsView = ReactiveCommand.CreateFromTask(async () =>
+        {
+            var vm = new SettingsViewModel(this);
+            await ShowSettingsDialog.Handle(vm);
+        });
+        var graphicUnderPointer = this.WhenAnyValue(x => x.IsBaseGraphicUnderPointer);
         OpenGraphicEditingView = ReactiveCommand.CreateFromTask(async () =>
         {
             var vm = new GraphicAddEditViewModel(UnderPointerFeature ?? throw new NullReferenceException());
             await ShowGraphicEditingDialog.Handle(vm);
-        }, canExecute);
-        var canSave = this.WhenAnyValue(x => x.HaveGraphics);
-        SaveGraphicStateInFile = ReactiveCommand.CreateFromTask(SaveGraphicStateInFileImpl, canSave);
+        }, 
+        canExecute: graphicUnderPointer);
+        var haveAnyGraphic = this.WhenAnyValue(x => x.HaveGraphics);
+        SaveGraphicStateInFile = ReactiveCommand.CreateFromTask(SaveGraphicStateInFileImpl,
+                                                                canExecute: haveAnyGraphic);
         LoadGraphicStateAsync = ReactiveCommand.CreateFromTask(LoadGraphicStateAsyncImpl);
         var canSaveOpened = this
             .WhenAnyValue(x => x.LoadedFileName)
             .Select(file => !string.IsNullOrEmpty(file));
-        SaveGraphicStateInOpenedFile = ReactiveCommand.CreateFromTask(async () => 
+        SaveGraphicStateInOpenedFile = ReactiveCommand.CreateFromTask(async () =>
         {
             _currentFileMapState!.Graphics = Graphics.Features;
             await SaveGraphics(_currentFileMapState);
-        }, canSaveOpened);
-        ImportImages = ReactiveCommand.CreateFromTask(async () => 
-        { 
+        }, 
+        canExecute: canSaveOpened);
+        ImportImages = ReactiveCommand.CreateFromTask(async () =>
+        {
             var paths = await ShowImportImagesDialogAsync.Handle(Unit.Default);
             if (paths is null) return;
             foreach (var path in paths)
@@ -123,36 +141,44 @@ public class MainViewModel : ViewModelBase
             if (App.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
                 desktop.MainWindow.Close();
         });
-        // SendViaLAN = ReactiveCommand.Create();
+        SendViaLAN = ReactiveCommand.Create(SendViaLANImpl,
+                                            canExecute: haveAnyGraphic);
+    }
+
+    private void SendViaLANImpl()
+    {
+        if (string.IsNullOrEmpty(DeliveryIPAddress))
+        {
+            OpenSettingsView?.Execute(null);
+            return;
+        }
+        using var tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse(DeliveryIPAddress), DeliveryPort));
+        var data = _currentFileMapState!.ToJsonBytes();
+        using (var stream = tcpClient.GetStream())
+        {
+            stream.Write(data, 0, data.Length);
+        }
+        tcpClient.Close();
     }
 
     internal ICommand? OpenLayersManageView { get; private set; }
-
+    internal ICommand? OpenSettingsView { get; private set; }
     internal ICommand? OpenGraphicEditingView { get; private set; }
-
     internal ICommand? SaveGraphicStateInOpenedFile { get; private set; }
-
     internal ICommand? SaveGraphicStateInFile { get; private set; }
-
     internal ICommand? LoadGraphicStateAsync { get; private set; }
-
     internal ICommand? ExitApp { get; private set; }
-    
     internal ICommand? ImportImages { get; private set; }
-
     internal ICommand? SendViaLAN { get; private set; }
 
-    internal INotificationMessageManager Manager { get; } = new NotificationMessageManager();
+    internal readonly INotificationMessageManager Manager = new NotificationMessageManager();
 
-    internal Interaction<LayersManageViewModel, MainViewModel> ShowLayersManageDialog { get; } = new();
-
-    internal Interaction<GraphicAddEditViewModel, MainViewModel> ShowGraphicEditingDialog { get; } = new();
-
-    internal Interaction<MapStateSaveViewModel, MapState?> ShowSaveGraphicStateDialog { get; } = new();
-    
-    internal Interaction<List<string>, string?> ShowOpenFileDialogAsync { get; } = new();
-
-    internal Interaction<Unit, string[]?> ShowImportImagesDialogAsync { get; } = new();
+    internal readonly Interaction<LayersManageViewModel, Unit> ShowLayersManageDialog = new();
+    internal readonly Interaction<GraphicAddEditViewModel, Unit> ShowGraphicEditingDialog = new();
+    internal readonly Interaction<MapStateSaveViewModel, MapState?> ShowSaveGraphicStateDialog = new();
+    internal readonly Interaction<List<string>, string?> ShowOpenFileDialogAsync = new();
+    internal readonly Interaction<Unit, string[]?> ShowImportImagesDialogAsync = new();
+    internal readonly Interaction<SettingsViewModel, Unit> ShowSettingsDialog = new();
 
     internal void AccessOnlyGraphic(object? sender, CancelEventArgs e) => e.Cancel = !IsBaseGraphicUnderPointer;
 
@@ -161,7 +187,7 @@ public class MainViewModel : ViewModelBase
         var point = args.GetCurrentPoint(MapControl);
         var screenPosition = args.GetPosition(MapControl).ToMapsui();
         var worldPosition = MapControl.Viewport.ScreenToWorld(screenPosition);
-        
+
 
         if (point.Properties.IsLeftButtonPressed)
         {
@@ -234,7 +260,7 @@ public class MainViewModel : ViewModelBase
         if (state is null || !state.IsInitialized)
         {
             ShowNotification(
-                "Выбранный файл не удалось преобразовать в объекты", 
+                "Выбранный файл не удалось преобразовать в объекты",
                 "Ошибка",
                 Colors.Red);
             return;
@@ -248,9 +274,9 @@ public class MainViewModel : ViewModelBase
     internal async void UpdateGraphics(IEnumerable<BaseGraphic> newGraphics, bool clearing = true)
     {
         var haveFailed = await LoadPointImagesAsync(newGraphics.Where(x => x is PointGraphic));
-        if (haveFailed) 
+        if (haveFailed)
             ShowNotification("Некоторых изображений - нет", "Информация", Colors.LightBlue);
-        if (clearing) 
+        if (clearing)
             Graphics.Clear();
         Graphics.AddRange(newGraphics);
     }
@@ -266,8 +292,8 @@ public class MainViewModel : ViewModelBase
                 haveFailedImagesPaths = true;
                 continue;
             }
-            point.GraphicStyle = new Mapsui.Styles.SymbolStyle 
-            { 
+            point.GraphicStyle = new Mapsui.Styles.SymbolStyle
+            {
                 BitmapId = bitmapId.Value,
                 SymbolScale = point.Scale
             };

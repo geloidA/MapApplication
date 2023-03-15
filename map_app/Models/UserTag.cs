@@ -1,17 +1,17 @@
 using System;
 using System.Collections;
 using System.ComponentModel;
+using System.Linq;
 
 namespace map_app.Models
 {
     public class UserTag : INotifyDataErrorInfo, INotifyPropertyChanged
     {
-        private string _name;
-        private bool _hasErrors = false;
+        private bool _hasErrors;
+        private string _name = "New";
 
         public UserTag()
         {
-            _name = "New";
         }
 
         public string Name
@@ -35,9 +35,10 @@ namespace map_app.Models
 
         public IEnumerable GetErrors(string? propertyName)
         {
-            return _hasErrors 
-                ? new[] { "Имя метки не может быть пустым" }
-                : Array.Empty<object>();
+            if (!HasErrors) return Enumerable.Empty<object>();
+            if (propertyName != nameof(Name)) 
+                throw new NotImplementedException();
+            return new[] { "Имя метки не может быть пустым" };
         }
 
         private void OnErrorsChanged(string propertyName)

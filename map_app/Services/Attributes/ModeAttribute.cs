@@ -2,7 +2,8 @@ using System;
 
 namespace map_app.Services.Attributes;
 
-public class ModeAttribute : Attribute
+[AttributeUsage(AttributeTargets.Property)]
+public sealed class ModeAttribute : Attribute
 {
     
 }

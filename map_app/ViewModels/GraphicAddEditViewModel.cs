@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using Mapsui.Styles;
 using Mapsui.Extensions;
 using map_app.Services.IO;
+using ReactiveUI.Validation.Extensions;
 #endregion
 
 namespace map_app.ViewModels
@@ -32,7 +33,6 @@ namespace map_app.ViewModels
         private BaseGraphic _editGraphic;
         private List<LinearPoint> _linear;
         private List<GeoPoint> _geo;
-        private double _pointScale = 1;
         private readonly bool _isAddMode;
         private readonly GraphicsLayer? _graphicPool;
 
@@ -70,8 +70,11 @@ namespace map_app.ViewModels
             if (_editGraphic is PointGraphic point)
             {
                 ImagePath = point.Image;
-                PointScale = ((SymbolStyle)point.GraphicStyle).SymbolScale; 
+                PointScale = ((SymbolStyle)point.GraphicStyle).SymbolScale;
             }
+            this.ValidationRule(x => x.PointScale,
+                                scale => scale > 0 && scale <= 1,
+                                "Размер должен быть в диапозоне от 0 до 1");
         }
 
         private void InitializeCommands()
@@ -97,7 +100,7 @@ namespace map_app.ViewModels
                 .Select(x => !x.Any() || x.All(y => !y.HasErrors))
                 .StartWith(true);
             Cancel = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
-            SaveChanges = ReactiveCommand.Create<ICloseable>(SaveChangesImpl, isTagsValid);
+            SaveChanges = ReactiveCommand.Create<ICloseable>(SaveChangesImpl, Observable.Merge(this.IsValid(), isTagsValid));
             SelectImageAsync = ReactiveCommand.CreateFromTask(SelectImageAsyncImpl);
             var isImageInit = this
                 .WhenAnyValue(x => x.ImagePath)
@@ -117,16 +120,8 @@ namespace map_app.ViewModels
         [Reactive]
         public string? ImagePath { get; set; }
 
-        public double PointScale 
-        {
-            get => _pointScale;
-            set
-            {
-                if (value < 0.1 || value > 1)
-                    throw new ArgumentException("Введите число между 0.1 и 1", nameof(PointScale));
-                this.RaiseAndSetIfChanged(ref _pointScale, value);
-            }
-        }
+        [Reactive]
+        public double PointScale { get; set; } = 1;
 
         [Reactive]
         public string? GraphicName { get; set; }

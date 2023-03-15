@@ -26,11 +26,12 @@ public partial class MainView : ReactiveWindow<MainViewModel>
         MapControl.PointerReleased += vm.MapControlOnPointerReleased;
         GraphicCotxtMenu.ContextMenuOpening += vm.AccessOnlyGraphic;
         this.WhenActivated(d => d(ViewModel!.ShowLayersManageDialog.RegisterHandler(DoShowLayersManageDialogAsync)));
-        this.WhenActivated(d => d(ViewModel!.ShowGraphicEditingDialog.RegisterHandler(DoShowGraphicEditingDialogAsync)));
+        this.WhenActivated(d => d(ViewModel!.ShowGraphicEditingDialog.RegisterHandler(DoShowGraphicAddEditDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.GraphicsPopupViewModel.ShowAddEditGraphicDialog.RegisterHandler(DoShowGraphicAddEditDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ShowSaveGraphicStateDialog.RegisterHandler(DoShowSaveGraphicStateDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ShowOpenFileDialogAsync.RegisterHandler(DoShowOpenFileDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ShowImportImagesDialogAsync.RegisterHandler(DoImportImagesDialogAsync)));
+        this.WhenActivated(d => d(ViewModel!.ShowSettingsDialog.RegisterHandler(DoShowSettingsDialogAsync)));
     }
 
     protected override void OnKeyUp(KeyEventArgs e)
@@ -45,52 +46,40 @@ public partial class MainView : ReactiveWindow<MainViewModel>
             ViewModel?.EditManager.CancelDrawing();
     }
 
-    private async Task DoShowLayersManageDialogAsync(InteractionContext<LayersManageViewModel, MainViewModel> interaction)
+    private async Task DoShowLayersManageDialogAsync(InteractionContext<LayersManageViewModel, Unit> interaction) // unit means that we don't care about interaction result
     {
-        var dialog = new LayersManageView();
-        dialog.DataContext = interaction.Input;
-
-        var result = await dialog.ShowDialog<MainViewModel>(this);
-        interaction.SetOutput(result);
+        var dialog = new LayersManageView { DataContext = interaction.Input };
+        interaction.SetOutput(await dialog.ShowDialog<Unit>(this));
     }
 
-    private async Task DoShowGraphicEditingDialogAsync(InteractionContext<GraphicAddEditViewModel, MainViewModel> interaction)
+    private async Task DoShowSettingsDialogAsync(InteractionContext<SettingsViewModel, Unit> interaction)
     {
-        var dialog = new GraphicAddEditView();
-        dialog.DataContext = interaction.Input;
-
-        var result = await dialog.ShowDialog<MainViewModel>(this);
-        interaction.SetOutput(result);
+        var dialog = new SettingsView { DataContext = interaction.Input };
+        interaction.SetOutput(await dialog.ShowDialog<Unit>(this));
     }
 
     private async Task DoShowGraphicAddEditDialogAsync(InteractionContext<GraphicAddEditViewModel, Unit> interaction)
     {
-        var dialog = new GraphicAddEditView();
-        dialog.DataContext = interaction.Input;
-
-        var result = await dialog.ShowDialog<Unit>(this);
-        interaction.SetOutput(result);
+        var dialog = new GraphicAddEditView { DataContext = interaction.Input };
+        interaction.SetOutput(await dialog.ShowDialog<Unit>(this));
     }
 
     private async Task DoShowSaveGraphicStateDialogAsync(InteractionContext<MapStateSaveViewModel, MapState?> interaction)
     {
-        var dialog = new MapStateSaveView();
-        dialog.DataContext = interaction.Input;
-        var result = await dialog.ShowDialog<MapState?>(this);
-
-        interaction.SetOutput(result);
+        var dialog = new MapStateSaveView { DataContext = interaction.Input };
+        interaction.SetOutput(await dialog.ShowDialog<MapState?>(this));
     }
 
     private async Task DoShowOpenFileDialogAsync(InteractionContext<List<string>, string?> interaction)
     {
-        var dialog = new OpenFileDialog();
-        dialog.Filters = new List<FileDialogFilter>
-        { 
-            new FileDialogFilter() { Extensions = interaction.Input }
+        var dialog = new OpenFileDialog
+        {
+            Filters = new List<FileDialogFilter>
+            { 
+                new FileDialogFilter { Extensions = interaction.Input }
+            }
         };
-        var result = await dialog.ShowAsync(this);
-
-        interaction.SetOutput(result?.First());
+        interaction.SetOutput((await dialog.ShowAsync(this))?.First());
     }
 
     private async Task DoImportImagesDialogAsync(InteractionContext<Unit, string[]?> interaction)
@@ -109,7 +98,6 @@ public partial class MainView : ReactiveWindow<MainViewModel>
                 }
             }
         };
-        var result = await dialog.ShowAsync(this);
-        interaction.SetOutput(result);
+        interaction.SetOutput(await dialog.ShowAsync(this));
     }
 }

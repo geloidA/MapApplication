@@ -2,7 +2,8 @@ using System;
 
 namespace map_app.Services.Attributes;
 
-public class LabelAttribute : Attribute
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
+public sealed class LabelAttribute : Attribute
 {
     public string? Text { get; set; }
 
