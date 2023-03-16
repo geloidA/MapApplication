@@ -27,7 +27,7 @@ namespace map_app.ViewModels
                                 ip => !string.IsNullOrEmpty(ip) && _validateIPv4Regex.IsMatch(ip),
                                 "Неправильный IP-адрес");
             this.ValidationRule(x => x.DeliveryPort,
-                                port => port > 1024 && port < 49151,
+                                port => port > 1024 && port < 65535,
                                 "Неправильный порт");
             DeliveryPort = mainViewModel.DeliveryPort;
             DeliveryIPAddress = mainViewModel.DeliveryIPAddress;

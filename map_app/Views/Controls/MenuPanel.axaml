@@ -9,7 +9,7 @@
         <MenuItem Header="Открыть" Command="{Binding LoadGraphicStateAsync}"/>
         <MenuItem Header="Сохранить" Command="{Binding SaveGraphicStateInOpenedFile}"/>
         <MenuItem Header="Сохранить как..." Command="{Binding SaveGraphicStateInFile}"/>
-        <MenuItem Header="Отправить по локальной сети" Command="{Binding SendViaLAN}" />
+        <MenuItem Header="Отправить по локальной сети" Command="{Binding SendViaTCP}" />
         <Separator/>
         <MenuItem Header="Выход" Command="{Binding ExitApp}"/>
     </MenuItem>

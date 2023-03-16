@@ -10,13 +10,13 @@ using map_app.ViewModels;
 
 namespace map_app.Network;
 
-public class MapStateServer
+public class MapStateListener
 {
     private bool _active;
     private readonly MainViewModel _mainVM;
     private readonly TcpListener _listener;
 
-    public MapStateServer(int port, MainViewModel vm)
+    public MapStateListener(int port, MainViewModel vm)
     {
         _listener = TcpListener.Create(port);
         _mainVM = vm;
@@ -35,23 +35,24 @@ public class MapStateServer
         finally { _listener.Stop(); }
     }
 
-    private async Task Accept(TcpClient client)
+    private async Task Accept(TcpClient handler)
     {
-        var state = await ProcessClientAsync(client);
+        var state = await HandleClientAsync(handler);
+        handler.Close();
         if (state is not null)
             _mainVM.UpdateGraphics(state.Graphics ?? Enumerable.Empty<BaseGraphic>(), false);
         else _mainVM.ShowNotification("Не удалось загрузить данные по сети", "Информация", Colors.LightBlue);
     }
 
-    private async Task<MapState?> ProcessClientAsync(TcpClient client)
+    private async Task<MapState?> HandleClientAsync(TcpClient handler)
     {
         MapState? state = null;
-        using (var stream = client.GetStream())
+        using (var stream = handler.GetStream())
         {
             var buffer = new byte[1024];
             var jsonBuilder = new StringBuilder();
             var numberOfBytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-            while (numberOfBytesRead > 0)
+            while (handler.Connected && numberOfBytesRead > 0)
             {
                 jsonBuilder.Append(Encoding.UTF8.GetString(buffer, 0, numberOfBytesRead));
                 numberOfBytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);

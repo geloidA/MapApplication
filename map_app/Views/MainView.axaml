@@ -10,13 +10,13 @@
         FontFamily="Ubuntu"
         WindowStartupLocation="CenterScreen"
         x:Class="map_app.Views.MainView"
-        Title="Подготовка полётного задания">
+        Title="Подготовка полетного задания">
     <Grid>
         <DockPanel>
             <StackPanel DockPanel.Dock="Top">
                 <controls:MenuPanel />
                 <Border Background="LightGray" >
-                    <notification:NotificationMessageContainer Manager="{Binding Manager}" />
+                    <notification:NotificationMessageContainer Manager="{Binding NotificationManager}" />
                 </Border>
             </StackPanel>
 

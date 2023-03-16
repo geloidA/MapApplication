@@ -35,7 +35,7 @@ public class MainViewModel : ViewModelBase
     private int _deliveryPort;
     private readonly EditManipulation _editManipulation = new();
     private readonly ObservableAsPropertyHelper<bool> _isBaseGraphicUnderPointer;
-    private readonly MapStateServer _mapStateServer;
+    private readonly MapStateListener _mapStateServer;
     #endregion
 
     internal bool IsBaseGraphicUnderPointer => _isBaseGraphicUnderPointer.Value;
@@ -82,7 +82,7 @@ public class MainViewModel : ViewModelBase
         Graphics = (GraphicsLayer)MapControl.Map!.Layers.FindLayer(nameof(GraphicsLayer)).Single();
         _deliveryPort = int.Parse(App.Config["default_port"] 
             ?? throw new InvalidOperationException("Can't find default port from appsettings.json"));
-        _mapStateServer = new MapStateServer(_deliveryPort, this);
+        _mapStateServer = new MapStateListener(_deliveryPort, this);
         _mapStateServer.RunAsync(() => true);
         EditManager = new EditManager(this);
         EditManager.Extent = new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap);
@@ -141,49 +141,46 @@ public class MainViewModel : ViewModelBase
             if (App.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
                 desktop.MainWindow.Close();
         });
-        SendViaLAN = ReactiveCommand.Create(SendViaLANImpl,
+        SendViaTCP = ReactiveCommand.CreateFromTask(SendViaTCPImpl,
                                             canExecute: haveAnyGraphic);
     }
 
-    private void SendViaLANImpl()
+    private async Task SendViaTCPImpl()
     {
         if (string.IsNullOrEmpty(DeliveryIPAddress))
         {
             OpenSettingsView?.Execute(null);
             return;
         }
-        var endPoint = new IPEndPoint(IPAddress.Parse(DeliveryIPAddress), DeliveryPort);
+        var remotePoint = new IPEndPoint(IPAddress.Parse(DeliveryIPAddress), DeliveryPort);
         if (_currentFileMapState is null)
             _currentFileMapState = new MapState { Graphics = Graphics.Features };
-        if (!TrySendData(endPoint, _currentFileMapState.ToJsonBytes(), out string sendMessage))
-            ShowNotification(sendMessage, "Ошибка", Colors.Red);
+        var sendResult = await TrySendData(remotePoint, _currentFileMapState.ToJsonBytes()); // todo: размазывание ответственности разнести по разным методам обработку успешного получения и просто получения
+        if (sendResult.Success)
+            ShowNotification(sendResult.Message, "Информация", Colors.LightBlue);
         else 
-            ShowNotification(sendMessage, "Информация", Colors.LightBlue);
+            ShowNotification(sendResult.Message, "Ошибка", Colors.Red);
     }
 
-    private bool TrySendData(IPEndPoint endPoint, byte[] data, out string sendMessage)
+    private async Task<(bool Success, string Message)> TrySendData(IPEndPoint remotePoint, byte[] data)
     {
-        sendMessage = "Состояние карты отправлено";
         try
         {
-            SendData(endPoint, data);
-            return true;
+            await SendDataAsync(remotePoint, data);
+            return (true, "Состояние карты отправлено");
         }
         catch (SocketException e)
         {
-            sendMessage = e.Message;
-            return false;
+            return (false, e.Message);
         }
     }
 
-    private void SendData(IPEndPoint endPoint, byte[] data)
+    private async Task SendDataAsync(IPEndPoint remotePoint, byte[] data)
     {
-        using var tcpClient = new TcpClient(endPoint);
-        using (var stream = tcpClient.GetStream())
-        {
-            stream.Write(data, 0, data.Length);
-        }
-        tcpClient.Close();
+        using var tcpClient = new TcpClient();
+        tcpClient.Connect(remotePoint);
+        using var stream = tcpClient.GetStream();
+        await stream.WriteAsync(data, 0, data.Length);
     }
 
     internal ICommand? OpenLayersManageView { get; private set; }
@@ -194,7 +191,7 @@ public class MainViewModel : ViewModelBase
     internal ICommand? LoadGraphicStateAsync { get; private set; }
     internal ICommand? ExitApp { get; private set; }
     internal ICommand? ImportImages { get; private set; }
-    internal ICommand? SendViaLAN { get; private set; }
+    internal ICommand? SendViaTCP { get; private set; }
 
     internal INotificationMessageManager NotificationManager { get; } = new NotificationMessageManager();
 
@@ -207,7 +204,8 @@ public class MainViewModel : ViewModelBase
 
     internal void AccessOnlyGraphic(object? sender, CancelEventArgs e)
     {
-        e.Cancel = !IsBaseGraphicUnderPointer || EditMode.DrawingMode.HasFlag(EditManager.EditMode);
+        e.Cancel = !IsBaseGraphicUnderPointer || 
+            (EditManager.EditMode != EditMode.None && EditMode.DrawingMode.HasFlag(EditManager.EditMode));
     }
 
     internal void MapControlOnPointerMoved(object? sender, PointerEventArgs args)
