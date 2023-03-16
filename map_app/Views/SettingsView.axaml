@@ -59,8 +59,8 @@
             </TabItem>
         </TabControl>
         <UniformGrid Columns="2" Grid.Row="1" >
-            <Button HorizontalAlignment="Center" Content="ОК" Command="{Binding Confirm}" />
-            <Button HorizontalAlignment="Center" Content="Отмена" Command="{Binding Cancel}" CommandParameter="{Binding ElementName=settingsWnd}" />
+            <Button HorizontalAlignment="Center" Content="ОК" Command="{Binding Confirm}" CommandParameter="{Binding ElementName=settingsWnd}" />
+            <Button HorizontalAlignment="Center" Content="Отмена" Command="{Binding Close}" CommandParameter="{Binding ElementName=settingsWnd}" />
         </UniformGrid>
     </Grid>
 </Window>

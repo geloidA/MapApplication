@@ -25,24 +25,25 @@ namespace map_app.ViewModels
             _mainViewModel = mainViewModel;
             this.ValidationRule(x => x.DeliveryIPAddress,
                                 ip => !string.IsNullOrEmpty(ip) && _validateIPv4Regex.IsMatch(ip),
-                                "Неправильный IP адрес");
+                                "Неправильный IP-адрес");
             this.ValidationRule(x => x.DeliveryPort,
                                 port => port > 1024 && port < 49151,
                                 "Неправильный порт");
             DeliveryPort = mainViewModel.DeliveryPort;
             DeliveryIPAddress = mainViewModel.DeliveryIPAddress;
-            Confirm = ReactiveCommand.Create(ConfirmImpl, canExecute: this.IsValid());
-            Cancel = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
+            Confirm = ReactiveCommand.Create<ICloseable>(ConfirmImpl, canExecute: this.IsValid());
+            Close = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
         }
 
-        private void ConfirmImpl()
+        private void ConfirmImpl(ICloseable wnd)
         {
             _mainViewModel.DeliveryIPAddress = DeliveryIPAddress;
             if (_mainViewModel.DeliveryPort != DeliveryPort)
                 _mainViewModel.DeliveryPort = DeliveryPort;
+            Close?.Execute(wnd);
         }
 
-        internal ICommand? Cancel { get; private set; }
+        internal ICommand? Close { get; private set; }
         internal ICommand? Confirm { get; private set; }
     }
 }

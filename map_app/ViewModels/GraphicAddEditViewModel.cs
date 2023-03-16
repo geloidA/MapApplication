@@ -99,7 +99,7 @@ namespace map_app.ViewModels
                 .ToCollection()
                 .Select(x => !x.Any() || x.All(y => !y.HasErrors))
                 .StartWith(true);
-            Cancel = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
+            Close = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
             SaveChanges = ReactiveCommand.Create<ICloseable>(SaveChangesImpl, Observable.Merge(this.IsValid(), isTagsValid));
             SelectImageAsync = ReactiveCommand.CreateFromTask(SelectImageAsyncImpl);
             var isImageInit = this
@@ -159,7 +159,7 @@ namespace map_app.ViewModels
         public ICommand? SaveChanges { get; private set; }
         public ICommand? RemoveSelectedTag { get; private set; }
         public ICommand? AddTag { get; private set; }
-        public ICommand? Cancel { get; private set; }
+        public ICommand? Close { get; private set; }
         public ICommand? SelectImageAsync { get; private set; }
 
         private async Task SelectImageAsyncImpl()
@@ -183,7 +183,7 @@ namespace map_app.ViewModels
                 _graphicPool!.Add(_editGraphic);
                 _graphicPool!.DataHasChanged();
             }
-            Cancel?.Execute(wnd);
+            Close?.Execute(wnd);
         }
 
         private void ConfirmChanges()

@@ -17,7 +17,7 @@ namespace map_app.Editing
 {
     public class EditManager
     {
-        public GraphicsLayer Layer { get; set; }
+        public GraphicsLayer GraphicLayer { get; set; }
         public double CurrentOpacity { get; set; }
         public Color CurrentColor { get; set; }
         public MRect? Extent { get; set; }
@@ -33,7 +33,7 @@ namespace map_app.Editing
         public EditManager(MainViewModel main)
         {
             _mainViewModel = main;
-            Layer = main.Graphics;            
+            GraphicLayer = main.Graphics;
             CurrentColor = Color.Black;
             CurrentOpacity = 1;
         }
@@ -81,7 +81,7 @@ namespace map_app.Editing
                 _addInfo.Vertex.SetXY(mapInfo?.WorldPosition);
                 _addInfo.Feature?.RenderedGeometry.Clear();
                 _addInfo.Feature?.RerenderGeometry();
-                Layer.DataHasChanged();
+                GraphicLayer.DataHasChanged();
             }
         }
 
@@ -92,8 +92,8 @@ namespace map_app.Editing
 
             if (EditMode == EditMode.AddPoint)
             {
-                Layer.Add(new PointGraphic(new[] { worldPosition }.ToList()) { StyleColor = CurrentColor, Opacity = CurrentOpacity });
-                Layer.LayersFeatureHasChanged();
+                GraphicLayer.Add(new PointGraphic(new[] { worldPosition }.ToList()) { StyleColor = CurrentColor, Opacity = CurrentOpacity });
+                GraphicLayer.LayersFeatureHasChanged();
             }
             else if (EditMode == EditMode.AddPolygon)
                 AddGraphic(worldPosition, typeof(PolygonGraphic), EditMode.DrawingPolygon);
@@ -121,8 +121,8 @@ namespace map_app.Editing
             if (graphic is not IHoveringGraphic hoveringGraphic)
                 throw new ArgumentException($"Type of graphic {graphicType} must implement IHoveringGraphic");
             hoveringGraphic.HoverVertex = _addInfo.Vertex;
-            Layer.Add(_addInfo.Feature);
-            Layer.LayersFeatureHasChanged();
+            GraphicLayer.Add(_addInfo.Feature);
+            GraphicLayer.LayersFeatureHasChanged();
             EditMode = drawingMode;
         }
 
@@ -151,7 +151,7 @@ namespace map_app.Editing
             target.AddPoint(worldPosition);
 
             _addInfo.Feature?.RenderedGeometry.Clear();
-            Layer.DataHasChanged();
+            GraphicLayer.DataHasChanged();
         }
 
         private static Coordinate? FindVertexTouched(MapInfo mapInfo, IEnumerable<Coordinate> vertices, double screenDistance)
@@ -219,7 +219,7 @@ namespace map_app.Editing
                     {
                         geometryFeature.Geometry = geometryFeature.Geometry.DeleteCoordinate(index);
                         geometryFeature.RenderedGeometry.Clear();
-                        Layer.DataHasChanged();
+                        GraphicLayer.DataHasChanged();
                     }
                 }
             }
@@ -241,7 +241,7 @@ namespace map_app.Editing
                     geometryFeature.Geometry = geometryFeature.Geometry.InsertCoordinate(mapInfo.WorldPosition.ToCoordinate3D() 
                         ?? throw new NullReferenceException("Inserted mapInfo was null"), segment);
                     geometryFeature.RenderedGeometry.Clear();
-                    Layer.DataHasChanged();
+                    GraphicLayer.DataHasChanged();
                 }
             }
             return false;
@@ -278,7 +278,7 @@ namespace map_app.Editing
             _rotateInfo.PreviousPosition = worldPosition;
 
             _rotateInfo.Feature.RenderedGeometry.Clear();
-            Layer.DataHasChanged();
+            GraphicLayer.DataHasChanged();
 
             return true; // to signal pan lock
         }
@@ -329,7 +329,7 @@ namespace map_app.Editing
             _scaleInfo.PreviousPosition = worldPosition;
 
             _scaleInfo.Feature.RenderedGeometry.Clear();
-            Layer.DataHasChanged();
+            GraphicLayer.DataHasChanged();
 
             return true; // to signal pan lock
         }
@@ -350,7 +350,7 @@ namespace map_app.Editing
             EditMode == EditMode.DrawingRectangle)
             {
                 if (_addInfo.Feature is null) return;
-                Layer.TryRemove(_addInfo.Feature);
+                GraphicLayer.TryRemove(_addInfo.Feature);
                 EndEdit();
             }
         }

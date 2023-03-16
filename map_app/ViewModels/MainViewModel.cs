@@ -152,8 +152,33 @@ public class MainViewModel : ViewModelBase
             OpenSettingsView?.Execute(null);
             return;
         }
-        using var tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse(DeliveryIPAddress), DeliveryPort));
-        var data = _currentFileMapState!.ToJsonBytes();
+        var endPoint = new IPEndPoint(IPAddress.Parse(DeliveryIPAddress), DeliveryPort);
+        if (_currentFileMapState is null)
+            _currentFileMapState = new MapState { Graphics = Graphics.Features };
+        if (!TrySendData(endPoint, _currentFileMapState.ToJsonBytes(), out string sendMessage))
+            ShowNotification(sendMessage, "Ошибка", Colors.Red);
+        else 
+            ShowNotification(sendMessage, "Информация", Colors.LightBlue);
+    }
+
+    private bool TrySendData(IPEndPoint endPoint, byte[] data, out string sendMessage)
+    {
+        sendMessage = "Состояние карты отправлено";
+        try
+        {
+            SendData(endPoint, data);
+            return true;
+        }
+        catch (SocketException e)
+        {
+            sendMessage = e.Message;
+            return false;
+        }
+    }
+
+    private void SendData(IPEndPoint endPoint, byte[] data)
+    {
+        using var tcpClient = new TcpClient(endPoint);
         using (var stream = tcpClient.GetStream())
         {
             stream.Write(data, 0, data.Length);
@@ -171,7 +196,7 @@ public class MainViewModel : ViewModelBase
     internal ICommand? ImportImages { get; private set; }
     internal ICommand? SendViaLAN { get; private set; }
 
-    internal readonly INotificationMessageManager Manager = new NotificationMessageManager();
+    internal INotificationMessageManager NotificationManager { get; } = new NotificationMessageManager();
 
     internal readonly Interaction<LayersManageViewModel, Unit> ShowLayersManageDialog = new();
     internal readonly Interaction<GraphicAddEditViewModel, Unit> ShowGraphicEditingDialog = new();
@@ -180,7 +205,10 @@ public class MainViewModel : ViewModelBase
     internal readonly Interaction<Unit, string[]?> ShowImportImagesDialogAsync = new();
     internal readonly Interaction<SettingsViewModel, Unit> ShowSettingsDialog = new();
 
-    internal void AccessOnlyGraphic(object? sender, CancelEventArgs e) => e.Cancel = !IsBaseGraphicUnderPointer;
+    internal void AccessOnlyGraphic(object? sender, CancelEventArgs e)
+    {
+        e.Cancel = !IsBaseGraphicUnderPointer || EditMode.DrawingMode.HasFlag(EditManager.EditMode);
+    }
 
     internal void MapControlOnPointerMoved(object? sender, PointerEventArgs args)
     {
@@ -248,7 +276,7 @@ public class MainViewModel : ViewModelBase
     {
         if (UnderPointerFeature is null)
             throw new NullReferenceException("Graphic was null");
-        EditManager.Layer.TryRemove(UnderPointerFeature);
+        EditManager.GraphicLayer.TryRemove(UnderPointerFeature);
     }
 
     private async Task LoadGraphicStateAsyncImpl()
@@ -310,7 +338,7 @@ public class MainViewModel : ViewModelBase
     internal void ShowNotification(string message, string badge, Color color)
     {
         var accentBrush = new SolidColorBrush(color);
-        this.Manager
+        NotificationManager
             .CreateMessage()
             .Accent(accentBrush)
             .Animates(true)
