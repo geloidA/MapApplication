@@ -35,10 +35,12 @@ public class MainViewModel : ViewModelBase
     private int _deliveryPort;
     private readonly EditManipulation _editManipulation = new();
     private readonly ObservableAsPropertyHelper<bool> _isBaseGraphicUnderPointer;
+    private readonly ObservableAsPropertyHelper<bool> _isOrthodromeUnderPointer;
     private readonly MapStateListener _mapStateServer;
     #endregion
 
     internal bool IsBaseGraphicUnderPointer => _isBaseGraphicUnderPointer.Value;
+    internal bool IsOrthodromeUnderPointer => _isOrthodromeUnderPointer.Value;
 
     internal bool IsRulerActivated { get; set; }
 
@@ -49,7 +51,7 @@ public class MainViewModel : ViewModelBase
     internal EditManager EditManager { get; }
 
     [Reactive]
-    private BaseGraphic? UnderPointerFeature { get; set; }
+    private BaseGraphic? UnderPointerGraphic { get; set; }
 
     [Reactive]
     internal string? DeliveryIPAddress { get; set; }
@@ -90,9 +92,13 @@ public class MainViewModel : ViewModelBase
         NavigationPanelViewModel = new NavigationPanelViewModel(this);
         AuxiliaryPanelViewModel = new AuxiliaryPanelViewModel(this);
         _isBaseGraphicUnderPointer = this
-            .WhenAnyValue(x => x.UnderPointerFeature)
+            .WhenAnyValue(x => x.UnderPointerGraphic)
             .Select(f => f as BaseGraphic != null)
             .ToProperty(this, x => x.IsBaseGraphicUnderPointer);
+        _isOrthodromeUnderPointer = this
+            .WhenAnyValue(x => x.UnderPointerGraphic)
+            .Select(f => f as OrthodromeGraphic != null)
+            .ToProperty(this, x => x.IsOrthodromeUnderPointer);
         Graphics.LayersFeatureChanged += (_, _) => HaveGraphics = Graphics.Features.Any();
         InitializeCommands();
     }
@@ -112,7 +118,7 @@ public class MainViewModel : ViewModelBase
         var graphicUnderPointer = this.WhenAnyValue(x => x.IsBaseGraphicUnderPointer);
         OpenGraphicEditingView = ReactiveCommand.CreateFromTask(async () =>
         {
-            var vm = new GraphicAddEditViewModel(UnderPointerFeature ?? throw new NullReferenceException());
+            var vm = new GraphicAddEditViewModel(UnderPointerGraphic ?? throw new NullReferenceException());
             await ShowGraphicEditingDialog.Handle(vm);
         }, 
         canExecute: graphicUnderPointer);
@@ -143,6 +149,11 @@ public class MainViewModel : ViewModelBase
         });
         SendViaTCP = ReactiveCommand.CreateFromTask(SendViaTCPImpl,
                                             canExecute: haveAnyGraphic);
+        OpenExportOrhodromeIntervalsView = ReactiveCommand.CreateFromTask(async () =>
+        {
+            var vm = new ExportOrhodromeIntervalsViewModel((OrthodromeGraphic)UnderPointerGraphic!);
+            await ShowExportOrhodromeIntervalsDialogAsync.Handle(vm);
+        });
     }
 
     private async Task SendViaTCPImpl()
@@ -192,6 +203,7 @@ public class MainViewModel : ViewModelBase
     internal ICommand? ExitApp { get; private set; }
     internal ICommand? ImportImages { get; private set; }
     internal ICommand? SendViaTCP { get; private set; }
+    internal ICommand? OpenExportOrhodromeIntervalsView { get; private set; }
 
     internal INotificationMessageManager NotificationManager { get; } = new NotificationMessageManager();
 
@@ -200,6 +212,7 @@ public class MainViewModel : ViewModelBase
     internal readonly Interaction<MapStateSaveViewModel, MapState?> ShowSaveGraphicStateDialog = new();
     internal readonly Interaction<List<string>, string?> ShowOpenFileDialogAsync = new();
     internal readonly Interaction<Unit, string[]?> ShowImportImagesDialogAsync = new();
+    internal readonly Interaction<ExportOrhodromeIntervalsViewModel, Unit> ShowExportOrhodromeIntervalsDialogAsync = new();
     internal readonly Interaction<SettingsViewModel, Unit> ShowSettingsDialog = new();
 
     internal void AccessOnlyGraphic(object? sender, CancelEventArgs e)
@@ -253,7 +266,7 @@ public class MainViewModel : ViewModelBase
         {
             _isRightWasPressed = true;
             var infoArgs = MapControl.GetMapInfo(args.GetPosition(MapControl).ToMapsui());
-            UnderPointerFeature = infoArgs?.Feature as BaseGraphic;
+            UnderPointerGraphic = infoArgs?.Feature as BaseGraphic;
             return;
         }
 
@@ -272,9 +285,9 @@ public class MainViewModel : ViewModelBase
 
     private void DeleteGraphic()
     {
-        if (UnderPointerFeature is null)
+        if (UnderPointerGraphic is null)
             throw new NullReferenceException("Graphic was null");
-        EditManager.GraphicLayer.TryRemove(UnderPointerFeature);
+        EditManager.GraphicLayer.TryRemove(UnderPointerGraphic);
     }
 
     private async Task LoadGraphicStateAsyncImpl()

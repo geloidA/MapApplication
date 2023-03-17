@@ -9,7 +9,7 @@ using System.Linq;
 using System.Collections.Generic;
 using map_app.Services.Renders;
 using Avalonia.Input;
-using map_app.Services;
+using System;
 
 namespace map_app.Views;
 
@@ -25,13 +25,16 @@ public partial class MainView : ReactiveWindow<MainViewModel>
         MapControl.PointerPressed += vm.MapControlOnPointerPressed;
         MapControl.PointerReleased += vm.MapControlOnPointerReleased;
         GraphicCotxtMenu.ContextMenuOpening += vm.AccessOnlyGraphic;
-        this.WhenActivated(d => d(ViewModel!.ShowLayersManageDialog.RegisterHandler(DoShowLayersManageDialogAsync)));
-        this.WhenActivated(d => d(ViewModel!.ShowGraphicEditingDialog.RegisterHandler(DoShowGraphicAddEditDialogAsync)));
-        this.WhenActivated(d => d(ViewModel!.GraphicsPopupViewModel.ShowAddEditGraphicDialog.RegisterHandler(DoShowGraphicAddEditDialogAsync)));
-        this.WhenActivated(d => d(ViewModel!.ShowSaveGraphicStateDialog.RegisterHandler(DoShowSaveGraphicStateDialogAsync)));
+        this.WhenActivated(d => d(ViewModel!.ShowLayersManageDialog.RegisterHandler(x => this.ShowDialogAsync(x, new LayersManageView()))));
+        Func<InteractionContext<GraphicAddEditViewModel, Unit>, Task> graphicAddEditDialog = 
+            x => this.ShowDialogAsync(x, new GraphicAddEditView());
+        this.WhenActivated(d => d(ViewModel!.ShowGraphicEditingDialog.RegisterHandler(graphicAddEditDialog)));
+        this.WhenActivated(d => d(ViewModel!.GraphicsPopupViewModel.ShowAddEditGraphicDialog.RegisterHandler(graphicAddEditDialog)));
+        this.WhenActivated(d => d(ViewModel!.ShowSaveGraphicStateDialog.RegisterHandler(x => this.ShowDialogAsync(x, new MapStateSaveView()))));
+        this.WhenActivated(d => d(ViewModel!.ShowSettingsDialog.RegisterHandler(x => this.ShowDialogAsync(x, new SettingsView()))));
         this.WhenActivated(d => d(ViewModel!.ShowOpenFileDialogAsync.RegisterHandler(DoShowOpenFileDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ShowImportImagesDialogAsync.RegisterHandler(DoImportImagesDialogAsync)));
-        this.WhenActivated(d => d(ViewModel!.ShowSettingsDialog.RegisterHandler(DoShowSettingsDialogAsync)));
+        this.WhenActivated(d => d(ViewModel!.ShowExportOrhodromeIntervalsDialogAsync.RegisterHandler(x => this.ShowDialogAsync(x, new ExportOrhodromeIntervalsView()))));
     }
 
     protected override void OnKeyUp(KeyEventArgs e)
@@ -44,30 +47,6 @@ public partial class MainView : ReactiveWindow<MainViewModel>
     {
         if (e.Key == Key.Escape)
             ViewModel?.EditManager.CancelDrawing();
-    }
-
-    private async Task DoShowLayersManageDialogAsync(InteractionContext<LayersManageViewModel, Unit> interaction) // unit means that we don't care about interaction result
-    {
-        var dialog = new LayersManageView { DataContext = interaction.Input };
-        interaction.SetOutput(await dialog.ShowDialog<Unit>(this));
-    }
-
-    private async Task DoShowSettingsDialogAsync(InteractionContext<SettingsViewModel, Unit> interaction)
-    {
-        var dialog = new SettingsView { DataContext = interaction.Input };
-        interaction.SetOutput(await dialog.ShowDialog<Unit>(this));
-    }
-
-    private async Task DoShowGraphicAddEditDialogAsync(InteractionContext<GraphicAddEditViewModel, Unit> interaction)
-    {
-        var dialog = new GraphicAddEditView { DataContext = interaction.Input };
-        interaction.SetOutput(await dialog.ShowDialog<Unit>(this));
-    }
-
-    private async Task DoShowSaveGraphicStateDialogAsync(InteractionContext<MapStateSaveViewModel, MapState?> interaction)
-    {
-        var dialog = new MapStateSaveView { DataContext = interaction.Input };
-        interaction.SetOutput(await dialog.ShowDialog<MapState?>(this));
     }
 
     private async Task DoShowOpenFileDialogAsync(InteractionContext<List<string>, string?> interaction)

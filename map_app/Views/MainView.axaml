@@ -26,6 +26,8 @@
                         <ContextMenu Name="GraphicCotxtMenu" >
                             <MenuItem Header="Обзор" Command="{Binding OpenGraphicEditingView}" />
                             <MenuItem Header="Удалить" Command="{Binding DeleteGraphic}" />
+                            <MenuItem Header="Выгрузить последовательность точек" 
+                                Command="{Binding OpenExportOrhodromeIntervalsView}" IsVisible="{Binding IsOrthodromeUnderPointer}" />
                         </ContextMenu>
                     </avalonia:MapControl.ContextMenu>
                 </avalonia:MapControl>

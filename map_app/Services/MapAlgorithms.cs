@@ -11,23 +11,22 @@ namespace map_app.Services
     {
         private const double EarthKmRadius = 6371;
 
-        public static List<GeoPoint> GetOrthodromePath(Coordinate worldPoint1, Coordinate worldPoint2)
+        public static IEnumerable<GeoPoint> GetOrthodromePath(Coordinate worldPoint1, Coordinate worldPoint2)
             => GetOrthodromePath(worldPoint1.ToGeoPoint(), worldPoint2.ToGeoPoint());
 
-        public static List<GeoPoint> GetOrthodromePath(GeoPoint degPoint1, GeoPoint degPoint2, double interval = 0.01)
+        public static IEnumerable<GeoPoint> GetOrthodromePath(GeoPoint degPoint1, GeoPoint degPoint2, double interval = 0.01)
         {
-            var points = new List<GeoPoint>();
             var comparer = new ThreeDimentionalPointEqualityComparer();
             if (comparer.Equals(degPoint1, degPoint2))
-                return points;
+                yield break;
             var lat1 = Algorithms.DegreesToRadians(degPoint1.Latitude);
             var lat2 = Algorithms.DegreesToRadians(degPoint2.Latitude);
             var lon1 = Algorithms.DegreesToRadians(degPoint1.Longtitude);
             var lon2 = Algorithms.DegreesToRadians(degPoint2.Longtitude);
             var d = Haversine(degPoint1, degPoint2) / 6371;
-            
-            for (var i = 0.0; i <= 1.0; i += interval)
+            for (var i = 0.0; i <= 1.0; i += interval) // calculation error
             {
+                if (i > 1.0) i = 1.0;
                 var A = Math.Sin((1 - i) * d) / Math.Sin(d);
                 var B = Math.Sin(i * d) / Math.Sin(d);
                 var x = A * Math.Cos(lat1) * Math.Cos(lon1) +
@@ -37,14 +36,11 @@ namespace map_app.Services
                 var z = A * Math.Sin(lat1) + B * Math.Sin(lat2);
                 var lat = Math.Atan2(z, Math.Sqrt(x * x + y * y));
                 var lon = Math.Atan2(y, x);
-                points.Add(new GeoPoint(
-                        Algorithms.RadiansToDegrees(lon), 
-                        Algorithms.RadiansToDegrees(lat)));
+                yield return new GeoPoint(
+                        Algorithms.RadiansToDegrees(lon),
+                        Algorithms.RadiansToDegrees(lat));
             }
-
-            return points;
         }
-
         public static double Haversine(GeoPoint p1, GeoPoint p2)
         {
             var lat1 = Algorithms.DegreesToRadians(p1.Latitude);

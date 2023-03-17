@@ -31,16 +31,15 @@ namespace map_app.ViewModels
                                 "Неправильный порт");
             DeliveryPort = mainViewModel.DeliveryPort;
             DeliveryIPAddress = mainViewModel.DeliveryIPAddress;
-            Confirm = ReactiveCommand.Create<ICloseable>(ConfirmImpl, canExecute: this.IsValid());
+            Confirm = ReactiveCommand.Create<ICloseable>(wnd => 
+            {
+                _mainViewModel.DeliveryIPAddress = DeliveryIPAddress;
+                if (_mainViewModel.DeliveryPort != DeliveryPort)
+                    _mainViewModel.DeliveryPort = DeliveryPort;
+                Close?.Execute(wnd);
+            }, 
+            canExecute: this.IsValid());
             Close = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
-        }
-
-        private void ConfirmImpl(ICloseable wnd)
-        {
-            _mainViewModel.DeliveryIPAddress = DeliveryIPAddress;
-            if (_mainViewModel.DeliveryPort != DeliveryPort)
-                _mainViewModel.DeliveryPort = DeliveryPort;
-            Close?.Execute(wnd);
         }
 
         internal ICommand? Close { get; private set; }

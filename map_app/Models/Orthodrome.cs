@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using map_app.Services;
 
 namespace map_app.Models
@@ -11,7 +12,7 @@ namespace map_app.Models
         {
             Start = start;
             End = end;
-            _path = MapAlgorithms.GetOrthodromePath(Start, End);
+            _path = MapAlgorithms.GetOrthodromePath(Start, End).ToList();
         }
 
         public GeoPoint Start { get; set; }
@@ -25,7 +26,7 @@ namespace map_app.Models
         /// </summary>
         public void RenderPath()
         {
-            _path = MapAlgorithms.GetOrthodromePath(Start, End);
+            _path = MapAlgorithms.GetOrthodromePath(Start, End).ToList();
         }
 
         public override string ToString()

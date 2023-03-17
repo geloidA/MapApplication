@@ -1,0 +1,21 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="map_app.Views.ExportOrhodromeIntervalsView"
+        Name="exportWnd"
+        MinWidth="400" MinHeight="200"
+        Width="400" Height="200"
+        Title="Экспорт ортодромии">
+    <Grid RowDefinitions="*,0.4*">
+        <UniformGrid Columns="2" >
+            <TextBlock Text="Шаг" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <TextBox Text="{Binding Interval}" Width="100" Height="20"/>
+        </UniformGrid>
+         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1">
+            <Button Classes="dialog" Content="Ок" Command="{Binding Save}" CommandParameter="{Binding ElementName=exportWnd}" />
+            <Button Classes="dialog" Content="Отмена" Command="{Binding Cancel}" CommandParameter="{Binding ElementName=exportWnd}" />
+        </StackPanel>
+    </Grid>
+</Window>

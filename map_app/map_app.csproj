@@ -37,6 +37,7 @@
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.18" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18" />
     <PackageReference Include="Avalonia.Svg" Version="0.10.18" />
+    <PackageReference Include="Csv" Version="2.0.93" />
     <PackageReference Include="Mapsui" Version="4.0.0-beta.6" />
     <PackageReference Include="Mapsui.Avalonia" Version="4.0.0-beta.6" />
     <PackageReference Include="MessageBox.Avalonia" Version="2.0.0" />

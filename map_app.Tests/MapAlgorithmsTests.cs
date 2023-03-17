@@ -48,4 +48,15 @@ public class MapAlgorithmsTests
         var point = new GeoPoint();
         Assert.That(MapAlgorithms.Haversine(point, point), Is.EqualTo(0.0));
     }
+
+    [Test]
+    public void GetOrthodromePath_ShouldHaveEqualStartEnd()
+    {
+        var geo1 = new GeoPoint(12, 15);
+        var geo2 = new GeoPoint(2, 12);
+        var path = MapAlgorithms.GetOrthodromePath(geo1, geo2);
+        var last = path.Last();
+        Assert.That(new ThreeDimentionalPointEqualityComparer().Equals(geo1, path.First()), Is.True);
+        Assert.That(new ThreeDimentionalPointEqualityComparer().Equals(geo2, last), Is.True);
+    }
 }

@@ -10,12 +10,6 @@ public partial class LayersManageView : ReactiveWindow<LayersManageViewModel>
     public LayersManageView()
     {
         InitializeComponent();
-        this.WhenActivated(d => d(ViewModel!.ShowAddEditDialog.RegisterHandler(DoShowAddDialogAsync)));
-    }
-
-    private async Task DoShowAddDialogAsync(InteractionContext<LayerAddEditViewModel, LayersManageViewModel> interaction)
-    {
-        var dialog = new LayerAddEditView { DataContext = interaction.Input };
-        interaction.SetOutput(await dialog.ShowDialog<LayersManageViewModel>(this));
+        this.WhenActivated(d => d(ViewModel!.ShowAddEditDialog.RegisterHandler(x => this.ShowDialogAsync(x, new LayerAddEditView()))));
     }
 }
