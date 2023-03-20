@@ -87,8 +87,7 @@ public class MainViewModel : ViewModelBase
             ?? throw new InvalidOperationException("Can't find default port from appsettings.json"));
         _mapStateServer = new MapStateListener(_deliveryPort, this);
         _mapStateServer.RunAsync(() => true);
-        EditManager = new EditManager(this);
-        EditManager.Extent = new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap);
+        EditManager = new EditManager(this, new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap));
         GraphicsPopupViewModel = new GraphicsPopupViewModel(this);
         NavigationPanelViewModel = new NavigationPanelViewModel(this);
         AuxiliaryPanelViewModel = new AuxiliaryPanelViewModel(this);

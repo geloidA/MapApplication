@@ -9,7 +9,7 @@ namespace map_app.Editing.Extensions
     public static class GeometryExtensions
     {
         /// <summary>
-        /// For editing features it is simpler if we can treat al
+        /// For editing features it is simpler if we can treat all
         /// geometries as a list of lists of points.
         /// </summary>
         /// <param name="geometry"></param>

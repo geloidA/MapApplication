@@ -75,28 +75,24 @@ internal class NavigationPanelViewModel : ViewModelBase
 
     public ICommand ChooseColor { get; }
 
-    private static void ClearGraphicsLayerRenderedGeometry(GraphicsLayer layer)
-    {
-        foreach (var feature in layer.Features)
-            feature.RenderedGeometry.Clear();
-    }
-
     private void SwitchDrawingMode(string modeName, EditMode editMode)
     {
         var drawingMode = this.GetType().GetProperty(modeName);
-        var isCurrentModeOn = !(bool)drawingMode?.GetValue(this)! ^ true;
-        drawingMode?.SetValue(this, isCurrentModeOn);
+        var isSwitchedModeOn = !(bool)drawingMode?.GetValue(this)! ^ true;
+        drawingMode?.SetValue(this, isSwitchedModeOn);
         
         foreach (var mode in _modesNames.Where(x => x != modeName))
         {
             var prop = this.GetType().GetProperty(mode);
             prop?.SetValue(this, false);
         }
-        if (isCurrentModeOn) ClearGraphicsLayerRenderedGeometry(_graphics);
+
         if (_editManager.HaveHoverVertex)
             _editManager.EndIncompleteEditing();
-        _editManager.EditMode = isCurrentModeOn ? editMode : EditMode.None;
+        _editManager.EditMode = isSwitchedModeOn ? editMode : EditMode.None;
     }
+
+    private void TurnOffMode(Type type, string modeName) => type.GetProperty(modeName)?.SetValue(this, false);
 
     private static string[] GetModeNames()
     {

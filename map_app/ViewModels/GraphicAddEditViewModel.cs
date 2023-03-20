@@ -169,14 +169,14 @@ namespace map_app.ViewModels
             ImagePath = imagePath;
         }
 
-        private void SaveChangesImpl(ICloseable wnd)
+        private async void SaveChangesImpl(ICloseable wnd)
         {            
             if (HaveValidationErrors(out string message))
             {
                 ShowMessageIncorrectData(message);
                 return;
             }
-            ConfirmChanges();
+            await ConfirmChanges();
             if (_isAddMode)
             {
                 _graphicPool!.Add(_editGraphic);
@@ -185,14 +185,14 @@ namespace map_app.ViewModels
             Close?.Execute(wnd);
         }
 
-        private void ConfirmChanges()
+        private async Task ConfirmChanges()
         {
             _editGraphic.Coordinates = _linear.ToCoordinates().ToList();
             var color = GraphicColor;
             if (_editGraphic is PointGraphic point)
             {
+                await UpdatePointStyleAsync(point);
                 point.Scale = PointScale;
-                 UpdatePointStyle(point);
             }
             _editGraphic.StyleColor = new Mapsui.Styles.Color(red: color.R, green: color.G, blue: color.B, alpha: color.A);
             _editGraphic.Opacity = Opacity;
@@ -201,16 +201,14 @@ namespace map_app.ViewModels
                        
         }
 
-        private async void UpdatePointStyle(PointGraphic point)
+        private async Task UpdatePointStyleAsync(PointGraphic point)
         {
-            if (point.Image != ImagePath)
-            {
-                var style = await GetNewPointStyle(point);
-                if (style is null) 
-                    ShowMessageIncorrectData("Файла нет");
-                else
-                    point.GraphicStyle = style;
-            }
+            if (point.Image == ImagePath) return;
+            var style = await GetNewPointStyle(point);
+            if (style is null) 
+                ShowMessageIncorrectData("Файла нет");
+            else
+                point.GraphicStyle = style;
         }
 
         private async Task<VectorStyle?> GetNewPointStyle(PointGraphic point)

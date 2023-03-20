@@ -17,30 +17,41 @@ namespace map_app.Editing
 {
     public class EditManager
     {
-        public GraphicsLayer GraphicLayer { get; set; }
-        public double CurrentOpacity { get; set; }
-        public Color CurrentColor { get; set; }
-        public MRect? Extent { get; set; }
-
-        public bool HaveHoverVertex => _addInfo.Vertex is not null;
-
         private readonly DragInfo _dragInfo = new();
         private readonly AddInfo _addInfo = new();
         private readonly RotateInfo _rotateInfo = new();
         private readonly ScaleInfo _scaleInfo = new();
         private readonly MainViewModel _mainViewModel;
+        private Color _currentColor = Color.Black;
 
-        public EditManager(MainViewModel main)
+        public GraphicsLayer GraphicLayer { get; }
+
+        public Color CurrentColor 
+        { 
+            get => _currentColor; 
+            set
+            {
+                if (value is null) throw new NullReferenceException();
+                _currentColor = value; 
+            }
+        }
+
+        public MRect Extent { get; }
+
+        public bool HaveHoverVertex => _addInfo.Vertex is not null;
+
+        public EditManager(MainViewModel main, MRect extent)
         {
             _mainViewModel = main;
             GraphicLayer = main.Graphics;
-            CurrentColor = Color.Black;
-            CurrentOpacity = 1;
+            Extent = extent;
         }
 
         public EditMode EditMode { get; set; }
 
         public int VertexRadius { get; set; } = 12;
+
+        public void TurnOffMode() => EditMode = EditMode.None;
 
         public void EndIncompleteEditing()
         {
@@ -92,7 +103,7 @@ namespace map_app.Editing
 
             if (EditMode == EditMode.AddPoint)
             {
-                GraphicLayer.Add(new PointGraphic(new[] { worldPosition }.ToList()) { StyleColor = CurrentColor, Opacity = CurrentOpacity });
+                GraphicLayer.Add(new PointGraphic(new[] { worldPosition }.ToList()) { StyleColor = CurrentColor });
                 GraphicLayer.DataHasChanged();
             }
             else if (EditMode == EditMode.AddPolygon)
@@ -131,7 +142,6 @@ namespace map_app.Editing
             var graphic = (BaseGraphic?)Activator.CreateInstance(graphicType, _addInfo.Vertices!.Single())
                 ?? throw new Exception($"Activator can not create instance of type \"{graphicType}\"");
             graphic.StyleColor = CurrentColor;
-            graphic.Opacity = CurrentOpacity;
             var distanceLabels = graphic.Styles.FirstOrDefault(x => x is LabelDistanceStyle);
             if (distanceLabels is not null)
                 distanceLabels.Enabled = _mainViewModel.IsRulerActivated;
@@ -172,7 +182,7 @@ namespace map_app.Editing
 
             _dragInfo.Feature = geometryFeature;
             _dragInfo.StartOffsetsToVertexes = new MPoint[_dragInfo.Feature.Coordinates.Count];
-            
+
             for (var i = 0; i < _dragInfo.Feature.Coordinates.Count; i++)
                 _dragInfo.StartOffsetsToVertexes[i] = mapInfo.WorldPosition - _dragInfo.Feature.Coordinates[i].ToMPoint();
 
@@ -181,10 +191,10 @@ namespace map_app.Editing
 
         public bool DraggingEntirely(Point? worldPosition)
         {
-            if (EditMode != EditMode.Modify || 
-                _dragInfo.Feature == null || 
-                worldPosition == null || 
-                _dragInfo.StartOffsetsToVertexes == null) 
+            if (EditMode != EditMode.Modify ||
+                _dragInfo.Feature == null ||
+                worldPosition == null ||
+                _dragInfo.StartOffsetsToVertexes == null)
                 return false;
 
             var i = 0;
@@ -192,7 +202,7 @@ namespace map_app.Editing
             {
                 coordinate.SetXY(worldPosition.ToMPoint() - _dragInfo.StartOffsetsToVertexes[i]);
                 i++;
-            }            
+            }
             _dragInfo.Feature.RerenderGeometry();
             return true;
         }
@@ -238,7 +248,7 @@ namespace map_app.Editing
                 var vertices = geometryFeature.Geometry.MainCoordinates();
                 if (EditHelper.ShouldInsert(mapInfo.WorldPosition, mapInfo.Resolution, vertices, VertexRadius, out var segment))
                 {
-                    geometryFeature.Geometry = geometryFeature.Geometry.InsertCoordinate(mapInfo.WorldPosition.ToCoordinate3D() 
+                    geometryFeature.Geometry = geometryFeature.Geometry.InsertCoordinate(mapInfo.WorldPosition.ToCoordinate3D()
                         ?? throw new NullReferenceException("Inserted mapInfo was null"), segment);
                     geometryFeature.RenderedGeometry.Clear();
                     GraphicLayer.DataHasChanged();
