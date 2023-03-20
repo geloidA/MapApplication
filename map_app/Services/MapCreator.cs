@@ -3,16 +3,13 @@ using BruTile.Web;
 using Mapsui;
 using Mapsui.Extensions;
 using Mapsui.Layers;
-using Mapsui.Layers.AnimatedLayers;
 using Mapsui.Styles;
-using Mapsui.Styles.Thematics;
 using Mapsui.Tiling.Layers;
-using map_app.Views;
-using map_app.Network;
 using Mapsui.Projections;
 using Mapsui.UI;
 using Mapsui.Widgets;
 using Mapsui.Widgets.ScaleBar;
+using map_app.Services.Layers;
 
 namespace map_app.Services;
 
@@ -54,35 +51,6 @@ public class MapCreator
         var (minX, minY) = SphericalMercator.FromLonLat(-180, 85);
         var (maxX, maxY) = SphericalMercator.FromLonLat(180, -85);
         return new MRect(minX, minY, maxX, maxY);
-    }
-
-    private static ILayer CreateAnimatedAircraftsLayer()
-    {
-        return new AnimatedPointLayer(new AnimationAircraftsProvider())
-        {
-            Name = "Aircrafts",
-            Style = CreateAircraftPointStyle()
-        };
-    }
-
-    private static IStyle CreateAircraftPointStyle()
-    {
-        return new ThemeStyle(f => 
-        {
-            return CreateSvgArrowStyle("Resources.Assets.aircraft.png", 0.1, f);
-        });
-    }
-
-    private static IStyle CreateSvgArrowStyle(string embeddedResourcePath, double scale, IFeature feature)
-    {
-        var bitmapId = typeof(MainView).LoadBitmapId(embeddedResourcePath);
-        return new SymbolStyle
-        {
-            BitmapId = bitmapId,
-            SymbolScale = scale,
-            SymbolOffset = new RelativeOffset(0.0, 0.5),
-            SymbolRotation = (double)feature["rotation"]!
-        };
     }
 
     private static ILayer CreateTargetWritableLayer()

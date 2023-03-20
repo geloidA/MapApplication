@@ -6,7 +6,7 @@ using Mapsui.Extensions;
 using Mapsui.Fetcher;
 using Mapsui.Layers;
 
-namespace map_app.Services;
+namespace map_app.Services.Layers;
 
 public class MapGridLayer : BaseLayer
 {

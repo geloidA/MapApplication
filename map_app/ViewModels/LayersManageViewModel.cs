@@ -11,6 +11,7 @@ using DynamicData;
 using ReactiveUI.Fody.Helpers;
 using DynamicData.Binding;
 using Avalonia.Input;
+using map_app.Services.Layers;
 
 namespace map_app.ViewModels
 {

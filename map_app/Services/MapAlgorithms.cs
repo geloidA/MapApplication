@@ -14,7 +14,7 @@ namespace map_app.Services
         public static IEnumerable<GeoPoint> GetOrthodromePath(Coordinate worldPoint1, Coordinate worldPoint2)
             => GetOrthodromePath(worldPoint1.ToGeoPoint(), worldPoint2.ToGeoPoint());
 
-        public static IEnumerable<GeoPoint> GetOrthodromePath(GeoPoint degPoint1, GeoPoint degPoint2, double interval = 0.01)
+        public static IEnumerable<GeoPoint> GetOrthodromePath(GeoPoint degPoint1, GeoPoint degPoint2, double interval = 0.01f)
         {
             var comparer = new ThreeDimentionalPointEqualityComparer();
             if (comparer.Equals(degPoint1, degPoint2))
@@ -24,9 +24,8 @@ namespace map_app.Services
             var lon1 = Algorithms.DegreesToRadians(degPoint1.Longtitude);
             var lon2 = Algorithms.DegreesToRadians(degPoint2.Longtitude);
             var d = Haversine(degPoint1, degPoint2) / 6371;
-            for (var i = 0.0; i <= 1.0; i += interval) // calculation error
+            for (var i = 0.0; i <= 1.0; i += interval)
             {
-                if (i > 1.0) i = 1.0;
                 var A = Math.Sin((1 - i) * d) / Math.Sin(d);
                 var B = Math.Sin(i * d) / Math.Sin(d);
                 var x = A * Math.Cos(lat1) * Math.Cos(lon1) +
@@ -41,6 +40,7 @@ namespace map_app.Services
                         Algorithms.RadiansToDegrees(lat));
             }
         }
+
         public static double Haversine(GeoPoint p1, GeoPoint p2)
         {
             var lat1 = Algorithms.DegreesToRadians(p1.Latitude);

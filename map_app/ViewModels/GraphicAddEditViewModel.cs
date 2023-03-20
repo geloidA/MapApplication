@@ -1,4 +1,3 @@
-#region Usings
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Avalonia.Media;
@@ -24,7 +23,7 @@ using Mapsui.Styles;
 using Mapsui.Extensions;
 using map_app.Services.IO;
 using ReactiveUI.Validation.Extensions;
-#endregion
+using map_app.Services.Layers;
 
 namespace map_app.ViewModels
 {

@@ -4,7 +4,7 @@ using ReactiveUI;
 
 namespace map_app.Views;
 
-public static class WindowExtentions
+public static class WindowExtensions
 {
     public static async Task ShowDialogAsync<TInput, TOutput>(this Window owner, InteractionContext<TInput, TOutput> interaction, Window dialog) 
         where TInput : ReactiveObject

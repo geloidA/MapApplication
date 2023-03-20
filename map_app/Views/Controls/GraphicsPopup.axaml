@@ -41,8 +41,11 @@
       VerticalAlignment="Center"
       >
       <Grid>
-        <Grid RowDefinitions="30,1*" >
-            <Label Content="Готовые объекты" HorizontalAlignment="Center"/>
+        <Grid RowDefinitions="50,1*" >
+            <Grid ColumnDefinitions="0.4*,*" >
+                <Button Classes="dialog" Content="Очистить" IsVisible="{Binding IsGraphicsListOpen}" Command="{Binding ClearGraphics}" />
+                <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="Готовые объекты" HorizontalAlignment="Center" IsVisible="{Binding IsGraphicsListOpen}"/>
+            </Grid>
             <Grid Grid.Row="1" ColumnDefinitions="1*,15" >
                 <ListBox Items="{Binding Graphics}" SelectedItem="{Binding SelectedGraphic}">
                     <ListBox.ItemTemplate>

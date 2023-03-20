@@ -12,6 +12,7 @@ using ReactiveUI.Fody.Helpers;
 using MColor = Mapsui.Styles.Color;
 using AColor = Avalonia.Media.Color;
 using map_app.Services.Attributes;
+using map_app.Services.Layers;
 
 namespace map_app.ViewModels.Controls;
 

@@ -52,10 +52,10 @@ public class MapStateListener
             var buffer = new byte[1024];
             var jsonBuilder = new StringBuilder();
             var numberOfBytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-            while (handler.Connected && numberOfBytesRead > 0)
+            while (numberOfBytesRead > 0)
             {
                 jsonBuilder.Append(Encoding.UTF8.GetString(buffer, 0, numberOfBytesRead));
-                numberOfBytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+                numberOfBytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, 100);
             }
             state = MapStateJsonSerializer.Deserialize(jsonBuilder.ToString());
         }

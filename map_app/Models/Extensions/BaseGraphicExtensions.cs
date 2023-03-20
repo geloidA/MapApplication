@@ -5,7 +5,7 @@ using map_app.Editing.Extensions;
 
 namespace map_app.Models.Extensions;
 
-public static class BaseGraphicExtentions
+public static class BaseGraphicExtensions
 {
     public static IEnumerable<Segment> GetSegments(this BaseGraphic graphic)
     {

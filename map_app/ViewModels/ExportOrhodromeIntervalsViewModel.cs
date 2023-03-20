@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Input;
 using Csv;
@@ -45,7 +44,7 @@ public class ExportOrhodromeIntervalsViewModel : ReactiveValidationObject
     {
         return orthodrome.GeoPoints
             .Zip(orthodrome.GeoPoints.Skip(1))
-            .SelectMany(pair => MapAlgorithms.GetOrthodromePath(pair.First, pair.Second, 1.0 / Interval))
+            .SelectMany(pair => MapAlgorithms.GetOrthodromePath(pair.First, pair.Second, 1.0f / Interval))
             .Select(p => new[] { $"{p.Longtitude}", $"{p.Latitude}" })
             .ToAsyncEnumerable();
     }

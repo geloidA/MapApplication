@@ -9,6 +9,7 @@ using map_app.Services;
 using Mapsui.Layers;
 using Mapsui.Tiling.Layers;
 using DynamicData;
+using map_app.Services.Layers;
 
 namespace map_app.ViewModels
 {

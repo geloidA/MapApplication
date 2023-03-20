@@ -8,10 +8,10 @@ using Mapsui.UI;
 using map_app.Models;
 using NetTopologySuite.Geometries;
 using Mapsui.Styles;
-using map_app.Services;
 using Mapsui;
 using map_app.ViewModels;
 using map_app.Services.Renders;
+using map_app.Services.Layers;
 
 namespace map_app.Editing
 {
@@ -93,7 +93,7 @@ namespace map_app.Editing
             if (EditMode == EditMode.AddPoint)
             {
                 GraphicLayer.Add(new PointGraphic(new[] { worldPosition }.ToList()) { StyleColor = CurrentColor, Opacity = CurrentOpacity });
-                GraphicLayer.LayersFeatureHasChanged();
+                GraphicLayer.DataHasChanged();
             }
             else if (EditMode == EditMode.AddPolygon)
                 AddGraphic(worldPosition, typeof(PolygonGraphic), EditMode.DrawingPolygon);
@@ -122,7 +122,7 @@ namespace map_app.Editing
                 throw new ArgumentException($"Type of graphic {graphicType} must implement IHoveringGraphic");
             hoveringGraphic.HoverVertex = _addInfo.Vertex;
             GraphicLayer.Add(_addInfo.Feature);
-            GraphicLayer.LayersFeatureHasChanged();
+            GraphicLayer.DataHasChanged();
             EditMode = drawingMode;
         }
 
