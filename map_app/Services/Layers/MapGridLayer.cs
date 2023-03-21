@@ -14,15 +14,13 @@ public class MapGridLayer : BaseLayer
     private readonly GridMemoryProvider _dataSource;
     private ImmutableArray<IFeature> _gridLines;
 
-    public double KilometerInterval { get; set; }
-
     public MapGridLayer(GridMemoryProvider dataSource)
     {
         _dataSource = dataSource ?? throw new ArgumentException(nameof(dataSource));
         _gridLines = ImmutableArray.Create<IFeature>();
         if (_dataSource is IDynamic dynamic)
             dynamic.DataChanged += (s, e) => { 
-                Catch.Exceptions(async () => await UpdateDataAsync());
+                Catch.Exceptions(async () => { if (Enabled) await UpdateDataAsync(); });
             };
     }
 

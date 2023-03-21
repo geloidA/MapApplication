@@ -27,13 +27,14 @@ public class AuxiliaryPanelViewModel : ViewModelBase
         _mapControl = mainViewModel.MapControl;
         _graphicsLayer = (GraphicsLayer)_mapControl.Map!.Layers.FindLayer(nameof(GraphicsLayer)).Single();
         _mainViewModel = mainViewModel;
-        _gridLinesProvider = new GridMemoryProvider(_mapControl.Viewport, this.WhenAnyValue(x => x.IsGridActivated));
+        _gridLinesProvider = new GridMemoryProvider(_mapControl.Viewport);
         _mapControl.Navigator!.Navigated += (_, _) => KilometerInterval = _mapControl.Viewport.Resolution / 25;
         _gridLayer = new MapGridLayer(_gridLinesProvider)
         {
-            Style = new VectorStyle { Line = new Pen(LineColor, 1) }
+            Style = new VectorStyle { Line = new Pen(LineColor, 1) },
+            Enabled = false
         };
-        IsGridActivated = false;
+        _mapControl.Map.Layers.Add(_gridLayer);
     }
 
     [Range(0.1, 1000, ErrorMessage = "Введите число между 0.1 и 1000")]
@@ -55,16 +56,7 @@ public class AuxiliaryPanelViewModel : ViewModelBase
     [Reactive]
     public bool IsRulerActivated { get; set; }
 
-    private void ShowGridReference()
-    {
-        IsGridActivated ^= true;
-        if (IsGridActivated)
-        {
-            _mapControl.Map!.Layers.Add(_gridLayer);
-            return;
-        }
-        _mapControl.Map!.Layers.Remove(_gridLayer);
-    }
+    private void ShowGridReference() => _gridLayer.Enabled = IsGridActivated ^= true;
 
     private void EnableRuler()
     {

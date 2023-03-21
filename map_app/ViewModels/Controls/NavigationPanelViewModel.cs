@@ -4,7 +4,6 @@ using System.Windows.Input;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using map_app.Editing;
-using map_app.Services;
 using Mapsui.UI.Avalonia;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
