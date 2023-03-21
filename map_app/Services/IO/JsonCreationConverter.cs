@@ -16,8 +16,7 @@ public abstract class JsonCreationConverter<T> : JsonConverter
     /// <returns></returns>
     protected abstract T Create(Type objectType, JObject jObject);
 
-    public override bool CanConvert(Type objectType)
-        => typeof(T).IsAssignableFrom(objectType);
+    public override bool CanConvert(Type objectType) => typeof(T).IsAssignableFrom(objectType);
 
     public override bool CanWrite => false;
 
@@ -30,6 +29,7 @@ public abstract class JsonCreationConverter<T> : JsonConverter
         var jObject = JObject.Load(reader);
         // Create target object based on JObject
         var target = Create(objectType, jObject);
+        if (target is null) throw new NullReferenceException("Create failed");
         // Populate the object properties
         serializer.ObjectCreationHandling = ObjectCreationHandling.Replace;
         serializer.Populate(jObject.CreateReader(), target);

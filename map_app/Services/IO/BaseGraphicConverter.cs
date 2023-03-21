@@ -18,14 +18,15 @@ public class BaseGraphicConverter : JsonCreationConverter<BaseGraphic>
     {
         var points = jObject.Value<JArray>("LinearPoints")?
             .Select(x => x.ToObject<LinearPoint>());
-        if (points is null) throw new Exception();
-        return (GraphicType)jObject["Type"]?.Value<int>() switch
+        if (points is null) 
+            throw new InvalidOperationException("JsonObject doesn't have LinearPoints field");
+        return (GraphicType?)jObject["Type"]?.Value<int>() switch
         {
             GraphicType.Orthodrome => new OrthodromeGraphic(points!.ToCoordinates().ToList()),
             GraphicType.Point => new PointGraphic(points!.ToCoordinates().ToList()),
             GraphicType.Polygon => new PolygonGraphic(points!.ToCoordinates().ToList()),
             GraphicType.Rectangle => new RectangleGraphic(points!.ToCoordinates().ToList()),
-            _ => throw new Exception()
+            _ => throw new NotFiniteNumberException("Unknown graphicType")
         };
     }
 }

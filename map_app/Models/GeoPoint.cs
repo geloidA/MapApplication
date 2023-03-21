@@ -16,11 +16,13 @@ public class GeoPoint : IThreeDimensionalPoint
     [JsonProperty("Alt")]
     public double Altitude { get; set; }
     
-    public double First  { get => this.Longtitude; set => this.Longtitude = value; }
-    public double Second { get => this.Latitude; set => this.Latitude = value; }
-    public double Third { get => this.Altitude; set => this.Altitude = value; }
+    public double First  { get => Longtitude; set => Longtitude = value; }
+    public double Second { get => Latitude; set => Latitude = value; }
+    public double Third { get => Altitude; set => Altitude = value; }
 
-    public GeoPoint() : this(0, 0, 0) { }
+    public GeoPoint()
+    {        
+    }
 
     public GeoPoint(double lon, double lat) : this(lon, lat, 0) { }
 
@@ -31,12 +33,6 @@ public class GeoPoint : IThreeDimensionalPoint
         Altitude = alt;
     }
 
-    public Point ToPoint()
-    {
-        var point = SphericalMercator.FromLonLat(Longtitude, Latitude);
-        return new Point(point.x, point.y, Altitude);
-    }
-
     public Coordinate ToWorldPosition()
     {
         var coordinate = SphericalMercator.FromLonLat(Longtitude, Latitude);
@@ -45,7 +41,7 @@ public class GeoPoint : IThreeDimensionalPoint
 
     public LinearPoint ToLinearPoint()
     {
-        var coordinate = this.ToWorldPosition();
+        var coordinate = ToWorldPosition();
         return new LinearPoint(
             coordinate.X,
             coordinate.Y,
@@ -53,13 +49,7 @@ public class GeoPoint : IThreeDimensionalPoint
         );
     }
 
-    public GeoPoint Copy()
-    {
-        return new GeoPoint(Longtitude, Latitude, Altitude);
-    }
+    public GeoPoint Copy() => new GeoPoint(Longtitude, Latitude, Altitude);
 
-    public override string ToString()
-    {
-        return string.Format("Lon:{0:0.00} ; Lat:{1:0.00} ; Alt:{2:0.00}", Longtitude, Latitude, Altitude);
-    }
+    public override string ToString() => $"Lon:{Longtitude:0.00} ; Lat:{Latitude:0.00} ; Alt:{Altitude:0.00}";
 }

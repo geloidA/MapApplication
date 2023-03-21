@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Mapsui;
 using Mapsui.Extensions;
@@ -10,15 +11,15 @@ namespace map_app.Services.Layers;
 
 public class MapGridLayer : BaseLayer
 {
-    private GridMemoryProvider _dataSource;
-    private readonly List<IFeature> _gridLines;
+    private readonly GridMemoryProvider _dataSource;
+    private ImmutableArray<IFeature> _gridLines;
 
     public double KilometerInterval { get; set; }
 
     public MapGridLayer(GridMemoryProvider dataSource)
     {
         _dataSource = dataSource ?? throw new ArgumentException(nameof(dataSource));
-        _gridLines = new List<IFeature>();
+        _gridLines = ImmutableArray.Create<IFeature>();
         if (_dataSource is IDynamic dynamic)
             dynamic.DataChanged += (s, e) => { 
                 Catch.Exceptions(async () => await UpdateDataAsync());
@@ -27,14 +28,14 @@ public class MapGridLayer : BaseLayer
 
     public async Task UpdateDataAsync()
     {
-        var features = await _dataSource.GetFeaturesAsync(new FetchInfo(new MRect(0, 0, 0, 0), 0));
-        _gridLines.Clear();
-        _gridLines.AddRange(features);
+        var features = await _dataSource.GetFeaturesAsync(null!);
+        _gridLines = ImmutableArray.CreateRange(features);
         OnDataChanged(new DataChangedEventArgs());
     }
 
     public override IEnumerable<IFeature> GetFeatures(MRect box, double resolution)
     {
-        return _gridLines;
+        foreach (var line in _gridLines)
+            yield return line;
     }
 }

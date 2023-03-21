@@ -24,6 +24,7 @@ using Mapsui.Extensions;
 using map_app.Services.IO;
 using ReactiveUI.Validation.Extensions;
 using map_app.Services.Layers;
+using Avalonia.Controls;
 
 namespace map_app.ViewModels
 {
@@ -98,7 +99,7 @@ namespace map_app.ViewModels
                 .ToCollection()
                 .Select(x => !x.Any() || x.All(y => !y.HasErrors))
                 .StartWith(true);
-            Close = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
+            Close = ReactiveCommand.Create<Window>(WindowCloser.Close);
             SaveChanges = ReactiveCommand.Create<ICloseable>(SaveChangesImpl, Observable.Merge(this.IsValid(), isTagsValid));
             SelectImageAsync = ReactiveCommand.CreateFromTask(SelectImageAsyncImpl);
             var isImageInit = this

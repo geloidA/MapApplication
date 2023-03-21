@@ -23,7 +23,7 @@ namespace map_app.Models
             if (points.Count != 2)
                 throw new ArgumentException();
             _coordinates = points;
-            Geometry = RenderGeometry();
+            RerenderGeometry();
         }
         
         public RectangleGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }

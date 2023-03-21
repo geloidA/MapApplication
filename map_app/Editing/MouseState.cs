@@ -1,11 +1,10 @@
-namespace map_app.Editing
+namespace map_app.Editing;
+
+public enum MouseState
 {
-    public enum MouseState
-    {
-        Down,
-        Up,
-        Dragging, // moving with mouse down
-        Moving, // moving with mouse up
-        DoubleClick
-    }
+    Down,
+    Up,
+    Dragging, // moving with mouse down
+    Moving, // moving with mouse up
+    DoubleClick
 }

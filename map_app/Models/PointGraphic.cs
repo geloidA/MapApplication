@@ -38,14 +38,17 @@ namespace map_app.Models
         public override GraphicType Type => GraphicType.Point;
 
         public PointGraphic() : base() { }
+
         public PointGraphic(List<Coordinate> points) : this() 
         {
             if (points.Count != 1)
                 throw new ArgumentException($"List need contain one point, but was {points.Count}");
             _coordinates = points;
-            Geometry = RenderGeometry();
+            RerenderGeometry();
         }
+
         public PointGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
+        
         public PointGraphic(Geometry? geometry) : base(geometry) { }
 
         public override VectorStyle GraphicStyle 

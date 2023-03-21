@@ -2,36 +2,29 @@ using System.Collections.Generic;
 using System.Linq;
 using map_app.Services;
 
-namespace map_app.Models
+namespace map_app.Models;
+
+public class Orthodrome
 {
-    public class Orthodrome
+    private List<GeoPoint> _path;
+
+    public Orthodrome(GeoPoint start, GeoPoint end)
     {
-        private List<GeoPoint> _path;
-
-        public Orthodrome(GeoPoint start, GeoPoint end)
-        {
-            Start = start;
-            End = end;
-            _path = MapAlgorithms.GetOrthodromePath(Start, End).ToList();
-        }
-
-        public GeoPoint Start { get; set; }
-
-        public GeoPoint End { get; set; }
-
-        public List<GeoPoint> Path => _path;
-
-        /// <summary>
-        /// Calculate great circle path
-        /// </summary>
-        public void RenderPath()
-        {
-            _path = MapAlgorithms.GetOrthodromePath(Start, End).ToList();
-        }
-
-        public override string ToString()
-        {
-            return string.Format("Start:{0}\nEnd:{1}", Start, End);
-        }
+        Start = start;
+        End = end;
+        _path = MapAlgorithms.GetOrthodromePath(Start, End).ToList();
     }
+
+    public GeoPoint Start { get; set; }
+
+    public GeoPoint End { get; set; }
+
+    public List<GeoPoint> Path => _path;
+
+    /// <summary>
+    /// Calculate great circle path
+    /// </summary>
+    public void RenderPath() => _path = MapAlgorithms.GetOrthodromePath(Start, End).ToList();
+
+    public override string ToString() => $"Start:{Start}\nEnd:{End}";
 }

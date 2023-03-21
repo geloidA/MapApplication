@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Windows.Input;
-using Avalonia.Input;
+using Avalonia.Controls;
 using map_app.Models;
 using map_app.Services;
 using map_app.Services.IO;
@@ -26,7 +26,7 @@ public class MapStateSaveViewModel : ViewModelBase
     {
         _graphics = graphics;
         ShowSaveGraphicsDialog = new Interaction<Unit, string?>();
-        ShowSaveFileDialog = ReactiveCommand.CreateFromTask<ICloseable>(async closeble =>
+        ShowSaveFileDialog = ReactiveCommand.CreateFromTask<Window>(async closeble =>
         {
             MapState? state = null;
             var saveLocation = await ShowSaveGraphicsDialog.Handle(Unit.Default);
@@ -43,7 +43,7 @@ public class MapStateSaveViewModel : ViewModelBase
             }
             WindowCloser.Close(closeble, state);
         });
-        Cancel = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
+        Cancel = ReactiveCommand.Create<Window>(WindowCloser.Close);
     }
 
     internal Interaction<Unit, string?> ShowSaveGraphicsDialog { get; }

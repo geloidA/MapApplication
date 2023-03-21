@@ -1,16 +1,15 @@
 using System.ComponentModel;
 
-namespace map_app.Models
+namespace map_app.Models;
+
+public enum GraphicType
 {
-    public enum GraphicType
-    {
-        [Description("Точка")]
-        Point,
-        [Description("Прямоугольник")]
-        Rectangle,
-        [Description("Ортодромия")]
-        Orthodrome,
-        [Description("Полигон")]
-        Polygon
-    }
+    [Description("Точка")]
+    Point,
+    [Description("Прямоугольник")]
+    Rectangle,
+    [Description("Ортодромия")]
+    Orthodrome,
+    [Description("Полигон")]
+    Polygon
 }

@@ -39,8 +39,8 @@ public abstract class BaseGraphic : GeometryFeature
     private void InitializeStyles()
     {
         Styles.Add(GraphicStyle);
-        if (this.GetType() != typeof(PointGraphic)) 
-            Styles.Add(new LabelDistanceStyle());
+        if (this.GetType() != typeof(PointGraphic))
+            Styles.Add(new LabelDistanceStyle { Enabled = false });
     }
 
     [JsonProperty]
@@ -82,10 +82,10 @@ public abstract class BaseGraphic : GeometryFeature
     }
 
     [JsonProperty]
-    public IReadOnlyList<GeoPoint> GeoPoints => _coordinates.Select(x => x.ToGeoPoint()).ToList();
+    public IEnumerable<GeoPoint> GeoPoints => _coordinates.Select(x => x.ToGeoPoint());
 
     [JsonProperty]
-    public IReadOnlyList<LinearPoint> LinearPoints => _coordinates.Select(x => x.ToLinearPoint()).ToList();
+    public IEnumerable<LinearPoint> LinearPoints => _coordinates.Select(x => x.ToLinearPoint());
 
     /// <summary>
     /// Recalculation Geometry property when set method is called
@@ -99,14 +99,14 @@ public abstract class BaseGraphic : GeometryFeature
                 throw new ArgumentNullException();
             
             _coordinates = value.ToList();
-            Geometry = RenderGeometry();
+            RerenderGeometry();
         }
     }
     
     public new Geometry? Geometry
     {
         get => base.Geometry;
-        protected set => base.Geometry = value;
+        private set => base.Geometry = value;
     }
 
     protected abstract Geometry RenderGeometry();

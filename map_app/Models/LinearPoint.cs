@@ -20,7 +20,10 @@ public class LinearPoint : IThreeDimensionalPoint
     public double Second { get => Y; set => Y = value; }
     public double Third { get => Z; set => Z = value; }
 
-    public LinearPoint() : this(0, 0, 0) { }
+    public LinearPoint()
+    {
+    }
+    
     public LinearPoint(double x, double y) : this(x, y, 0) { }
 
     public LinearPoint(double x, double y, double z)
@@ -30,10 +33,7 @@ public class LinearPoint : IThreeDimensionalPoint
         Z = z;
     }
 
-    public Coordinate ToCoordinate()
-    {
-        return new Coordinate3D(X, Y, Z);
-    }
+    public Coordinate ToCoordinate() => new Coordinate3D(X, Y, Z);
 
     public GeoPoint ToGeoPoint()
     {
@@ -41,8 +41,5 @@ public class LinearPoint : IThreeDimensionalPoint
         return new GeoPoint(lonLat.lon, lonLat.lat, Z); 
     }
 
-    public override string ToString()
-    {
-        return $"X:{X} Y:{Y} Z:{Z}";
-    }
+    public override string ToString() => $"X:{X:0.00} Y:{Y:0.00} Z:{Z:0.00}";
 }

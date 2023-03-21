@@ -12,7 +12,7 @@
         x:Class="map_app.Views.GraphicAddEditView"
         Title="Обзор">
     <Window.Resources>
-        <convrts:GraphicTypeToBoolConverter x:Key="onlyPointPassedConverter"/>
+        <convrts:GraphicTypePointCheckerConverter x:Key="onlyPointPassedConverter"/>
         <convrts:EnumDescriptionConverter x:Key="enumConverter" />
         <convrts:BitmapValueConverter x:Key="bitmapConverter" />
     </Window.Resources>

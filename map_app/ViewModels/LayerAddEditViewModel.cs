@@ -10,6 +10,7 @@ using Mapsui.Layers;
 using Mapsui.Tiling.Layers;
 using DynamicData;
 using map_app.Services.Layers;
+using Avalonia.Controls;
 
 namespace map_app.ViewModels
 {
@@ -26,8 +27,8 @@ namespace map_app.ViewModels
                 WhenAnyValue(x => x.Name, x=> x.Source,
                     (name, source) => !string.IsNullOrWhiteSpace(name)
                      && (!string.IsNullOrWhiteSpace(source) || _toEdit?.Tag?.ToString() == "Graphic"));
-            Cancel = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
-            Confirm = ReactiveCommand.Create<ICloseable>(wnd =>
+            Cancel = ReactiveCommand.Create<Window>(WindowCloser.Close);
+            Confirm = ReactiveCommand.Create<Window>(wnd =>
             {
                 if (_toEdit is null)
                     ConfirmAddImpl(wnd);

@@ -8,8 +8,7 @@ public class Coordinate3D : Coordinate
     public override double Z { get; set; }
 
     public Coordinate3D()
-    {
-        X = 0; Y = 0; Z = 0;
+    {        
     }
 
     public Coordinate3D(double x, double y, double z)

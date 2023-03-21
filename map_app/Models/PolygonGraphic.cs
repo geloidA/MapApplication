@@ -26,7 +26,7 @@ namespace map_app.Models
             if (points.Count < 2)
                 throw new ArgumentException("Points length can't be less then 2");
             _coordinates = points;
-            Geometry = RenderGeometry();
+            RerenderGeometry();
         }
 
         public PolygonGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
@@ -37,7 +37,7 @@ namespace map_app.Models
         public void AddPoint(Coordinate worldCoordinate)
         {
             _coordinates.Add(worldCoordinate);
-            Geometry = RenderGeometry();
+            RerenderGeometry();
         }
 
         public override PolygonGraphic Copy() => new PolygonGraphic(this);

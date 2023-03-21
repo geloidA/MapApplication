@@ -27,13 +27,7 @@ public partial class MyDataGrid : DataGrid, IStyleable
     protected override void OnCellEditEnded(DataGridCellEditEndedEventArgs e)
     {
         if (e.EditAction == DataGridEditAction.Commit)
-        {
-            CurrentCell = new Cell 
-            { 
-                Column = e.Column.DisplayIndex,
-                Row = e.Row.GetIndex()
-            };
-        }
+            CurrentCell = new(column: e.Column.DisplayIndex, row: e.Row.GetIndex());
         base.OnCellEditEnded(e);
     }
 }

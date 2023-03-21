@@ -10,8 +10,8 @@ using map_app.Services;
 using DynamicData;
 using ReactiveUI.Fody.Helpers;
 using DynamicData.Binding;
-using Avalonia.Input;
 using map_app.Services.Layers;
+using Avalonia.Controls;
 
 namespace map_app.ViewModels
 {
@@ -31,7 +31,7 @@ namespace map_app.ViewModels
                 .ToPropertyEx(this, x => x.CanUndo); // need for observe changes in observable collection
             UndoChanges = ReactiveCommand.Create(() => _undoStack.Pop()(), this.WhenAnyValue(x => x.CanUndo));
             
-            SaveAndClose = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
+            SaveAndClose = ReactiveCommand.Create<Window>(WindowCloser.Close);
             Layers = new ObservableCollection<ILayer>(map.Layers);
             _map.Layers.Changed += (s, e) => 
             { 

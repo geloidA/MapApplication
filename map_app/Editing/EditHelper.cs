@@ -5,6 +5,7 @@ using Mapsui.Utilities;
 using NetTopologySuite.Geometries;
 
 namespace map_app.Editing;
+
 public class EditHelper
 {
     /// <summary>

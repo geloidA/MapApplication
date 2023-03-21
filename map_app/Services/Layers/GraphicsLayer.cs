@@ -16,9 +16,7 @@ public class GraphicsLayer : BaseLayer
         get
         {
             foreach (var graphic in _graphics)
-            {
                 yield return graphic;
-            }
         }
     }
 

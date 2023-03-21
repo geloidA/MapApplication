@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Windows.Input;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Csv;
 using map_app.Models;
@@ -25,8 +26,8 @@ public class ExportOrhodromeIntervalsViewModel : ReactiveValidationObject
         this.ValidationRule(x => x.Interval,
                             interval => interval > 0,
                             "Шаг должен быть больше 0");
-        Save = ReactiveCommand.Create<ICloseable>(SaveImpl, canExecute: this.IsValid());
-        Cancel = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
+        Save = ReactiveCommand.Create<Window>(SaveImpl, canExecute: this.IsValid());
+        Cancel = ReactiveCommand.Create<Window>(WindowCloser.Close);
     }
 
     private async void SaveImpl(ICloseable window)
@@ -44,7 +45,7 @@ public class ExportOrhodromeIntervalsViewModel : ReactiveValidationObject
     {
         return orthodrome.GeoPoints
             .Zip(orthodrome.GeoPoints.Skip(1))
-            .SelectMany(pair => MapAlgorithms.GetOrthodromePath(pair.First, pair.Second, 1.0f / Interval))
+            .SelectMany(pair => MapAlgorithms.GetOrthodromePath(pair.First, pair.Second, Interval))
             .Select(p => new[] { $"{p.Longtitude}", $"{p.Latitude}" })
             .ToAsyncEnumerable();
     }

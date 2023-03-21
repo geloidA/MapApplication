@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using System.Windows.Input;
+using Avalonia.Controls;
 using Avalonia.Input;
 using map_app.Services;
 using ReactiveUI;
@@ -39,7 +40,7 @@ namespace map_app.ViewModels
                 Close?.Execute(wnd);
             }, 
             canExecute: this.IsValid());
-            Close = ReactiveCommand.Create<ICloseable>(WindowCloser.Close);
+            Close = ReactiveCommand.Create<Window>(WindowCloser.Close);
         }
 
         internal ICommand? Close { get; private set; }

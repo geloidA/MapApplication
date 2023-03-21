@@ -15,10 +15,8 @@ public class LabelDistanceStyleRenderer : ISkiaStyleRenderer
     public bool Draw(SKCanvas canvas, IReadOnlyViewport viewport, 
         ILayer layer, IFeature feature, IStyle style, ISymbolCache symbolCache, long iteration)
     {
-        if (feature.Extent is null)
-            return false;
-        if (layer.Enabled == false)
-            return false;
+        if (feature.Extent is null) return false;
+        if (!layer.Enabled) return false;
 
         var graphic = (BaseGraphic)feature;
         foreach (var segment in graphic.GetSegments())

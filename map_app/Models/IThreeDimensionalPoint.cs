@@ -1,20 +1,19 @@
-namespace map_app.Models
+namespace map_app.Models;
+
+public interface IThreeDimensionalPoint
 {
-    public interface IThreeDimensionalPoint
-    {
-        /// <summary>
-        ///  Lon or X
-        /// </summary>       
-        public double First { get; set; }
+    /// <summary>
+    ///  Longtitude or X
+    /// </summary>       
+    public double First { get; set; }
 
-        /// <summary>
-        ///  Lat or Y
-        /// </summary>  
-        public double Second { get; set; }
+    /// <summary>
+    ///  Latitude or Y
+    /// </summary>  
+    public double Second { get; set; }
 
-        /// <summary>
-        ///  Alt or Z
-        /// </summary>  
-        public double Third { get; set; }
-    }
+    /// <summary>
+    ///  Altitude or Z
+    /// </summary>  
+    public double Third { get; set; }
 }

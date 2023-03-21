@@ -15,7 +15,7 @@ namespace map_app.Services;
 
 public class MapCreator
 {
-    private static readonly Color EditModeColor = new Color(124, 22, 111, 180);
+    private static readonly Color EditModeColor = new(124, 22, 111, 180);
 
     public static Map Create()
     {
