@@ -7,7 +7,7 @@
         MaxWidth="650" MaxHeight="700"
         Name="MapStateView"
         x:Class="map_app.Views.MapStateSaveView"
-        Title="MapStateSaveView">
+        Title="Сохранение">
     <Grid RowDefinitions="*,0.5*">
         <Grid RowDefinitions="*,50,*" ColumnDefinitions="*,*" VerticalAlignment="Center" HorizontalAlignment="Center" >
             <TextBlock Text="Название задания" VerticalAlignment="Center" />

@@ -14,7 +14,6 @@ using System.Reactive.Linq;
 using ReactiveUI.Validation.Helpers;
 using System.Linq;
 using map_app.Models.Extensions;
-using Avalonia.Input;
 using DynamicData.Binding;
 using DynamicData;
 using System.Reactive;
@@ -100,7 +99,7 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
             .Select(x => !x.Any() || x.All(y => !y.HasErrors))
             .StartWith(true);
         Close = ReactiveCommand.Create<Window>(WindowCloser.Close);
-        SaveChanges = ReactiveCommand.Create<ICloseable>(SaveChangesImpl, Observable.Merge(this.IsValid(), isTagsValid));
+        SaveChanges = ReactiveCommand.Create<Window>(SaveChangesImpl, Observable.Merge(this.IsValid(), isTagsValid));
         SelectImageAsync = ReactiveCommand.CreateFromTask(SelectImageAsyncImpl);
         var isImageInit = this
             .WhenAnyValue(x => x.ImagePath)
@@ -170,7 +169,7 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
         ImagePath = imagePath;
     }
 
-    private async void SaveChangesImpl(ICloseable wnd)
+    private async void SaveChangesImpl(Window wnd)
     {            
         if (HaveValidationErrors(out string message))
         {
@@ -181,7 +180,7 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
         if (_isAddMode)
         {
             _graphicPool!.Add(_editGraphic);
-            _graphicPool!.DataHasChanged();
+            _graphicPool.DataHasChanged();
         }
         Close?.Execute(wnd);
     }
@@ -264,7 +263,7 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
             .Where(g => IsCoordinateIncorrect(g))
             .Any();
 
-    private bool IsCoordinateIncorrect(GeoPoint point) // need check z and altitude
+    private bool IsCoordinateIncorrect(GeoPoint point)
     {
         return point.Longtitude < -180 
             || point.Longtitude > 180
@@ -272,7 +271,7 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
             || point.Latitude > 85;
     }
 
-    private bool IsCorrectCoordinateNumber        
+    private bool IsCorrectCoordinateNumber
         => _editGraphic switch
         {
             PointGraphic => _geo.Count == 1,
@@ -362,10 +361,10 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
 
     private void ShowMessageIncorrectData(string message)
     {
-        var messageBoxStandardWindow = MessageBoxManager.GetMessageBoxStandardWindow(
+        MessageBoxManager.GetMessageBoxStandardWindow(
             "Некорректные данные",
-            message);
-        messageBoxStandardWindow.Show();
+            message)
+        .Show();
     }
 
     private static bool IsIndexValid(int index, int count) => index != -1 && index <= count - 1;

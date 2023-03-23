@@ -7,11 +7,11 @@ using map_app.Editing;
 using Mapsui.UI.Avalonia;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using map_app.Services.Attributes;
+using map_app.Services.Layers;
 
 using MColor = Mapsui.Styles.Color;
 using AColor = Avalonia.Media.Color;
-using map_app.Services.Attributes;
-using map_app.Services.Layers;
 
 namespace map_app.ViewModels.Controls;
 

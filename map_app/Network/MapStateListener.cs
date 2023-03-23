@@ -51,7 +51,7 @@ public class MapStateListener
         {
             var buffer = new byte[1024];
             var jsonBuilder = new StringBuilder();
-            var numberOfBytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+            var numberOfBytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, 100);
             while (numberOfBytesRead > 0)
             {
                 jsonBuilder.Append(Encoding.UTF8.GetString(buffer, 0, numberOfBytesRead));

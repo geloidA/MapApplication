@@ -30,6 +30,8 @@
     <UserControl.Resources>
         <c:BaseGraphicToLabelConverter x:Key="graphicConverter" />
     </UserControl.Resources>
+    
+    <!-- Popup Menu -->
     <Border 
       BoxShadow="0 3 8 0 Black"
       CornerRadius="0 5 5 0"

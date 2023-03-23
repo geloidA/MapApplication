@@ -24,6 +24,7 @@
         <svg:Svg x:Key="modify" Path="Resources/Assets/modify.svg" Width="20" Height="20" />
     </UserControl.Resources>
 
+    <!-- Bottom Menu -->
     <Border BoxShadow="0 3 8 0 Black"
             VerticalAlignment="Bottom"
             HorizontalAlignment="Center"

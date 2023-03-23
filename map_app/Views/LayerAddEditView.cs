@@ -6,8 +6,7 @@ namespace map_app.Views;
 
 public partial class LayerAddEditView : ReactiveWindow<LayerAddEditViewModel>
 {
-    private readonly string _txtBoxTip = @"Введите известный домен
-или маску получения плиток.
+    private readonly string _txtBoxTip = @"Введите маску получения плиток.
 Например ""http://domen/tile/{z}/{x}/{y}.png""";
 
     public LayerAddEditView()

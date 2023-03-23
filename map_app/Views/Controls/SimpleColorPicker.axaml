@@ -8,6 +8,8 @@
     <UserControl.Resources>
         <c:ColorToImmutableSolidColorBrushConverter x:Key="myConverter" />
     </UserControl.Resources>
+
+    <!-- ColorPicker in Bottom Menu -->
     <Button Background="{Binding CurrentColor, Converter={StaticResource myConverter}}"
         Width="{Binding $parent.Width}" Height="{Binding $parent.Height}" BorderThickness="1" BorderBrush="black">
         <Button.Flyout>

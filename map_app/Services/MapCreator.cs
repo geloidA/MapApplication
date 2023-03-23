@@ -25,10 +25,10 @@ public class MapCreator
             PanLimits = GetLimitsOfWorld(),
             ZoomLimits = new MinMax(2.5, 25000)
         };
-        var layer = new TileLayer(MyTileSource.Create("www.openstreetmap.org"))
+        var layer = new TileLayer(KnownTileSources.Create(KnownTileSource.OpenStreetMap))
         { 
-            Name = "Основной",
-            Tag = "User"
+            Name = "MainTileLayer",
+            Tag = new ManagedLayerTag { Name = "Карта", HaveTileSource = true }
         };
         var scaleWidget = GetScaleWidget(map);
         map.Widgets.Add(scaleWidget);
@@ -59,7 +59,7 @@ public class MapCreator
         {
             Name = nameof(GraphicsLayer),
             IsMapInfoLayer = true,
-            Tag = "Graphic",
+            Tag = new ManagedLayerTag { Name = "Объекты" },
             Style = null
         };
     }

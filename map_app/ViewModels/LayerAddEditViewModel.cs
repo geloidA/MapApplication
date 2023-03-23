@@ -4,114 +4,138 @@ using Mapsui;
 using System.Windows.Input;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using Avalonia.Input;
 using map_app.Services;
 using Mapsui.Layers;
 using Mapsui.Tiling.Layers;
 using DynamicData;
 using map_app.Services.Layers;
 using Avalonia.Controls;
+using MessageBox.Avalonia;
+using BruTile.Web;
+using BruTile.Predefined;
 
-namespace map_app.ViewModels
+namespace map_app.ViewModels;
+
+public class LayerAddEditViewModel : ViewModelBase
 {
-    public class LayerAddEditViewModel : ViewModelBase
+    private readonly Map _map = new();
+    private readonly ManagedLayerTag? _layersTag;
+    private readonly ILayer? _toEdit;
+    private readonly ObservableStack<Action> _undoStack = new();
+    private readonly IObservable<bool> _canConfirm;
+
+    private LayerAddEditViewModel()
     {
-        private readonly Map _map;
-        private readonly ILayer? _toEdit;
-        private readonly ObservableStack<Action> _undoStack;
-        private readonly IObservable<bool> _canConfirm;
-
-        private LayerAddEditViewModel()
+        _canConfirm = this.
+            WhenAnyValue(x => x.Name, x=> x.Source,
+                (name, source) => !string.IsNullOrWhiteSpace(name) && 
+                (!string.IsNullOrWhiteSpace(source) ||
+                (!_layersTag?.HaveTileSource ?? false)));
+        Cancel = ReactiveCommand.Create<Window>(WindowCloser.Close);
+        Confirm = ReactiveCommand.Create<Window>(wnd =>
         {
-            _canConfirm = this.
-                WhenAnyValue(x => x.Name, x=> x.Source,
-                    (name, source) => !string.IsNullOrWhiteSpace(name)
-                     && (!string.IsNullOrWhiteSpace(source) || _toEdit?.Tag?.ToString() == "Graphic"));
-            Cancel = ReactiveCommand.Create<Window>(WindowCloser.Close);
-            Confirm = ReactiveCommand.Create<Window>(wnd =>
-            {
-                if (_toEdit is null)
-                    ConfirmAddImpl(wnd);
-                else
-                    ConfirmEditImpl(wnd);
-            }, 
-            _canConfirm);
-        }
-
-        public LayerAddEditViewModel(Map map, ObservableStack<Action> undoStack) : this()
-        {
-            _map = map;
-            _undoStack = undoStack;
-        }
-
-        public LayerAddEditViewModel(Map map, ILayer toEdit, ObservableStack<Action> undoStack) : this(map, undoStack)
-        {
-            if (toEdit is null) throw new NullReferenceException("Edit layer can't be null");
-            _toEdit = toEdit;
-            Name = _toEdit.Name;
-            Opacity = _toEdit.Opacity;
-            Source = _toEdit.Attribution.Url;
-        }
-
-        [Reactive]
-        public double Opacity { get; set; } = 1;
-
-        [Reactive]
-        public string? Name { get; set; }
-
-        [Reactive]
-        public string? Source { get; set; }
-
-        public ICommand Confirm { get; }
-        public ICommand Cancel { get; }
-
-        private void ConfirmEditImpl(ICloseable wnd)
-        {
-            if (_toEdit!.Attribution.Url == Source || _toEdit.Tag?.ToString() == "Graphic")
-                EditExistedLayer();
+            if (_toEdit is null)
+                ConfirmAddImpl(wnd);
             else
-                InitializeNewLayer();
-            Cancel.Execute(wnd);
-        }
+                ConfirmEditImpl(wnd);
+        }, 
+        _canConfirm);
+    }
 
-        private void InitializeNewLayer()
+    public LayerAddEditViewModel(Map map, ObservableStack<Action> undoStack) : this()
+    {
+        _map = map;
+        _undoStack = undoStack;
+    }
+
+    public LayerAddEditViewModel(Map map, ILayer toEdit, ObservableStack<Action> undoStack) : this(map, undoStack)
+    {
+        if (toEdit is null) throw new NullReferenceException("Edit layer can't be null");
+        _toEdit = toEdit;
+        _layersTag = (_toEdit.Tag as ManagedLayerTag)!;
+        Name = _layersTag.Name;
+        Opacity = _toEdit.Opacity;
+        Source = _toEdit.Attribution.Url;
+    }
+
+    [Reactive]
+    public double Opacity { get; set; } = 1;
+
+    [Reactive]
+    public string? Name { get; set; }
+
+    [Reactive]
+    public string? Source { get; set; }
+
+    public ICommand Confirm { get; }
+    public ICommand Cancel { get; }
+
+    private void ConfirmEditImpl(Window wnd)
+    {
+        if (_toEdit!.Attribution.Url == Source || !(_toEdit.Tag as ManagedLayerTag)!.HaveTileSource)
+            EditExistedLayer();
+        else
         {
-            var changed = CreateUserLayer(Source!, Name!, Opacity);
-            var index = _map.Layers.IndexOf(_toEdit);
-            _map.Layers.Remove(_toEdit!);
-            _map.Layers.Insert(index, changed);
-            _map.Layers.Move(_map.Layers.Count - 1, _map.Layers.FindLayer(nameof(GraphicsLayer)).Single());
-            _undoStack.Push(() =>
+            if (!Uri.TryCreate(Source, UriKind.Absolute, out _))
             {
-                _map.Layers.Remove(changed);
-                _map.Layers.Insert(index, _toEdit!);
-                changed.Dispose();
-            });
+                MessageBoxManager.GetMessageBoxStandardWindow(
+                    "Некорректные данные",
+                    "Неверный адрес")
+                .Show();
+                return;
+            }
+            InitializeNewLayer();
         }
+        Cancel.Execute(wnd);
+    }
 
-        private void EditExistedLayer()
+    private void InitializeNewLayer()
+    {
+        var changed = CreateUserLayer(Source!, Name!, Opacity, _toEdit?.Name != "MainTileLayer");
+        var index = _map.Layers.IndexOf(_toEdit);
+        _map.Layers.Remove(_toEdit!);
+        _map.Layers.Insert(index, changed);
+        _map.Layers.Move(_map.Layers.Count - 1, _map.Layers.FindLayer(nameof(GraphicsLayer)).Single());
+        _undoStack.Push(() =>
         {
-            var copy = Tuple.Create(_toEdit!.Name, _toEdit.Opacity);
-            _toEdit.Name = Name!;
-            _toEdit.Opacity = Opacity;
-            _undoStack.Push(() =>
-            {
-                _toEdit.Name = copy.Item1;
-                _toEdit.Opacity = copy.Item2;
-            });
-        }
+            _map.Layers.Remove(changed);
+            _map.Layers.Insert(index, _toEdit!);
+            changed.Dispose();
+        });
+    }
 
-        private void ConfirmAddImpl(ICloseable wnd)
+    private void EditExistedLayer()
+    {
+        var copy = Tuple.Create(_layersTag!.Name, _toEdit!.Opacity);
+        _layersTag.Name = Name;
+        _toEdit.Opacity = Opacity;
+        _undoStack.Push(() =>
         {
-            var layer = CreateUserLayer(Source!, Name!, Opacity);
-            _map.Layers.Add(layer); // todo: think how get data source
-            _undoStack.Push(() => _map.Layers.Remove(_map.Layers.ElementAt(_map.Layers.Count - 1)));
-            Cancel.Execute(wnd);            
-        }
+            _layersTag.Name = copy.Item1;
+            _toEdit.Opacity = copy.Item2;
+        });
+    }
 
-        private ILayer CreateUserLayer(string address, string name, double opacity)
-        {
-            return new TileLayer(MyTileSource.Create(address)) { Name = name, Opacity = opacity, Tag = "User" };
-        }
+    private void ConfirmAddImpl(Window wnd)
+    {
+        var layer = CreateUserLayer(Source!, Name!, Opacity);
+        _map.Layers.Add(layer);
+        _undoStack.Push(() => _map.Layers.Remove(_map.Layers.ElementAt(_map.Layers.Count - 1)));
+        Cancel.Execute(wnd);
+    }
+
+    private ILayer CreateUserLayer(string address, string name, double opacity, bool canRemove = true)
+    {
+        var tileSource = new HttpTileSource(new GlobalSphericalMercator(), address) { Attribution = new BruTile.Attribution(url: address)  };
+        return new TileLayer(tileSource) 
+        { 
+            Opacity = opacity, 
+            Tag = new ManagedLayerTag 
+            { 
+                Name = name,
+                CanRemove = canRemove,
+                HaveTileSource = true
+            } 
+        };
     }
 }

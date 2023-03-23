@@ -16,7 +16,7 @@
         <DataGrid Items="{Binding Layers}" CanUserResizeColumns="True" Margin="10 10 0 0" SelectedItem="{Binding SelectedLayer}" 
                 AutoGenerateColumns="False" IsReadOnly="True" ColumnWidth="*" >
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Имя" Binding="{Binding Name}"/>
+                <DataGridTextColumn Header="Имя" Binding="{Binding Tag.Name}"/>
                 <DataGridTextColumn Header="Прозрачность" Binding="{Binding Opacity}"/>
                 <DataGridTextColumn Header="Источник" Binding="{Binding Attribution.Url}"/>
             </DataGrid.Columns>

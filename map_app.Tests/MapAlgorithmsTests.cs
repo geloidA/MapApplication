@@ -39,7 +39,7 @@ public class MapAlgorithmsTests
     [Test]
     public void Haversine_ShouldThrowNullRefException_WhenPointIsNull()
     {
-        Assert.Throws<NullReferenceException>(() => { MapAlgorithms.Haversine(null, new GeoPoint()); });
+        Assert.Throws<NullReferenceException>(() => { MapAlgorithms.Haversine(null!, new GeoPoint()); });
     }
 
     [Test]

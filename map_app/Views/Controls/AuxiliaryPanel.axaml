@@ -14,6 +14,8 @@
     </UserControl.Resources>
   
   <Grid HorizontalAlignment="Right">
+
+        <!-- ZoomIn ZoomOut -->
         <Border BoxShadow="0 3 8 0 Black"
         Background="White"
         CornerRadius="3"
@@ -30,6 +32,7 @@
             </Grid>
         </Border>
 
+        <!-- Ruler -->
         <Border BoxShadow="0 3 8 0 Black" Background="White" CornerRadius="3" Margin="0 125 10 0" 
             VerticalAlignment="Top" ToolTip.Tip="Линейка"
             Width="35" HorizontalAlignment="Right"
@@ -39,6 +42,7 @@
                 HorizontalAlignment="Center" /> 
         </Border>
 
+        <!-- MapGrid -->
         <Border BoxShadow="0 3 8 0 Black" Background="White" CornerRadius="3" Margin="0 0 10 20"
             VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="135" Height="40" >
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" >

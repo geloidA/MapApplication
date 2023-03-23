@@ -29,7 +29,6 @@ namespace map_app.ViewModels;
 
 public class MainViewModel : ViewModelBase
 {
-    #region private members
     private bool _isRightWasPressed;
     private const double LeftBorderMap = -20037494;
     private MapState? _currentFileMapState;
@@ -37,8 +36,7 @@ public class MainViewModel : ViewModelBase
     private readonly EditManipulation _editManipulation = new();
     private readonly ObservableAsPropertyHelper<bool> _isBaseGraphicUnderPointer;
     private readonly ObservableAsPropertyHelper<bool> _isOrthodromeUnderPointer;
-    private readonly MapStateListener _mapStateServer;
-    #endregion
+    private readonly MapStateListener _mapStateListener;
 
     internal bool IsBaseGraphicUnderPointer => _isBaseGraphicUnderPointer.Value;
     internal bool IsOrthodromeUnderPointer => _isOrthodromeUnderPointer.Value;
@@ -85,9 +83,9 @@ public class MainViewModel : ViewModelBase
         Graphics = (GraphicsLayer)MapControl.Map!.Layers.FindLayer(nameof(GraphicsLayer)).Single();
         _deliveryPort = int.Parse(App.Config["default_port"] 
             ?? throw new InvalidOperationException("Can't find default port from appsettings.json"));
-        _mapStateServer = new MapStateListener(_deliveryPort, this);
-        _mapStateServer.RunAsync(() => true);
-        EditManager = new EditManager(this, new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap));
+        _mapStateListener = new(_deliveryPort, this);
+        _mapStateListener.RunAsync(stopPredicate: () => true);
+        EditManager = new(this, new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap));
         GraphicsPopupViewModel = new GraphicsPopupViewModel(this);
         NavigationPanelViewModel = new NavigationPanelViewModel(this);
         AuxiliaryPanelViewModel = new AuxiliaryPanelViewModel(this);
@@ -129,10 +127,10 @@ public class MainViewModel : ViewModelBase
         var canSaveOpened = this
             .WhenAnyValue(x => x.LoadedFileName)
             .Select(file => !string.IsNullOrEmpty(file));
-        SaveGraphicStateInOpenedFile = ReactiveCommand.CreateFromTask(async () =>
+        SaveGraphicStateInOpenedFile = ReactiveCommand.Create(() =>
         {
             _currentFileMapState!.Graphics = Graphics.Features;
-            await SaveGraphics(_currentFileMapState);
+            SaveGraphics(_currentFileMapState);
         }, 
         canExecute: canSaveOpened);
         ImportImages = ReactiveCommand.CreateFromTask(async () =>
@@ -369,5 +367,5 @@ public class MainViewModel : ViewModelBase
         UpdateCurrentState(mapState);
     }
 
-    private async Task SaveGraphics(MapState state) => await MapStateJsonMarshaller.SaveAsync(state, state.FileLocation);
+    private async void SaveGraphics(MapState state) => await MapStateJsonMarshaller.SaveAsync(state, state.FileLocation);
 }
