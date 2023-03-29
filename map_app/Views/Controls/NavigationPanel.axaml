@@ -21,7 +21,7 @@
         <svg:Svg x:Key="rectangle" Path="Resources/Assets/rectangle.svg" Width="20" Height="20" />
         <svg:Svg x:Key="angle-up" Path="Resources/Assets/angle-up.svg" Width="20" Height="20" />
         <svg:Svg x:Key="orthodrome" Path="Resources/Assets/orthodrome.svg" Width="20" Height="20" />
-        <svg:Svg x:Key="modify" Path="Resources/Assets/modify.svg" Width="20" Height="20" />
+        <svg:Svg x:Key="drag" Path="Resources/Assets/drag.svg" Width="20" Height="20" />
     </UserControl.Resources>
 
     <!-- Bottom Menu -->
@@ -39,7 +39,7 @@
                     <ToggleButton Classes="main" IsChecked="{Binding IsOrthodromeMode}" Content="{StaticResource orthodrome}" Command="{Binding EnableOrthodromeMode}" ToolTip.Tip="Ортодромия" />
                     <ToggleButton Classes="main" IsChecked="{Binding IsPolygonMode}" Content="{StaticResource polygon}" Command="{Binding EnablePolygonMode}" ToolTip.Tip="Полигон" />
                     <ToggleButton Classes="main" IsChecked="{Binding IsPointMode}" Content="{StaticResource point}" Command="{Binding EnablePointMode}" ToolTip.Tip="Точка" />
-                    <ToggleButton Classes="main" IsChecked="{Binding IsModifyMode}" Content="{StaticResource modify}" Command="{Binding EnableModifyMode}" ToolTip.Tip="Перемещение" />
+                    <ToggleButton Classes="main" IsChecked="{Binding IsDragMode}" Content="{StaticResource drag}" Command="{Binding EnableDragMode}" ToolTip.Tip="Перемещение" />
                     <controls:SimpleColorPicker Margin="35 0 0 0" />
                 </StackPanel>
             </Grid> 

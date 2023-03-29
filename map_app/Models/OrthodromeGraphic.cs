@@ -29,7 +29,7 @@ public class OrthodromeGraphic : BaseGraphic, IHoveringGraphic
     public OrthodromeGraphic (Coordinate startPoint) : base() // for creation via activator
     {
         _coordinates = new List<Coordinate> { startPoint };
-        _orthodromes.AddFirst(new Orthodrome(startPoint.ToGeoPoint(), startPoint.ToGeoPoint()));
+        _orthodromes.AddFirst(new Orthodrome(startPoint.ToGeoPoint()));
     }
 
     public OrthodromeGraphic(List<Coordinate> points) : base()
@@ -60,21 +60,22 @@ public class OrthodromeGraphic : BaseGraphic, IHoveringGraphic
 
     public void AddPoint(Coordinate worldCoordinate)
     {
-        _orthodromes.AddLast(new Orthodrome(_orthodromes.Last!.Value.End, worldCoordinate.ToGeoPoint()));
+        var geoWorldCoordinate = worldCoordinate.ToGeoPoint();
+        if (_orthodromes.Last != null)
+            _orthodromes.Last.Value.End = geoWorldCoordinate;
+        _orthodromes.AddLast(new Orthodrome(geoWorldCoordinate));
         _coordinates.Add(worldCoordinate.Copy());
-        RerenderGeometry();
     }
 
     public override OrthodromeGraphic Copy() => new OrthodromeGraphic(this);
 
     protected override Geometry RenderGeometry()
     {
-        var result = new List<GeoPoint>();
         _orthodromes.Last!.Value.End = HoverVertex?.ToGeoPoint() ?? _orthodromes.Last.Value.End; // change last orthodrome point while mouse moving
-        _orthodromes.Last!.Value.RenderPath();
-        foreach (var orthodrome in _orthodromes)
-            result.AddRange(orthodrome.Path);
-        return new LineString(result.ToWorldPositions().ToArray());
+        return new LineString(_orthodromes
+            .SelectMany(x => x.Path)
+            .ToWorldPositions()
+            .ToArray());
     }
 
     private static LinkedList<Orthodrome> CreateOrhodromes(List<GeoPoint> points)
@@ -83,7 +84,7 @@ public class OrthodromeGraphic : BaseGraphic, IHoveringGraphic
         var orthodromes = new LinkedList<Orthodrome>();
         orthodromes.AddFirst(new Orthodrome(points[0], points[1]));
         foreach (var point in points.Skip(2))
-            orthodromes.AddLast(new Orthodrome(orthodromes.Last!.Value.End, point));
+            orthodromes.AddLast(new Orthodrome(orthodromes.Last!.Value.End!, point));
         return orthodromes;
     }
 }

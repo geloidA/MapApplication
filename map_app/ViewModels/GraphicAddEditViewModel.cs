@@ -98,7 +98,7 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
             .ToCollection()
             .Select(x => !x.Any() || x.All(y => !y.HasErrors))
             .StartWith(true);
-        Close = ReactiveCommand.Create<Window>(WindowCloser.Close);
+        Cancel = ReactiveCommand.Create<Window>(x => WindowCloser.Close(x, DialogResult.Cancel));
         SaveChanges = ReactiveCommand.Create<Window>(SaveChangesImpl, Observable.Merge(this.IsValid(), isTagsValid));
         SelectImageAsync = ReactiveCommand.CreateFromTask(SelectImageAsyncImpl);
         var isImageInit = this
@@ -158,7 +158,7 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
     public ICommand? SaveChanges { get; private set; }
     public ICommand? RemoveSelectedTag { get; private set; }
     public ICommand? AddTag { get; private set; }
-    public ICommand? Close { get; private set; }
+    public ICommand? Cancel { get; private set; }
     public ICommand? SelectImageAsync { get; private set; }
 
     private async Task SelectImageAsyncImpl()
@@ -182,7 +182,7 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
             _graphicPool!.Add(_editGraphic);
             _graphicPool.DataHasChanged();
         }
-        Close?.Execute(wnd);
+        WindowCloser.Close(wnd, DialogResult.OK);
     }
 
     private async Task ConfirmChanges()

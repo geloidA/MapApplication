@@ -21,42 +21,29 @@ public class EditManager
     private readonly AddInfo _addInfo = new();
     private readonly RotateInfo _rotateInfo = new();
     private readonly ScaleInfo _scaleInfo = new();
-    private readonly MainViewModel _mainViewModel;
-    private Color _currentColor = Color.Black;
+    private readonly MainViewModel _mainVM;
 
     public GraphicsLayer GraphicLayer { get; }
 
-    public Color CurrentColor 
-    { 
-        get => _currentColor; 
-        set
-        {
-            if (value is null) throw new NullReferenceException();
-            _currentColor = value; 
-        }
-    }
+    public Color Color { get; set; } = Color.Black;
 
     public MRect Extent { get; }
 
-    public bool HaveHoverVertex => _addInfo.Vertex is not null;
-
     public EditManager(MainViewModel main, MRect extent)
     {
-        _mainViewModel = main;
+        _mainVM = main;
         GraphicLayer = main.Graphics;
         Extent = extent;
     }
 
     public EditMode EditMode { get; set; }
 
-    public int VertexRadius { get; set; } = 24;
-
-    public void TurnOffMode() => EditMode = EditMode.None;
+    public int VertexRadius { get; set; } = 4;
 
     public void EndIncompleteEditing()
     {
-        if (_addInfo.Vertex is null) return;
-        AddVertex(_addInfo.Vertex);
+        if (_addInfo.CurrentVertex is null) return;
+        AddVertex(_addInfo.CurrentVertex);
         EndEdit();
     }
 
@@ -64,7 +51,6 @@ public class EditManager
     {
         if (_addInfo.Feature is null) return false;
         if (_addInfo.Feature.Extent is null) return false;
-        if (_addInfo.Vertices is null) return false;
         if (_addInfo.Feature is IHoveringGraphic feature)
             feature.HoverVertex = null;
 
@@ -79,21 +65,20 @@ public class EditManager
 
     private bool EndEdit(EditMode nextMode)
     {
+        _addInfo.Feature!.RerenderGeometry();
         _addInfo.Feature = null;
-        _addInfo.Vertex = null;
+        _addInfo.CurrentVertex = null;
         EditMode = nextMode;
         return false;
     }
 
     internal void HoveringVertex(MapInfo? mapInfo)
     {
-        if (_addInfo.Vertex != null)
-        {
-            _addInfo.Vertex.SetXY(mapInfo?.WorldPosition);
-            _addInfo.Feature?.RenderedGeometry.Clear();
-            _addInfo.Feature?.RerenderGeometry();
-            GraphicLayer.DataHasChanged();
-        }
+        if (_addInfo.Feature is not IHoveringGraphic || _addInfo.CurrentVertex == null) return;
+        _addInfo.CurrentVertex.SetXY(mapInfo?.WorldPosition);
+        _addInfo.Feature?.RenderedGeometry.Clear();
+        _addInfo.Feature?.RerenderGeometry();
+        GraphicLayer.DataHasChanged();
     }
 
     public bool AddVertex(Coordinate worldPosition)
@@ -103,7 +88,7 @@ public class EditManager
 
         if (EditMode == EditMode.AddPoint)
         {
-            GraphicLayer.Add(new PointGraphic(new[] { worldPosition }.ToList()) { StyleColor = CurrentColor });
+            GraphicLayer.Add(new PointGraphic(new[] { worldPosition }.ToList()) { StyleColor = Color });
             GraphicLayer.DataHasChanged();
         }
         else if (EditMode == EditMode.AddPolygon)
@@ -125,43 +110,36 @@ public class EditManager
 
     private void AddGraphic(Coordinate worldPosition, Type graphicType, EditMode drawingMode)
     {
-        _addInfo.Vertices = new List<Coordinate> { worldPosition };
-        var graphic = CreateGraphic(graphicType);
+        var graphic = CreateGraphic(graphicType, worldPosition);
         _addInfo.Feature = graphic;
-        _addInfo.Vertex = worldPosition.Copy();
+        _addInfo.CurrentVertex = worldPosition.Copy();
         if (graphic is not IHoveringGraphic hoveringGraphic)
             throw new ArgumentException($"Type of graphic {graphicType} must implement IHoveringGraphic");
-        hoveringGraphic.HoverVertex = _addInfo.Vertex;
+        hoveringGraphic.HoverVertex = _addInfo.CurrentVertex;
         GraphicLayer.Add(_addInfo.Feature);
-        GraphicLayer.DataHasChanged();
         EditMode = drawingMode;
     }
 
-    private BaseGraphic CreateGraphic(Type graphicType)
+    private BaseGraphic CreateGraphic(Type graphicType, Coordinate startPosition)
     {
-        var graphic = (BaseGraphic?)Activator.CreateInstance(graphicType, _addInfo.Vertices!.Single())
+        var graphic = (BaseGraphic?)Activator.CreateInstance(graphicType, startPosition)
             ?? throw new Exception($"Activator can not create instance of type \"{graphicType}\"");
-        graphic.StyleColor = CurrentColor;
+        graphic.StyleColor = Color;
         var distanceLabels = graphic.Styles.FirstOrDefault(x => x is LabelDistanceStyle);
         if (distanceLabels is not null)
-            distanceLabels.Enabled = _mainViewModel.IsRulerActivated;
+            distanceLabels.Enabled = _mainVM.IsRulerActivated;
         return graphic;
     }
 
     private void AddNewStepPoint(Coordinate worldPosition, IHoveringGraphic? target)
     {
         if (target is null) return;
-        if (_addInfo.Vertices is null) return;
-
         // Set the final position of the 'hover' vertex (that was already part of the geometry)
-        _addInfo.Vertex.SetXY(worldPosition);
+        _addInfo.CurrentVertex.SetXY(worldPosition);
         target.HoverVertex = worldPosition.Copy();
-        _addInfo.Vertex = target.HoverVertex;
-        _addInfo.Vertices.Add(_addInfo.Vertex);
+        _addInfo.CurrentVertex = target.HoverVertex;
         target.AddPoint(worldPosition);
-
         _addInfo.Feature?.RenderedGeometry.Clear();
-        GraphicLayer.DataHasChanged();
     }
 
     private static Coordinate? FindVertexTouched(MapInfo mapInfo, IEnumerable<Coordinate> vertices, double screenDistance)
@@ -175,10 +153,11 @@ public class EditManager
 
     public bool StartDraggingEntirely(MapInfo mapInfo, double screenDistance)
     {
-        if (EditMode != EditMode.Modify) return false;
+        if (EditMode != EditMode.Drag) return false;
         if (mapInfo.Feature == null) return false;
         if (mapInfo.Feature is not BaseGraphic geometryFeature || mapInfo.Feature is OrthodromeGraphic) return false;
         if (mapInfo.WorldPosition == null) return true;
+        _mainVM.DataState = DataState.Unsaved;
 
         _dragInfo.Feature = geometryFeature;
         _dragInfo.StartOffsetsToVertexes = new MPoint[_dragInfo.Feature.Coordinates.Count];
@@ -191,7 +170,7 @@ public class EditManager
 
     public bool DraggingEntirely(Point? worldPosition)
     {
-        if (EditMode != EditMode.Modify ||
+        if (EditMode != EditMode.Drag ||
             _dragInfo.Feature == null ||
             worldPosition == null ||
             _dragInfo.StartOffsetsToVertexes == null)
@@ -209,7 +188,7 @@ public class EditManager
 
     public void StopDragging()
     {
-        if (EditMode == EditMode.Modify && _dragInfo.Feature != null)
+        if (EditMode == EditMode.Drag && _dragInfo.Feature != null)
         {
             _dragInfo.Feature.Geometry?.GeometryChanged();
             _dragInfo.Feature = null;
@@ -355,13 +334,9 @@ public class EditManager
 
     internal void CancelDrawing()
     {
-        if (EditMode == EditMode.DrawingOrthodromeLine ||
-        EditMode == EditMode.DrawingPolygon ||
-        EditMode == EditMode.DrawingRectangle)
-        {
-            if (_addInfo.Feature is null) return;
-            GraphicLayer.TryRemove(_addInfo.Feature);
-            EndEdit();
-        }
+        if (EditMode == EditMode.None || !EditMode.DrawingMode.HasFlag(EditMode)) return;
+        if (_addInfo.Feature is null) return;
+        GraphicLayer.TryRemove(_addInfo.Feature);
+        EditMode = EditMode.GetAddMode();
     }
 }

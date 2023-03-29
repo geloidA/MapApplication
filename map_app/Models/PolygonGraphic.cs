@@ -16,7 +16,7 @@ namespace map_app.Models
 
         public PolygonGraphic() : base() { }
 
-        public PolygonGraphic(Coordinate startPoint) : base()
+        public PolygonGraphic(Coordinate startPoint) : base() 
         {
             _coordinates = new List<Coordinate> { startPoint };
         }
@@ -34,11 +34,7 @@ namespace map_app.Models
 
         public override GraphicType Type => GraphicType.Polygon;
 
-        public void AddPoint(Coordinate worldCoordinate)
-        {
-            _coordinates.Add(worldCoordinate);
-            RerenderGeometry();
-        }
+        public void AddPoint(Coordinate worldCoordinate) => _coordinates.Add(worldCoordinate);
 
         public override PolygonGraphic Copy() => new PolygonGraphic(this);
 

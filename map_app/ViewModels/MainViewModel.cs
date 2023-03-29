@@ -24,11 +24,16 @@ using Avalonia.Controls.ApplicationLifetimes;
 using System.Net.Sockets;
 using System.Net;
 using map_app.Services.Layers;
+using Mapsui.Nts.Extensions;
+using Mapsui;
+
+using MColor = Mapsui.Styles.Color;
 
 namespace map_app.ViewModels;
 
 public class MainViewModel : ViewModelBase
 {
+    private DataState _dataState;
     private bool _isRightWasPressed;
     private const double LeftBorderMap = -20037494;
     private MapState? _currentFileMapState;
@@ -37,6 +42,16 @@ public class MainViewModel : ViewModelBase
     private readonly ObservableAsPropertyHelper<bool> _isBaseGraphicUnderPointer;
     private readonly ObservableAsPropertyHelper<bool> _isOrthodromeUnderPointer;
     private readonly MapStateListener _mapStateListener;
+
+    internal DataState DataState
+    {
+        get => _dataState;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _dataState, value);
+            Title = GetTitleText(value);
+        }
+    }
 
     internal bool IsBaseGraphicUnderPointer => _isBaseGraphicUnderPointer.Value;
     internal bool IsOrthodromeUnderPointer => _isOrthodromeUnderPointer.Value;
@@ -47,13 +62,25 @@ public class MainViewModel : ViewModelBase
 
     internal GraphicsLayer Graphics { get; }
 
-    internal EditManager EditManager { get; }
+    private readonly EditManager _editManager;
 
     [Reactive]
     private BaseGraphic? UnderPointerGraphic { get; set; }
 
     [Reactive]
     internal string? DeliveryIPAddress { get; set; }
+    
+    internal EditMode EditMode
+    {
+        get => _editManager.EditMode;
+        set => _editManager.EditMode = value;
+    }
+
+    internal MColor EditManagerColor 
+    {
+        get => _editManager.Color;
+        set => _editManager.Color = value;
+    }
 
     public int DeliveryPort 
     { 
@@ -62,7 +89,7 @@ public class MainViewModel : ViewModelBase
     }
 
     [Reactive]
-    internal string? LoadedFileName { get; set; }
+    internal string Title { get; set; } = "Подготовка полетного задания";
 
     [Reactive]
     private bool HaveGraphics { get; set; }
@@ -85,7 +112,7 @@ public class MainViewModel : ViewModelBase
             ?? throw new InvalidOperationException("Can't find default port from appsettings.json"));
         _mapStateListener = new(_deliveryPort, this);
         _mapStateListener.RunAsync(stopPredicate: () => true);
-        EditManager = new(this, new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap));
+        _editManager = new(this, new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap));
         GraphicsPopupViewModel = new GraphicsPopupViewModel(this);
         NavigationPanelViewModel = new NavigationPanelViewModel(this);
         AuxiliaryPanelViewModel = new AuxiliaryPanelViewModel(this);
@@ -97,7 +124,11 @@ public class MainViewModel : ViewModelBase
             .WhenAnyValue(x => x.UnderPointerGraphic)
             .Select(f => f as OrthodromeGraphic != null)
             .ToProperty(this, x => x.IsOrthodromeUnderPointer);
-        Graphics.LayersFeatureChanged += (_, _) => HaveGraphics = Graphics.Features.Any();
+        Graphics.LayersFeatureChanged += (_, _) =>
+        {
+            HaveGraphics = Graphics.Features.Any();
+            DataState = DataState.Unsaved;
+        };
         InitializeCommands();
     }
 
@@ -117,22 +148,25 @@ public class MainViewModel : ViewModelBase
         OpenGraphicEditingView = ReactiveCommand.CreateFromTask(async () =>
         {
             var vm = new GraphicAddEditViewModel(UnderPointerGraphic ?? throw new NullReferenceException());
-            await ShowGraphicEditingDialog.Handle(vm);
+            var result = await ShowGraphicEditingDialog.Handle(vm);
+            if (result == DialogResult.OK)
+                DataState = DataState.Unsaved;
         }, 
         canExecute: graphicUnderPointer);
         var haveAnyGraphic = this.WhenAnyValue(x => x.HaveGraphics);
         SaveGraphicStateInFile = ReactiveCommand.CreateFromTask(SaveGraphicStateInFileImpl,
                                                                 canExecute: haveAnyGraphic);
         LoadGraphicStateAsync = ReactiveCommand.CreateFromTask(LoadGraphicStateAsyncImpl);
-        var canSaveOpened = this
-            .WhenAnyValue(x => x.LoadedFileName)
-            .Select(file => !string.IsNullOrEmpty(file));
+        var canSave = this
+            .WhenAnyValue(x => x.DataState)
+            .Select(appState => appState == DataState.Unsaved && _currentFileMapState != null);
         SaveGraphicStateInOpenedFile = ReactiveCommand.Create(() =>
         {
             _currentFileMapState!.Graphics = Graphics.Features;
             SaveGraphics(_currentFileMapState);
-        }, 
-        canExecute: canSaveOpened);
+            DataState = DataState.Saved;
+        },
+        canExecute: canSave);
         ImportImages = ReactiveCommand.CreateFromTask(async () =>
         {
             var paths = await ShowImportImagesDialogAsync.Handle(Unit.Default);
@@ -154,6 +188,17 @@ public class MainViewModel : ViewModelBase
         });
     }
 
+    private string GetTitleText(DataState appState)
+    {
+        return appState switch
+        {
+            DataState.None => Title,
+            DataState.Saved => Title[0] == '*' ? Title.Substring(1) : Title,
+            DataState.Unsaved => Title[0] == '*' ? Title : '*' + Title,
+            _ => throw new NotImplementedException()
+        };
+    }
+
     private async Task SendViaTCPImpl()
     {
         if (string.IsNullOrEmpty(DeliveryIPAddress))
@@ -164,7 +209,7 @@ public class MainViewModel : ViewModelBase
         var remotePoint = new IPEndPoint(IPAddress.Parse(DeliveryIPAddress), DeliveryPort);
         if (_currentFileMapState is null)
             _currentFileMapState = new MapState { Graphics = Graphics.Features };
-        var sendResult = await TrySendData(remotePoint, _currentFileMapState.ToJsonBytes()); // todo: размазывание ответственности разнести по разным методам обработку успешного получения и просто получения
+        var sendResult = await TrySendData(remotePoint, _currentFileMapState.ToJsonBytes());
         if (sendResult.Success)
             ShowNotification(sendResult.Message, "Информация", Colors.LightBlue);
         else 
@@ -206,7 +251,7 @@ public class MainViewModel : ViewModelBase
     internal INotificationMessageManager NotificationManager { get; } = new NotificationMessageManager();
 
     internal readonly Interaction<LayersManageViewModel, Unit> ShowLayersManageDialog = new();
-    internal readonly Interaction<GraphicAddEditViewModel, Unit> ShowGraphicEditingDialog = new();
+    internal readonly Interaction<GraphicAddEditViewModel, DialogResult> ShowGraphicEditingDialog = new();
     internal readonly Interaction<MapStateSaveViewModel, MapState?> ShowSaveGraphicStateDialog = new();
     internal readonly Interaction<List<string>, string?> ShowOpenFileDialogAsync = new();
     internal readonly Interaction<Unit, string[]?> ShowImportImagesDialogAsync = new();
@@ -216,7 +261,7 @@ public class MainViewModel : ViewModelBase
     internal void AccessOnlyGraphic(object? sender, CancelEventArgs e)
     {
         e.Cancel = !IsBaseGraphicUnderPointer || 
-            (EditManager.EditMode != EditMode.None && EditMode.DrawingMode.HasFlag(EditManager.EditMode));
+            (_editManager.EditMode != EditMode.None && EditMode.DrawingMode.HasFlag(_editManager.EditMode));
     }
 
     internal void MapControlOnPointerMoved(object? sender, PointerEventArgs args)
@@ -225,16 +270,15 @@ public class MainViewModel : ViewModelBase
         var screenPosition = args.GetPosition(MapControl).ToMapsui();
         var worldPosition = MapControl.Viewport.ScreenToWorld(screenPosition);
 
-
         if (point.Properties.IsLeftButtonPressed)
         {
             _editManipulation.Manipulate(MouseState.Dragging, screenPosition,
-                EditManager, MapControl);
+                _editManager, MapControl);
         }
         else
         {
             _editManipulation.Manipulate(MouseState.Moving, screenPosition,
-                EditManager, MapControl);
+                _editManager, MapControl);
         }
     }
 
@@ -242,15 +286,20 @@ public class MainViewModel : ViewModelBase
     {
         var point = args.GetCurrentPoint(MapControl);
 
+        var screenPosition = args.GetPosition(MapControl).ToMapsui();
+
         if (_isRightWasPressed) // need for escape drawing by right click
         {
             _isRightWasPressed = false;
             return;
         }
 
+        if (EditMode.OrthodromeEditing.HasFlag(_editManager.EditMode))
+            screenPosition = GetOrthodromeNextCoordinate(screenPosition);
+
         if (MapControl.Map != null)
             MapControl.Map.PanLock = _editManipulation.Manipulate(MouseState.Up,
-                args.GetPosition(MapControl).ToMapsui(), EditManager, MapControl);
+                screenPosition, _editManager, MapControl);
     }
 
     internal void MapControlOnPointerPressed(object? sender, PointerPressedEventArgs args)
@@ -260,32 +309,50 @@ public class MainViewModel : ViewModelBase
         if (MapControl.Map == null)
             return;
 
+        var screenPosition = args.GetPosition(MapControl).ToMapsui();
+
         if (point.Properties.IsRightButtonPressed)
         {
             _isRightWasPressed = true;
-            var infoArgs = MapControl.GetMapInfo(args.GetPosition(MapControl).ToMapsui());
+            var infoArgs = MapControl.GetMapInfo(screenPosition);
             UnderPointerGraphic = infoArgs?.Feature as BaseGraphic;
             return;
         }
 
+        if (EditMode.OrthodromeEditing.HasFlag(_editManager.EditMode))
+            screenPosition = GetOrthodromeNextCoordinate(screenPosition);
+
         if (args.ClickCount > 1)
         {
             MapControl.Map.PanLock = _editManipulation.Manipulate(MouseState.DoubleClick,
-                args.GetPosition(MapControl).ToMapsui(), EditManager, MapControl);
+                screenPosition, _editManager, MapControl);
             args.Handled = true;
         }
         else
         {
             MapControl.Map.PanLock = _editManipulation.Manipulate(MouseState.Down,
-                args.GetPosition(MapControl).ToMapsui(), EditManager, MapControl);
+                screenPosition, _editManager, MapControl);
         }
+    }
+
+    private MPoint GetOrthodromeNextCoordinate(MPoint screenPosition)
+    {
+        var firstPoint = MapControl
+            .GetMapInfo(screenPosition)?
+            .MapInfoRecords
+            .FirstOrDefault(x => x.Feature is PointGraphic)?
+            .Feature;
+        return firstPoint != null
+            ? MapControl.Viewport.WorldToScreen(((PointGraphic)firstPoint).Coordinates.Single().ToMPoint())
+            : screenPosition;
     }
 
     private void DeleteGraphic()
     {
         if (UnderPointerGraphic is null)
             throw new NullReferenceException("Graphic was null");
-        EditManager.GraphicLayer.TryRemove(UnderPointerGraphic);
+        var success = _editManager.GraphicLayer.TryRemove(UnderPointerGraphic);
+        if (success) DataState = DataState.Unsaved;
     }
 
     private async Task LoadGraphicStateAsyncImpl()
@@ -341,7 +408,8 @@ public class MainViewModel : ViewModelBase
     private void UpdateCurrentState(MapState state)
     {
         _currentFileMapState = state;
-        LoadedFileName = Path.GetFileName(state.FileLocation);
+        Title = $"{Path.GetFileName(state.FileLocation)} - Подготовка полетного задания";
+        DataState = DataState.Saved;
     }
 
     internal void ShowNotification(string message, string badge, Color color)
@@ -368,4 +436,8 @@ public class MainViewModel : ViewModelBase
     }
 
     private async void SaveGraphics(MapState state) => await MapStateJsonMarshaller.SaveAsync(state, state.FileLocation);
+
+    internal void CancelDrawing() => _editManager.CancelDrawing();
+
+    internal void EndIncompleteEditing() => _editManager.EndIncompleteEditing();
 }

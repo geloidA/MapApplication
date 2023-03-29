@@ -19,24 +19,24 @@ internal class NavigationPanelViewModel : ViewModelBase
 {
     private readonly string[] _modesNames;
     private readonly GraphicsLayer _graphics;
-    private readonly EditManager _editManager;
+    private readonly MainViewModel _mainVM;
     private readonly MapControl _mapControl;
     
     public NavigationPanelViewModel(MainViewModel mainViewModel)
     {
         _modesNames = GetModeNames();
         _mapControl = mainViewModel.MapControl;
-        _editManager = mainViewModel.EditManager;
+        _mainVM = mainViewModel;
         _graphics = mainViewModel.Graphics;
         EnablePointMode = ReactiveCommand.Create(() => SwitchDrawingMode(nameof(IsPointMode), EditMode.AddPoint));
         EnablePolygonMode = ReactiveCommand.Create(() => SwitchDrawingMode(nameof(IsPolygonMode), EditMode.AddPolygon));
         EnableOrthodromeMode = ReactiveCommand.Create(() => SwitchDrawingMode(nameof(IsOrthodromeMode), EditMode.AddOrthodromeLine));
         EnableRectangleMode = ReactiveCommand.Create(() => SwitchDrawingMode(nameof(IsRectangleMode), EditMode.AddRectangle));
-        EnableModifyMode = ReactiveCommand.Create(() => SwitchDrawingMode(nameof(IsModifyMode), EditMode.Modify));
+        EnableDragMode = ReactiveCommand.Create(() => SwitchDrawingMode(nameof(IsDragMode), EditMode.Drag));
 
         ChooseColor = ReactiveCommand.Create<ImmutableSolidColorBrush>(brush => CurrentColor = brush.Color);
         this.WhenAnyValue(x => x.CurrentColor)
-            .Subscribe(c => _editManager.CurrentColor = new MColor(c.R, c.G, c.B, c.A));
+            .Subscribe(c => _mainVM.EditManagerColor = new MColor(c.R, c.G, c.B, c.A));
     }
 
     [Mode]
@@ -57,7 +57,7 @@ internal class NavigationPanelViewModel : ViewModelBase
 
     [Mode]
     [Reactive]
-    public bool IsModifyMode { get; set; }
+    public bool IsDragMode { get; set; }
 
     [Reactive]
     public AColor CurrentColor { get; set; } = Colors.Gray;
@@ -70,7 +70,7 @@ internal class NavigationPanelViewModel : ViewModelBase
 
     public ICommand EnableRectangleMode { get; }
 
-    public ICommand EnableModifyMode { get; }
+    public ICommand EnableDragMode { get; }
 
     public ICommand ChooseColor { get; }
 
@@ -86,9 +86,9 @@ internal class NavigationPanelViewModel : ViewModelBase
             prop?.SetValue(this, false);
         }
 
-        if (_editManager.HaveHoverVertex)
-            _editManager.EndIncompleteEditing();
-        _editManager.EditMode = isSwitchedModeOn ? editMode : EditMode.None;
+        if (_mainVM.EditMode != EditMode.None && EditMode.DrawingMode.HasFlag(_mainVM.EditMode))
+            _mainVM.EndIncompleteEditing();
+        _mainVM.EditMode = isSwitchedModeOn ? editMode : EditMode.None;
     }
 
     private void TurnOffMode(Type type, string modeName) => type.GetProperty(modeName)?.SetValue(this, false);

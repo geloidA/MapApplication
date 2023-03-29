@@ -1,12 +1,15 @@
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reactive;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Svg;
 using DynamicData;
+using map_app.Editing;
+using map_app.Editing.Extensions;
 using map_app.Models;
+using map_app.Services;
 using map_app.Services.Layers;
 using Mapsui.UI.Avalonia;
 using ReactiveUI;
@@ -25,6 +28,7 @@ internal class GraphicsPopupViewModel : ViewModelBase
         Width = 15,
         Height = 15
     };
+    
     private static Image _arrowLeft = new Image
     {
         Source = new SvgImage
@@ -36,6 +40,7 @@ internal class GraphicsPopupViewModel : ViewModelBase
     };
 
     private readonly GraphicsLayer _graphics;
+    private readonly MainViewModel _mainVM;
     private readonly ObservableAsPropertyHelper<Image> _arrowImage;
     private readonly ObservableAsPropertyHelper<bool> _isSelectedGraphicNotNull;
     private readonly MapControl _mapControl;
@@ -46,6 +51,7 @@ internal class GraphicsPopupViewModel : ViewModelBase
     {
         _mapControl = mainViewModel.MapControl;
         _graphics = mainViewModel.Graphics;
+        _mainVM = mainViewModel;
         _arrowImage = this
             .WhenAnyValue(x => x.IsGraphicsListOpen)
             .Select(isOpen => isOpen ? _arrowLeft : _arrowRight)
@@ -59,28 +65,28 @@ internal class GraphicsPopupViewModel : ViewModelBase
             .ToProperty(this, x => x.IsSelectedGraphicNotNull);
         var canExecute = this.WhenAnyValue(x => x.IsSelectedGraphicNotNull);
         RemoveGraphic = ReactiveCommand.Create(() => _graphics.TryRemove(SelectedGraphic!), canExecute);
-        
+
         Graphics = new ObservableCollection<BaseGraphic>(_graphics.Features);
         _graphics.LayersFeatureChanged += OnLayersFeatureChanged;
         OpenEditGraphicView = ReactiveCommand.CreateFromTask(async () =>
         {
-            var manager = new GraphicAddEditViewModel(SelectedGraphic!);
-            await ShowAddEditGraphicDialog.Handle(manager);
-        }, canExecute);           
+            await OpenGraphicView(new GraphicAddEditViewModel(SelectedGraphic!), mainViewModel);
+        }, canExecute);
 
         OpenAddGraphicView = ReactiveCommand.CreateFromTask<GraphicType>(async (type) =>
         {
-            var manager = new GraphicAddEditViewModel(_graphics, type);
-            await ShowAddEditGraphicDialog.Handle(manager);
+            await OpenGraphicView(new GraphicAddEditViewModel(_graphics, type), mainViewModel);
         });
         _graphics.LayersFeatureChanged += (_, _) => HaveAnyGraphic = _graphics.Features.Any();
         var haveAnyGraphic = this.WhenAnyValue(x => x.HaveAnyGraphic);
-        ClearGraphics = ReactiveCommand.Create(() => 
-        { 
-            _graphics.Clear();
-            mainViewModel.MapControl.RefreshGraphics();
-        },
-        canExecute: haveAnyGraphic);
+        ClearGraphics = ReactiveCommand.Create(ClearGraphicsImpl, canExecute: haveAnyGraphic);
+    }
+
+    private async Task OpenGraphicView(GraphicAddEditViewModel vm, MainViewModel mainViewModel)
+    {
+        var result = await ShowAddEditGraphicDialog.Handle(vm);
+        if (result == DialogResult.OK)
+            mainViewModel.DataState = DataState.Unsaved;
     }
 
     private void OnLayersFeatureChanged(object sender, MDataChangedEventArgs args)
@@ -102,7 +108,7 @@ internal class GraphicsPopupViewModel : ViewModelBase
         }
     }
 
-    internal readonly Interaction<GraphicAddEditViewModel, Unit> ShowAddEditGraphicDialog = new();
+    internal readonly Interaction<GraphicAddEditViewModel, DialogResult> ShowAddEditGraphicDialog = new();
 
     public Image ArrowImage => _arrowImage.Value;
 
@@ -135,4 +141,12 @@ internal class GraphicsPopupViewModel : ViewModelBase
     public ICommand OpenEditGraphicView { get; }
 
     public ICommand OpenAddGraphicView { get; }
+
+    private void ClearGraphicsImpl()
+    {
+        _graphics.Clear();
+        _mapControl.RefreshGraphics();
+        if (_mainVM.EditMode != EditMode.None && EditMode.DrawingMode.HasFlag(_mainVM.EditMode))
+            _mainVM.EditMode = _mainVM.EditMode.GetAddMode();
+    }
 }

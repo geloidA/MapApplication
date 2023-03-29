@@ -16,6 +16,5 @@
     <MenuItem Header="Cлои" Command="{Binding OpenLayersManageView}" />
     <MenuItem Header="Импорт изображений" Command="{Binding ImportImages}" />
     <MenuItem Header="Настройки" Command="{Binding OpenSettingsView}" />
-    <TextBlock Text="{Binding LoadedFileName}" FontStyle="Italic" />
   </Menu>
 </UserControl>

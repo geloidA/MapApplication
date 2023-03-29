@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using map_app.Services.Renders;
 using Avalonia.Input;
 using System;
+using map_app.Services;
 
 namespace map_app.Views;
 
@@ -26,7 +27,7 @@ public partial class MainView : ReactiveWindow<MainViewModel>
         MapControl.PointerReleased += vm.MapControlOnPointerReleased;
         GraphicCotxtMenu.ContextMenuOpening += vm.AccessOnlyGraphic;
         this.WhenActivated(d => d(ViewModel!.ShowLayersManageDialog.RegisterHandler(x => this.ShowDialogAsync(x, new LayersManageView()))));
-        Func<InteractionContext<GraphicAddEditViewModel, Unit>, Task> graphicAddEditDialog = 
+        Func<InteractionContext<GraphicAddEditViewModel, DialogResult>, Task> graphicAddEditDialog = 
             x => this.ShowDialogAsync(x, new GraphicAddEditView());
         this.WhenActivated(d => d(ViewModel!.ShowGraphicEditingDialog.RegisterHandler(graphicAddEditDialog)));
         this.WhenActivated(d => d(ViewModel!.GraphicsPopupViewModel.ShowAddEditGraphicDialog.RegisterHandler(graphicAddEditDialog)));
@@ -46,7 +47,7 @@ public partial class MainView : ReactiveWindow<MainViewModel>
     protected override void OnKeyDown(KeyEventArgs e)
     {
         if (e.Key == Key.Escape)
-            ViewModel?.EditManager.CancelDrawing();
+            ViewModel?.CancelDrawing();
     }
 
     private async Task DoShowOpenFileDialogAsync(InteractionContext<List<string>, string?> interaction)

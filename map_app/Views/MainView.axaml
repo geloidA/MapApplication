@@ -10,7 +10,7 @@
         FontFamily="Ubuntu"
         WindowStartupLocation="CenterScreen"
         x:Class="map_app.Views.MainView"
-        Title="Подготовка полетного задания">
+        Title="{Binding Title}">
     <Grid>
         <DockPanel>
             <StackPanel DockPanel.Dock="Top">

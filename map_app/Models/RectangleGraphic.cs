@@ -50,9 +50,6 @@ namespace map_app.Models
             }));
         }
 
-        public void AddPoint(Coordinate worldCoordinate)
-        {
-            _coordinates.Add(worldCoordinate);
-        }
+        public void AddPoint(Coordinate worldCoordinate) => _coordinates.Add(worldCoordinate);
     }
 }
