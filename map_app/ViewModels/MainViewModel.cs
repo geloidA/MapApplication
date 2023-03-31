@@ -42,6 +42,8 @@ public class MainViewModel : ViewModelBase
     private readonly ObservableAsPropertyHelper<bool> _isBaseGraphicUnderPointer;
     private readonly ObservableAsPropertyHelper<bool> _isOrthodromeUnderPointer;
     private readonly MapStateListener _mapStateListener;
+    private readonly LayersManageViewModel layersManageViewModel;
+    private readonly SettingsViewModel settingsViewModel;
 
     internal DataState DataState
     {
@@ -60,7 +62,7 @@ public class MainViewModel : ViewModelBase
 
     internal MapControl MapControl { get; }
 
-    internal GraphicsLayer Graphics { get; }
+    internal GraphicsLayer GraphicsLayer { get; }
 
     private readonly EditManager _editManager;
 
@@ -107,15 +109,17 @@ public class MainViewModel : ViewModelBase
     {
         MapControl = mapControl;
         MapControl.Map = MapCreator.Create();
-        Graphics = (GraphicsLayer)MapControl.Map!.Layers.FindLayer(nameof(GraphicsLayer)).Single();
+        GraphicsLayer = (GraphicsLayer)MapControl.Map!.Layers.FindLayer(nameof(GraphicsLayer)).Single();
         _deliveryPort = int.Parse(App.Config["default_port"] 
             ?? throw new InvalidOperationException("Can't find default port from appsettings.json"));
         _mapStateListener = new(_deliveryPort, this);
         _mapStateListener.RunAsync(stopPredicate: () => true);
         _editManager = new(this, new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap));
-        GraphicsPopupViewModel = new GraphicsPopupViewModel(this);
-        NavigationPanelViewModel = new NavigationPanelViewModel(this);
-        AuxiliaryPanelViewModel = new AuxiliaryPanelViewModel(this);
+        GraphicsPopupViewModel = new(this);
+        NavigationPanelViewModel = new(this);
+        layersManageViewModel = new(MapControl.Map);
+        settingsViewModel = new(this);
+        AuxiliaryPanelViewModel = new(this);
         _isBaseGraphicUnderPointer = this
             .WhenAnyValue(x => x.UnderPointerGraphic)
             .Select(f => f as BaseGraphic != null)
@@ -124,9 +128,10 @@ public class MainViewModel : ViewModelBase
             .WhenAnyValue(x => x.UnderPointerGraphic)
             .Select(f => f as OrthodromeGraphic != null)
             .ToProperty(this, x => x.IsOrthodromeUnderPointer);
-        Graphics.LayersFeatureChanged += (_, _) =>
+        GraphicsLayer.LayersFeatureChanged += (sender, _) =>
         {
-            HaveGraphics = Graphics.Features.Any();
+            var graphics = (GraphicsLayer)sender;
+            HaveGraphics = graphics.Features.Any();
             DataState = DataState.Unsaved;
         };
         InitializeCommands();
@@ -134,16 +139,8 @@ public class MainViewModel : ViewModelBase
 
     private void InitializeCommands()
     {
-        OpenLayersManageView = ReactiveCommand.CreateFromTask(async () =>
-        {
-            var manager = new LayersManageViewModel(MapControl!.Map!);
-            await ShowLayersManageDialog.Handle(manager);
-        });
-        OpenSettingsView = ReactiveCommand.CreateFromTask(async () =>
-        {
-            var vm = new SettingsViewModel(this);
-            await ShowSettingsDialog.Handle(vm);
-        });
+        OpenLayersManageView = ReactiveCommand.CreateFromTask(async () => await ShowLayersManageDialog.Handle(layersManageViewModel));
+        OpenSettingsView = ReactiveCommand.CreateFromTask(async () => await ShowSettingsDialog.Handle(settingsViewModel));
         var graphicUnderPointer = this.WhenAnyValue(x => x.IsBaseGraphicUnderPointer);
         OpenGraphicEditingView = ReactiveCommand.CreateFromTask(async () =>
         {
@@ -162,7 +159,7 @@ public class MainViewModel : ViewModelBase
             .Select(appState => appState == DataState.Unsaved && _currentFileMapState != null);
         SaveGraphicStateInOpenedFile = ReactiveCommand.Create(() =>
         {
-            _currentFileMapState!.Graphics = Graphics.Features;
+            _currentFileMapState!.Graphics = GraphicsLayer.Features;
             SaveGraphics(_currentFileMapState);
             DataState = DataState.Saved;
         },
@@ -179,13 +176,13 @@ public class MainViewModel : ViewModelBase
             if (App.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
                 desktop.MainWindow.Close();
         });
-        SendViaTCP = ReactiveCommand.CreateFromTask(SendViaTCPImpl,
-                                            canExecute: haveAnyGraphic);
+        SendViaTCP = ReactiveCommand.CreateFromTask(SendViaTCPImpl, canExecute: haveAnyGraphic);
         OpenExportOrhodromeIntervalsView = ReactiveCommand.CreateFromTask(async () =>
         {
             var vm = new ExportOrhodromeIntervalsViewModel((OrthodromeGraphic)UnderPointerGraphic!);
             await ShowExportOrhodromeIntervalsDialogAsync.Handle(vm);
         });
+        CopyGraphic = ReactiveCommand.Create(() => GraphicsLayer.Add(UnderPointerGraphic!.Copy()));
     }
 
     private string GetTitleText(DataState appState)
@@ -208,7 +205,7 @@ public class MainViewModel : ViewModelBase
         }
         var remotePoint = new IPEndPoint(IPAddress.Parse(DeliveryIPAddress), DeliveryPort);
         if (_currentFileMapState is null)
-            _currentFileMapState = new MapState { Graphics = Graphics.Features };
+            _currentFileMapState = new MapState { Graphics = GraphicsLayer.Features };
         var sendResult = await TrySendData(remotePoint, _currentFileMapState.ToJsonBytes());
         if (sendResult.Success)
             ShowNotification(sendResult.Message, "Информация", Colors.LightBlue);
@@ -246,6 +243,7 @@ public class MainViewModel : ViewModelBase
     internal ICommand? ExitApp { get; private set; }
     internal ICommand? ImportImages { get; private set; }
     internal ICommand? SendViaTCP { get; private set; }
+    internal ICommand? CopyGraphic { get; private set; }
     internal ICommand? OpenExportOrhodromeIntervalsView { get; private set; }
 
     internal INotificationMessageManager NotificationManager { get; } = new NotificationMessageManager();
@@ -347,7 +345,7 @@ public class MainViewModel : ViewModelBase
             : screenPosition;
     }
 
-    private void DeleteGraphic()
+    internal void DeleteGraphic()
     {
         if (UnderPointerGraphic is null)
             throw new NullReferenceException("Graphic was null");
@@ -381,8 +379,8 @@ public class MainViewModel : ViewModelBase
         if (haveFailed)
             ShowNotification("Некоторых изображений - нет", "Информация", Colors.LightBlue);
         if (clearing)
-            Graphics.Clear();
-        Graphics.AddRange(newGraphics);
+            GraphicsLayer.Clear();
+        GraphicsLayer.AddRange(newGraphics);
     }
 
     private async Task<bool> LoadPointImagesAsync(IEnumerable<BaseGraphic> graphics)
@@ -429,7 +427,7 @@ public class MainViewModel : ViewModelBase
 
     private async Task SaveGraphicStateInFileImpl()
     {
-        var vm = new MapStateSaveViewModel(Graphics.Features);
+        var vm = new MapStateSaveViewModel(GraphicsLayer.Features);
         var mapState = await ShowSaveGraphicStateDialog.Handle(vm);
         if (mapState is null) return;
         UpdateCurrentState(mapState);

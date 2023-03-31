@@ -32,7 +32,7 @@ public class EditManager
     public EditManager(MainViewModel main, MRect extent)
     {
         _mainVM = main;
-        GraphicLayer = main.Graphics;
+        GraphicLayer = main.GraphicsLayer;
         Extent = extent;
     }
 
@@ -86,38 +86,29 @@ public class EditManager
         if (!Extent?.Contains(worldPosition.ToMPoint()) ?? false)
             return false;
 
-        if (EditMode == EditMode.AddPoint)
+        return EditMode switch
         {
-            GraphicLayer.Add(new PointGraphic(new[] { worldPosition }.ToList()) { StyleColor = Color });
-            GraphicLayer.DataHasChanged();
-        }
-        else if (EditMode == EditMode.AddPolygon)
-            AddGraphic(worldPosition, typeof(PolygonGraphic), EditMode.DrawingPolygon);
-        else if (EditMode == EditMode.DrawingPolygon || EditMode == EditMode.DrawingOrthodromeLine)
-            AddNewStepPoint(worldPosition, _addInfo.Feature as IHoveringGraphic);
-        else if (EditMode == EditMode.AddOrthodromeLine)
-            AddGraphic(worldPosition, typeof(OrthodromeGraphic), EditMode.DrawingOrthodromeLine);
-        else if (EditMode == EditMode.AddRectangle)
-            AddGraphic(worldPosition, typeof(RectangleGraphic), EditMode.DrawingRectangle);
-        else if (EditMode == EditMode.DrawingRectangle)
-        {
-            AddNewStepPoint(worldPosition, _addInfo.Feature as IHoveringGraphic);
-            EndEdit();
-        }
-
-        return false;
+            EditMode.AddPoint => AddGraphic(worldPosition, typeof(PointGraphic), EditMode.AddPoint),
+            EditMode.AddPolygon => AddGraphic(worldPosition, typeof(PolygonGraphic), EditMode.DrawingPolygon),
+            EditMode.AddOrthodromeLine => AddGraphic(worldPosition, typeof(OrthodromeGraphic), EditMode.DrawingOrthodromeLine),
+            EditMode.AddRectangle => AddGraphic(worldPosition, typeof(RectangleGraphic), EditMode.DrawingRectangle),
+            EditMode.DrawingPolygon => AddNewStepPoint(worldPosition, _addInfo.Feature as IHoveringGraphic),
+            EditMode.DrawingOrthodromeLine => AddNewStepPoint(worldPosition, _addInfo.Feature as IHoveringGraphic),
+            EditMode.DrawingRectangle => AddNewStepPointAndEndEdit(worldPosition, _addInfo.Feature as IHoveringGraphic),
+            _ => false
+        };
     }
 
-    private void AddGraphic(Coordinate worldPosition, Type graphicType, EditMode drawingMode)
+    private bool AddGraphic(Coordinate worldPosition, Type graphicType, EditMode drawingMode)
     {
         var graphic = CreateGraphic(graphicType, worldPosition);
         _addInfo.Feature = graphic;
         _addInfo.CurrentVertex = worldPosition.Copy();
-        if (graphic is not IHoveringGraphic hoveringGraphic)
-            throw new ArgumentException($"Type of graphic {graphicType} must implement IHoveringGraphic");
-        hoveringGraphic.HoverVertex = _addInfo.CurrentVertex;
+        if (graphic is IHoveringGraphic hoveringGraphic)
+            hoveringGraphic.HoverVertex = _addInfo.CurrentVertex;
         GraphicLayer.Add(_addInfo.Feature);
         EditMode = drawingMode;
+        return false;
     }
 
     private BaseGraphic CreateGraphic(Type graphicType, Coordinate startPosition)
@@ -131,15 +122,22 @@ public class EditManager
         return graphic;
     }
 
-    private void AddNewStepPoint(Coordinate worldPosition, IHoveringGraphic? target)
+    private bool AddNewStepPoint(Coordinate worldPosition, IHoveringGraphic? target)
     {
-        if (target is null) return;
+        if (target is null) return false;
         // Set the final position of the 'hover' vertex (that was already part of the geometry)
         _addInfo.CurrentVertex.SetXY(worldPosition);
         target.HoverVertex = worldPosition.Copy();
         _addInfo.CurrentVertex = target.HoverVertex;
         target.AddPoint(worldPosition);
         _addInfo.Feature?.RenderedGeometry.Clear();
+        return false;
+    }
+
+    private bool AddNewStepPointAndEndEdit(Coordinate worldPosition, IHoveringGraphic? target)
+    {
+        AddNewStepPoint(worldPosition, target);
+        return EndEdit();
     }
 
     private static Coordinate? FindVertexTouched(MapInfo mapInfo, IEnumerable<Coordinate> vertices, double screenDistance)
@@ -177,7 +175,7 @@ public class EditManager
             return false;
 
         var i = 0;
-        foreach (var coordinate in _dragInfo.Feature.Coordinates)
+        foreach (var coordinate in _dragInfo.Feature.Coordinates) // throw index out of range exception "idk"
         {
             coordinate.SetXY(worldPosition.ToMPoint() - _dragInfo.StartOffsetsToVertexes[i]);
             i++;

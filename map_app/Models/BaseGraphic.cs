@@ -8,6 +8,7 @@ using map_app.Editing.Extensions;
 using NetTopologySuite.Geometries;
 using map_app.Services.Renders;
 using map_app.Services.IO;
+using map_app.Services.Extensions;
 
 namespace map_app.Models;
 
@@ -19,15 +20,18 @@ public abstract class BaseGraphic : GeometryFeature
     private double _opacity = 1;
     protected List<Coordinate> _coordinates = new();
 
-    protected BaseGraphic(BaseGraphic source) 
+    protected BaseGraphic(BaseGraphic source)
     {
-        _color = source._color;
+        _color = new Color(source._color);
         _opacity = source._opacity;
-        UserTags = source.UserTags;
-        GraphicStyle = source.GraphicStyle;
-        Styles = source.Styles;
-        _coordinates = source._coordinates;
-        Geometry = source.Geometry;
+        Name = source.Name;
+        UserTags = source.UserTags?.ToDictionary(x => x.Key, x => x.Value);
+        GraphicStyle = source.GraphicStyle.Copy();
+        _coordinates = source._coordinates
+            .Select(x => x.Copy())
+            .ToList();
+        Geometry = source.Geometry?.Copy();
+        if (this is not PointGraphic) InitializeStyles();
     }
 
     public BaseGraphic() => InitializeStyles();
@@ -111,6 +115,10 @@ public abstract class BaseGraphic : GeometryFeature
 
     protected abstract Geometry RenderGeometry();
 
+    /// <summary>
+    /// Creates a deep copy of graphic
+    /// </summary>
+    /// <returns></returns>
     public abstract BaseGraphic Copy();
     
     public void RerenderGeometry() => Geometry = RenderGeometry();

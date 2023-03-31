@@ -60,7 +60,6 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
                 g: (byte)_editGraphic.StyleColor.G,
                 b: (byte)_editGraphic.StyleColor.B,
                 a: (byte)_editGraphic.StyleColor.A);
-        ShowOpenFileDialog = new Interaction<List<string>, string?>();
         InitializeCommands();
         this.WhenAnyValue(x => x.SelectedPointType)
             .Subscribe(SwapPointsSource);
@@ -151,7 +150,7 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
     [Reactive]
     public Avalonia.Media.Color GraphicColor { get; set; }
 
-    internal Interaction<List<string>, string?> ShowOpenFileDialog { get; }
+    internal readonly Interaction<List<string>, string?> ShowOpenFileDialog = new();
 
     public ICommand? RemoveSelectedPoint { get; private set; }
     public ICommand? RemoveImage { get; private set; }
@@ -180,7 +179,6 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
         if (_isAddMode)
         {
             _graphicPool!.Add(_editGraphic);
-            _graphicPool.DataHasChanged();
         }
         WindowCloser.Close(wnd, DialogResult.OK);
     }

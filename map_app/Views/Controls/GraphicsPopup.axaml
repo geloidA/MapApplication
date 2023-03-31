@@ -68,6 +68,7 @@
                                     CommandParameter="{x:Static models:GraphicType.Rectangle}" />
                             </MenuItem>
                             <MenuItem Header="Редактировать" Command="{Binding OpenEditGraphicView}" />
+                            <MenuItem Header="Копировать" Command="{Binding CopyGraphic}" />
                             <MenuItem Header="Удалить" Command="{Binding RemoveGraphic}" />
                         </ContextMenu>
                     </ListBox.ContextMenu>

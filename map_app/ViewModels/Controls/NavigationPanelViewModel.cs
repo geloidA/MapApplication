@@ -27,7 +27,7 @@ internal class NavigationPanelViewModel : ViewModelBase
         _modesNames = GetModeNames();
         _mapControl = mainViewModel.MapControl;
         _mainVM = mainViewModel;
-        _graphics = mainViewModel.Graphics;
+        _graphics = mainViewModel.GraphicsLayer;
         EnablePointMode = ReactiveCommand.Create(() => SwitchDrawingMode(nameof(IsPointMode), EditMode.AddPoint));
         EnablePolygonMode = ReactiveCommand.Create(() => SwitchDrawingMode(nameof(IsPolygonMode), EditMode.AddPolygon));
         EnableOrthodromeMode = ReactiveCommand.Create(() => SwitchDrawingMode(nameof(IsOrthodromeMode), EditMode.AddOrthodromeLine));

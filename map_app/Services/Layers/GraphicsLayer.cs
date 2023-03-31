@@ -24,6 +24,7 @@ public class GraphicsLayer : BaseLayer
     {
         _graphics.Add(graphic);
         OnLayersFeatureChanged(CollectionOperation.Add, new[] { graphic });
+        DataHasChanged();
     }
 
     public override IEnumerable<IFeature> GetFeatures(MRect? box, double resolution) // for correct graphics order drawing
@@ -38,6 +39,7 @@ public class GraphicsLayer : BaseLayer
     {
         _graphics.AddRange(features);
         OnLayersFeatureChanged(CollectionOperation.AddRange, features);
+        DataHasChanged();
     }
 
     public bool TryRemove(BaseGraphic graphic)
@@ -47,6 +49,7 @@ public class GraphicsLayer : BaseLayer
         {
             graphic.Dispose();
             OnLayersFeatureChanged(CollectionOperation.Remove, new[] { graphic });
+            DataHasChanged();
         }
         return success;
     }
@@ -57,6 +60,7 @@ public class GraphicsLayer : BaseLayer
             feature.Dispose();
         _graphics.Clear();
         OnLayersFeatureChanged(CollectionOperation.Clear, Enumerable.Empty<BaseGraphic>());
+        DataHasChanged();
     }
 
     public override void Dispose()

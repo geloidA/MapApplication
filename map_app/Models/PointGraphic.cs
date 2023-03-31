@@ -39,6 +39,10 @@ namespace map_app.Models
 
         public PointGraphic() : base() { }
 
+        public PointGraphic(Coordinate point) : this(new List<Coordinate> { point })
+        {
+        }
+
         public PointGraphic(List<Coordinate> points) : this() 
         {
             if (points.Count != 1)

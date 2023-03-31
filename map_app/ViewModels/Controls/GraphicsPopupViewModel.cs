@@ -50,7 +50,7 @@ internal class GraphicsPopupViewModel : ViewModelBase
     public GraphicsPopupViewModel(MainViewModel mainViewModel)
     {
         _mapControl = mainViewModel.MapControl;
-        _graphics = mainViewModel.Graphics;
+        _graphics = mainViewModel.GraphicsLayer;
         _mainVM = mainViewModel;
         _arrowImage = this
             .WhenAnyValue(x => x.IsGraphicsListOpen)
@@ -63,23 +63,20 @@ internal class GraphicsPopupViewModel : ViewModelBase
             .WhenAnyValue(x => x.SelectedGraphic)
             .Select(g => g is not null)
             .ToProperty(this, x => x.IsSelectedGraphicNotNull);
-        var canExecute = this.WhenAnyValue(x => x.IsSelectedGraphicNotNull);
-        RemoveGraphic = ReactiveCommand.Create(() => _graphics.TryRemove(SelectedGraphic!), canExecute);
+        var selectedIsNotNull = this.WhenAnyValue(x => x.IsSelectedGraphicNotNull);
+        RemoveGraphic = ReactiveCommand.Create(() => _graphics.TryRemove(SelectedGraphic!), canExecute: selectedIsNotNull);
 
         Graphics = new ObservableCollection<BaseGraphic>(_graphics.Features);
         _graphics.LayersFeatureChanged += OnLayersFeatureChanged;
         OpenEditGraphicView = ReactiveCommand.CreateFromTask(async () =>
-        {
-            await OpenGraphicView(new GraphicAddEditViewModel(SelectedGraphic!), mainViewModel);
-        }, canExecute);
+            await OpenGraphicView(new GraphicAddEditViewModel(SelectedGraphic!), mainViewModel), canExecute: selectedIsNotNull);
 
         OpenAddGraphicView = ReactiveCommand.CreateFromTask<GraphicType>(async (type) =>
-        {
-            await OpenGraphicView(new GraphicAddEditViewModel(_graphics, type), mainViewModel);
-        });
+            await OpenGraphicView(new GraphicAddEditViewModel(_graphics, type), mainViewModel));
         _graphics.LayersFeatureChanged += (_, _) => HaveAnyGraphic = _graphics.Features.Any();
         var haveAnyGraphic = this.WhenAnyValue(x => x.HaveAnyGraphic);
         ClearGraphics = ReactiveCommand.Create(ClearGraphicsImpl, canExecute: haveAnyGraphic);
+        CopyGraphic = ReactiveCommand.Create(() => _graphics.Add(SelectedGraphic!.Copy()), selectedIsNotNull);
     }
 
     private async Task OpenGraphicView(GraphicAddEditViewModel vm, MainViewModel mainViewModel)
@@ -133,13 +130,10 @@ internal class GraphicsPopupViewModel : ViewModelBase
     public bool IsGraphicsListOpen { get; set; }
 
     public ICommand IsGraphicsListPressed { get; }
-
     public ICommand RemoveGraphic { get; }
-
+    public ICommand CopyGraphic { get; }
     public ICommand ClearGraphics { get; }
-
     public ICommand OpenEditGraphicView { get; }
-
     public ICommand OpenAddGraphicView { get; }
 
     private void ClearGraphicsImpl()
