@@ -1,7 +1,7 @@
-using System.Collections.Generic;
-using System.Text;
 using map_app.Models;
 using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Text;
 
 namespace map_app.Services;
 
@@ -18,7 +18,7 @@ public class MapState
     public IEnumerable<BaseGraphic>? Graphics { get; set; }
 
     public bool IsInitialized => Name != null || Description != null || Graphics != null;
-    
+
     public string FileLocation { get; set; } = string.Empty;
 
     public byte[] ToJsonBytes()

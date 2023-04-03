@@ -1,20 +1,19 @@
 using BruTile.Predefined;
 using BruTile.Web;
+using map_app.Services.Layers;
 using Mapsui;
 using Mapsui.Extensions;
 using Mapsui.Layers;
+using Mapsui.Projections;
 using Mapsui.Styles;
 using Mapsui.Tiling.Layers;
-using Mapsui.Projections;
 using Mapsui.UI;
 using Mapsui.Widgets;
 using Mapsui.Widgets.ScaleBar;
-using map_app.Services.Layers;
-using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
-using System.Linq;
+using System;
 using System.Globalization;
+using System.Linq;
 
 namespace map_app.Services;
 
@@ -24,20 +23,23 @@ public class MapCreator
 
     public static Map Create()
     {
-        var map = new Map { CRS = "EPSG:3857" };
-        map.Limiter = new ViewportLimiterKeepWithin
+        var map = new Map
         {
-            PanLimits = GetLimitsOfWorld(),
-            ZoomLimits = new MinMax(2.5, 25000)
+            CRS = "EPSG:3857",
+            Limiter = new ViewportLimiterKeepWithin
+            {
+                PanLimits = GetLimitsOfWorld(),
+                ZoomLimits = new MinMax(2.5, 25000)
+            }
         };
         var sources = App.Config
             .GetSection("tile_sources")
             .GetChildren()
-            .Select(x =>  new 
-            { 
-                Name = x["Name"], 
-                Opacity = double.Parse(x["Opacity"]!, CultureInfo.InvariantCulture), 
-                HttpTileSource = x["HttpTileSource"] 
+            .Select(x => new
+            {
+                Name = x["Name"],
+                Opacity = double.Parse(x["Opacity"]!, CultureInfo.InvariantCulture),
+                HttpTileSource = x["HttpTileSource"]
             })
             .Select(x => CreateOwnTileLayer(x.Name!, x.Opacity, x.HttpTileSource!))
             .Reverse();
@@ -51,11 +53,12 @@ public class MapCreator
 
     private static IWidget GetScaleWidget(Mapsui.Map map)
     {
-        var scaleWidget = new ScaleBarWidget(map);
-        scaleWidget.HorizontalAlignment = HorizontalAlignment.Right;
-        scaleWidget.MarginX = 150f;
-        scaleWidget.MarginY = 25f;
-        return scaleWidget;
+        return new ScaleBarWidget(map)
+        {
+            HorizontalAlignment = HorizontalAlignment.Right,
+            MarginX = 150f,
+            MarginY = 25f
+        };
     }
 
     private static MRect GetLimitsOfWorld()
@@ -78,17 +81,18 @@ public class MapCreator
 
     private static IStyle CreateTargetLayerStyle()
     {
-        var style = new StyleCollection();
-        style.Styles = new System.Collections.ObjectModel.Collection<IStyle>
+        return new StyleCollection
         {
-            new VectorStyle
+            Styles = new System.Collections.ObjectModel.Collection<IStyle>
             {
-                Fill = null,
-                Outline = new Pen(EditModeColor, 3),
-                Line = new Pen(EditModeColor, 3)
+                new VectorStyle
+                {
+                    Fill = null,
+                    Outline = new Pen(EditModeColor, 3),
+                    Line = new Pen(EditModeColor, 3)
+                }
             }
         };
-        return style;
     }
 
     private static TileLayer CreateOwnTileLayer(string name, double opacity, string httpTileSource)

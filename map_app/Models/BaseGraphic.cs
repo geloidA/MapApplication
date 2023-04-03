@@ -1,14 +1,14 @@
+using map_app.Editing.Extensions;
+using map_app.Services.Extensions;
+using map_app.Services.IO;
+using map_app.Services.Renders;
+using Mapsui.Nts;
+using Mapsui.Styles;
+using NetTopologySuite.Geometries;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mapsui.Nts;
-using Newtonsoft.Json;
-using Mapsui.Styles;
-using map_app.Editing.Extensions;
-using NetTopologySuite.Geometries;
-using map_app.Services.Renders;
-using map_app.Services.IO;
-using map_app.Services.Extensions;
 
 namespace map_app.Models;
 
@@ -43,7 +43,7 @@ public abstract class BaseGraphic : GeometryFeature
     private void InitializeStyles()
     {
         Styles.Add(GraphicStyle);
-        if (this.GetType() != typeof(PointGraphic))
+        if (GetType() != typeof(PointGraphic))
             Styles.Add(new LabelDistanceStyle { Enabled = false });
     }
 
@@ -79,7 +79,7 @@ public abstract class BaseGraphic : GeometryFeature
         set
         {
             if (value < 0 || value > 1)
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(Opacity), "Can't be less 0 or more then 1");
             _opacity = value;
             GraphicStyle.Opacity = (float)_opacity;
         }
@@ -100,13 +100,13 @@ public abstract class BaseGraphic : GeometryFeature
         set
         {
             if (value is null)
-                throw new ArgumentNullException();
-            
+                throw new ArgumentNullException(nameof(Coordinates));
+
             _coordinates = value.ToList();
             RerenderGeometry();
         }
     }
-    
+
     public new Geometry? Geometry
     {
         get => base.Geometry;
@@ -120,6 +120,6 @@ public abstract class BaseGraphic : GeometryFeature
     /// </summary>
     /// <returns></returns>
     public abstract BaseGraphic Copy();
-    
+
     public void RerenderGeometry() => Geometry = RenderGeometry();
 }

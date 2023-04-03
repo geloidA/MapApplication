@@ -1,33 +1,26 @@
-using System;
-using System.Linq;
-using System.Windows.Input;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using map_app.Editing;
-using Mapsui.UI.Avalonia;
+using map_app.Services.Attributes;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using map_app.Services.Attributes;
-using map_app.Services.Layers;
-
-using MColor = Mapsui.Styles.Color;
+using System;
+using System.Linq;
+using System.Windows.Input;
 using AColor = Avalonia.Media.Color;
+using MColor = Mapsui.Styles.Color;
 
 namespace map_app.ViewModels.Controls;
 
 internal class NavigationPanelViewModel : ViewModelBase
 {
     private readonly string[] _modesNames;
-    private readonly GraphicsLayer _graphics;
     private readonly MainViewModel _mainVM;
-    private readonly MapControl _mapControl;
-    
+
     public NavigationPanelViewModel(MainViewModel mainViewModel)
     {
         _modesNames = GetModeNames();
-        _mapControl = mainViewModel.MapControl;
         _mainVM = mainViewModel;
-        _graphics = mainViewModel.GraphicsLayer;
         EnablePointMode = ReactiveCommand.Create(() => SwitchDrawingMode(nameof(IsPointMode), EditMode.AddPoint));
         EnablePolygonMode = ReactiveCommand.Create(() => SwitchDrawingMode(nameof(IsPolygonMode), EditMode.AddPolygon));
         EnableOrthodromeMode = ReactiveCommand.Create(() => SwitchDrawingMode(nameof(IsOrthodromeMode), EditMode.AddOrthodromeLine));
@@ -76,15 +69,13 @@ internal class NavigationPanelViewModel : ViewModelBase
 
     private void SwitchDrawingMode(string modeName, EditMode editMode)
     {
-        var drawingMode = this.GetType().GetProperty(modeName);
+        var type = GetType();
+        var drawingMode = type.GetProperty(modeName);
         var isSwitchedModeOn = !(bool)drawingMode?.GetValue(this)! ^ true;
         drawingMode?.SetValue(this, isSwitchedModeOn);
-        
+
         foreach (var mode in _modesNames.Where(x => x != modeName))
-        {
-            var prop = this.GetType().GetProperty(mode);
-            prop?.SetValue(this, false);
-        }
+            TurnOffMode(type, mode);
 
         if (_mainVM.EditMode != EditMode.None && EditMode.DrawingMode.HasFlag(_mainVM.EditMode))
             _mainVM.EndIncompleteEditing();

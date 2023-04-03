@@ -1,8 +1,8 @@
-using System;
-using System.Collections.Generic;
 using map_app.Services.Attributes;
 using Mapsui.Nts;
 using NetTopologySuite.Geometries;
+using System;
+using System.Collections.Generic;
 
 namespace map_app.Models
 {
@@ -17,15 +17,15 @@ namespace map_app.Models
         {
             _coordinates = new List<Coordinate> { startPoint };
         }
-        
+
         public RectangleGraphic(List<Coordinate> points) : base()
-        {            
+        {
             if (points.Count != 2)
-                throw new ArgumentException();
+                throw new ArgumentException("Can only have 2 coordinates", nameof(points));
             _coordinates = points;
             RerenderGeometry();
         }
-        
+
         public RectangleGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
         public RectangleGraphic(Geometry? geometry) : base(geometry) { }
 
@@ -33,14 +33,14 @@ namespace map_app.Models
 
         public Coordinate? HoverVertex { get; set; }
 
-        public override RectangleGraphic Copy() => new RectangleGraphic(this);
+        public override RectangleGraphic Copy() => new(this);
 
         protected override Geometry RenderGeometry()
         {
             var first = _coordinates[0];
             var second = HoverVertex ?? _coordinates[1];
 
-            return new Polygon(new LinearRing(new[] 
+            return new Polygon(new LinearRing(new[]
             {
                 new Coordinate { X = first.X, Y = first.Y },
                 new Coordinate { X = second.X, Y = first.Y },

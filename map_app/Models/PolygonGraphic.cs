@@ -1,9 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using map_app.Services.Attributes;
 using Mapsui.Nts;
 using NetTopologySuite.Geometries;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace map_app.Models
 {
@@ -16,7 +16,7 @@ namespace map_app.Models
 
         public PolygonGraphic() : base() { }
 
-        public PolygonGraphic(Coordinate startPoint) : base() 
+        public PolygonGraphic(Coordinate startPoint) : base()
         {
             _coordinates = new List<Coordinate> { startPoint };
         }
@@ -36,7 +36,7 @@ namespace map_app.Models
 
         public void AddPoint(Coordinate worldCoordinate) => _coordinates.Add(worldCoordinate);
 
-        public override PolygonGraphic Copy() => new PolygonGraphic(this);
+        public override PolygonGraphic Copy() => new(this);
 
         protected override Geometry RenderGeometry()
         {

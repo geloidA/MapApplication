@@ -1,7 +1,7 @@
+using map_app.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using map_app.Models;
 
 namespace map_app.Services;
 
@@ -21,7 +21,7 @@ public class ThreeDimentionalPointEqualityComparer : EqualityComparer<IThreeDime
 
     public override int GetHashCode([DisallowNull] IThreeDimensionalPoint obj)
     {
-        return (obj.First.GetHashCode() * 31 + obj.Second.GetHashCode()) 
+        return (obj.First.GetHashCode() * 31 + obj.Second.GetHashCode())
             * 31 + obj.Third.GetHashCode();
     }
 }

@@ -1,11 +1,11 @@
-using System.Collections.Generic;
 using map_app.Editing.Extensions;
 using map_app.Models.Extensions;
-using System.Linq;
+using map_app.Services.Attributes;
 using Mapsui.Nts;
 using NetTopologySuite.Geometries;
 using System;
-using map_app.Services.Attributes;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace map_app.Models;
 
@@ -26,7 +26,7 @@ public class OrthodromeGraphic : BaseGraphic, IHoveringGraphic
     {
     }
 
-    public OrthodromeGraphic (Coordinate startPoint) : base() // for creation via activator
+    public OrthodromeGraphic(Coordinate startPoint) : base() // for creation via activator
     {
         _coordinates = new List<Coordinate> { startPoint };
         _orthodromes.AddFirst(new Orthodrome(startPoint.ToGeoPoint()));
@@ -48,10 +48,10 @@ public class OrthodromeGraphic : BaseGraphic, IHoveringGraphic
 
     public override GraphicType Type => GraphicType.Orthodrome;
 
-    public override IReadOnlyList<Coordinate> Coordinates 
-    { 
-        get => base.Coordinates; 
-        set 
+    public override IReadOnlyList<Coordinate> Coordinates
+    {
+        get => base.Coordinates;
+        set
         {
             _orthodromes = CreateOrhodromes(value.ToGeoPoints().ToList());
             base.Coordinates = value;

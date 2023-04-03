@@ -1,18 +1,18 @@
-using System;
-using System.Linq;
-using Mapsui;
-using System.Windows.Input;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using Avalonia.Controls;
+using BruTile.Predefined;
+using BruTile.Web;
+using DynamicData;
 using map_app.Services;
+using map_app.Services.Layers;
+using Mapsui;
 using Mapsui.Layers;
 using Mapsui.Tiling.Layers;
-using DynamicData;
-using map_app.Services.Layers;
-using Avalonia.Controls;
 using MessageBox.Avalonia;
-using BruTile.Web;
-using BruTile.Predefined;
+using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
+using System;
+using System.Linq;
+using System.Windows.Input;
 
 namespace map_app.ViewModels;
 
@@ -27,8 +27,8 @@ public class LayerAddEditViewModel : ViewModelBase
     private LayerAddEditViewModel()
     {
         _canConfirm = this.
-            WhenAnyValue(x => x.Name, x=> x.Source,
-                (name, source) => !string.IsNullOrWhiteSpace(name) && 
+            WhenAnyValue(x => x.Name, x => x.Source,
+                (name, source) => !string.IsNullOrWhiteSpace(name) &&
                 (!string.IsNullOrWhiteSpace(source) ||
                 (!_layersTag?.HaveTileSource ?? false)));
         Cancel = ReactiveCommand.Create<Window>(WindowCloser.Close);
@@ -38,7 +38,7 @@ public class LayerAddEditViewModel : ViewModelBase
                 ConfirmAddImpl(wnd);
             else
                 ConfirmEditImpl(wnd);
-        }, 
+        },
         _canConfirm);
     }
 
@@ -124,18 +124,18 @@ public class LayerAddEditViewModel : ViewModelBase
         Cancel.Execute(wnd);
     }
 
-    private ILayer CreateUserLayer(string address, string name, double opacity, bool canRemove = true)
+    private static ILayer CreateUserLayer(string address, string name, double opacity, bool canRemove = true)
     {
-        var tileSource = new HttpTileSource(new GlobalSphericalMercator(), address) { Attribution = new BruTile.Attribution(url: address)  };
-        return new TileLayer(tileSource) 
-        { 
-            Opacity = opacity, 
-            Tag = new ManagedLayerTag 
-            { 
+        var tileSource = new HttpTileSource(new GlobalSphericalMercator(), address) { Attribution = new BruTile.Attribution(url: address) };
+        return new TileLayer(tileSource)
+        {
+            Opacity = opacity,
+            Tag = new ManagedLayerTag
+            {
                 Name = name,
                 CanRemove = canRemove,
                 HaveTileSource = true
-            } 
+            }
         };
     }
 }

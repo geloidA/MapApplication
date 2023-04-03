@@ -1,6 +1,3 @@
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using map_app.Models;
 using map_app.Services;
 using map_app.Services.Layers;
@@ -9,6 +6,9 @@ using Mapsui.Styles;
 using Mapsui.UI.Avalonia;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace map_app.ViewModels.Controls;
 
@@ -19,7 +19,7 @@ public class AuxiliaryPanelViewModel : ViewModelBase
     private readonly GridMemoryProvider _gridLinesProvider;
     private readonly MapControl _mapControl;
     private readonly GraphicsLayer _graphicsLayer;
-    private readonly Color LineColor = new Color(0, 0, 255, 100);
+    private readonly Color LineColor = new(0, 0, 255, 100);
     private double _kilometerInterval = 1000;
 
     public AuxiliaryPanelViewModel(MainViewModel mainViewModel)
@@ -38,7 +38,7 @@ public class AuxiliaryPanelViewModel : ViewModelBase
     }
 
     [Range(0.1, 1000, ErrorMessage = "Введите число между 0.1 и 1000")]
-    public double KilometerInterval 
+    public double KilometerInterval
     {
         get => _kilometerInterval;
         set

@@ -1,9 +1,9 @@
-using System.Collections.Generic;
-using System.Linq;
 using map_app.Models;
 using Mapsui;
 using Mapsui.Layers;
 using Mapsui.Styles;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace map_app.Services.Layers;
 
@@ -11,7 +11,7 @@ public class GraphicsLayer : BaseLayer
 {
     private readonly List<BaseGraphic> _graphics = new();
 
-    public IEnumerable<BaseGraphic> Features 
+    public IEnumerable<BaseGraphic> Features
     {
         get
         {
@@ -71,6 +71,6 @@ public class GraphicsLayer : BaseLayer
 
     public event MDataChangedEventHandler? LayersFeatureChanged;
 
-    private void OnLayersFeatureChanged(CollectionOperation operation, IEnumerable<BaseGraphic> graphics) 
-        => LayersFeatureChanged?.Invoke(this, new MDataChangedEventArgs(operation, graphics));        
+    private void OnLayersFeatureChanged(CollectionOperation operation, IEnumerable<BaseGraphic> graphics)
+        => LayersFeatureChanged?.Invoke(this, new MDataChangedEventArgs(operation, graphics));
 }

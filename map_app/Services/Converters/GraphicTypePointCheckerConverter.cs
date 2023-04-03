@@ -1,7 +1,7 @@
-using System;
-using System.Globalization;
 using Avalonia.Data.Converters;
 using map_app.Models;
+using System;
+using System.Globalization;
 
 namespace map_app.Services.Converters;
 

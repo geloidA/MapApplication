@@ -1,32 +1,31 @@
-using System;
-using Mapsui.UI.Avalonia;
-using map_app.Services;
-using map_app.Editing;
-using System.Reactive.Linq;
-using System.Linq;
-using System.Windows.Input;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Notification;
+using map_app.Editing;
+using map_app.Models;
+using map_app.Network;
+using map_app.Services;
+using map_app.Services.IO;
+using map_app.Services.Layers;
+using map_app.ViewModels.Controls;
+using Mapsui;
+using Mapsui.Nts.Extensions;
+using Mapsui.UI.Avalonia;
 using Mapsui.UI.Avalonia.Extensions;
 using ReactiveUI;
-using map_app.Models;
 using ReactiveUI.Fody.Helpers;
-using System.ComponentModel;
-using map_app.ViewModels.Controls;
-using map_app.Services.IO;
-using System.IO;
-using System.Threading.Tasks;
+using System;
 using System.Collections.Generic;
-using Avalonia.Notification;
-using Avalonia.Media;
-using System.Reactive;
-using map_app.Network;
-using Avalonia.Controls.ApplicationLifetimes;
-using System.Net.Sockets;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
 using System.Net;
-using map_app.Services.Layers;
-using Mapsui.Nts.Extensions;
-using Mapsui;
-
+using System.Net.Sockets;
+using System.Reactive;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
+using System.Windows.Input;
 using MColor = Mapsui.Styles.Color;
 
 namespace map_app.ViewModels;
@@ -71,23 +70,23 @@ public class MainViewModel : ViewModelBase
 
     [Reactive]
     internal string? DeliveryIPAddress { get; set; }
-    
+
     internal EditMode EditMode
     {
         get => _editManager.EditMode;
         set => _editManager.EditMode = value;
     }
 
-    internal MColor EditManagerColor 
+    internal MColor EditManagerColor
     {
         get => _editManager.Color;
         set => _editManager.Color = value;
     }
 
-    public int DeliveryPort 
-    { 
+    public int DeliveryPort
+    {
         get => _deliveryPort;
-        internal set => this.RaiseAndSetIfChanged(ref _deliveryPort, value); 
+        internal set => this.RaiseAndSetIfChanged(ref _deliveryPort, value);
     }
 
     [Reactive]
@@ -123,11 +122,11 @@ public class MainViewModel : ViewModelBase
         AuxiliaryPanelViewModel = new(this);
         _isBaseGraphicUnderPointer = this
             .WhenAnyValue(x => x.UnderPointerGraphic)
-            .Select(f => f as BaseGraphic != null)
+            .Select(f => f is BaseGraphic)
             .ToProperty(this, x => x.IsBaseGraphicUnderPointer);
         _isOrthodromeUnderPointer = this
             .WhenAnyValue(x => x.UnderPointerGraphic)
-            .Select(f => f as OrthodromeGraphic != null)
+            .Select(f => f is OrthodromeGraphic)
             .ToProperty(this, x => x.IsOrthodromeUnderPointer);
         GraphicsLayer.LayersFeatureChanged += (sender, _) =>
         {
@@ -149,7 +148,7 @@ public class MainViewModel : ViewModelBase
             var result = await ShowGraphicEditingDialog.Handle(vm);
             if (result == DialogResult.OK)
                 DataState = DataState.Unsaved;
-        }, 
+        },
         canExecute: graphicUnderPointer);
         var haveAnyGraphic = this.WhenAnyValue(x => x.HaveGraphics);
         SaveGraphicStateInFile = ReactiveCommand.CreateFromTask(SaveGraphicStateInFileImpl,
@@ -191,7 +190,7 @@ public class MainViewModel : ViewModelBase
         return appState switch
         {
             DataState.None => Title,
-            DataState.Saved => Title[0] == '*' ? Title.Substring(1) : Title,
+            DataState.Saved => Title[0] == '*' ? Title[1..] : Title,
             DataState.Unsaved => Title[0] == '*' ? Title : '*' + Title,
             _ => throw new NotImplementedException()
         };
@@ -205,16 +204,15 @@ public class MainViewModel : ViewModelBase
             return;
         }
         var remotePoint = new IPEndPoint(IPAddress.Parse(DeliveryIPAddress), DeliveryPort);
-        if (_currentFileMapState is null)
-            _currentFileMapState = new MapState { Graphics = GraphicsLayer.Features };
-        var sendResult = await TrySendData(remotePoint, _currentFileMapState.ToJsonBytes());
-        if (sendResult.Success)
-            ShowNotification(sendResult.Message, "Информация", Colors.LightBlue);
-        else 
-            ShowNotification(sendResult.Message, "Ошибка", Colors.Red);
+        _currentFileMapState ??= new MapState { Graphics = GraphicsLayer.Features };
+        var (Success, Message) = await TrySendData(remotePoint, _currentFileMapState.ToJsonBytes());
+        if (Success)
+            ShowNotification(Message, "Информация", Colors.LightBlue);
+        else
+            ShowNotification(Message, "Ошибка", Colors.Red);
     }
 
-    private async Task<(bool Success, string Message)> TrySendData(IPEndPoint remotePoint, byte[] data)
+    private static async Task<(bool Success, string Message)> TrySendData(IPEndPoint remotePoint, byte[] data)
     {
         try
         {
@@ -227,12 +225,12 @@ public class MainViewModel : ViewModelBase
         }
     }
 
-    private async Task SendDataAsync(IPEndPoint remotePoint, byte[] data)
+    private static async Task SendDataAsync(IPEndPoint remotePoint, byte[] data)
     {
         using var tcpClient = new TcpClient();
         tcpClient.Connect(remotePoint);
         using var stream = tcpClient.GetStream();
-        await stream.WriteAsync(data, 0, data.Length);
+        await stream.WriteAsync(data);
     }
 
     internal ICommand? OpenLayersManageView { get; private set; }
@@ -259,7 +257,7 @@ public class MainViewModel : ViewModelBase
 
     internal void AccessOnlyGraphic(object? sender, CancelEventArgs e)
     {
-        e.Cancel = !IsBaseGraphicUnderPointer || 
+        e.Cancel = !IsBaseGraphicUnderPointer ||
             (_editManager.EditMode != EditMode.None && EditMode.DrawingMode.HasFlag(_editManager.EditMode));
     }
 
@@ -267,7 +265,6 @@ public class MainViewModel : ViewModelBase
     {
         var point = args.GetCurrentPoint(MapControl);
         var screenPosition = args.GetPosition(MapControl).ToMapsui();
-        var worldPosition = MapControl.Viewport.ScreenToWorld(screenPosition);
 
         if (point.Properties.IsLeftButtonPressed)
         {
@@ -381,7 +378,7 @@ public class MainViewModel : ViewModelBase
         GraphicsLayer.AddRange(newGraphics);
     }
 
-    private async Task<bool> LoadPointImagesAsync(IEnumerable<BaseGraphic> graphics)
+    private static async Task<bool> LoadPointImagesAsync(IEnumerable<BaseGraphic> graphics)
     {
         var haveFailedImagesPaths = false;
         foreach (var point in graphics.Cast<PointGraphic>().Where(x => x.Image != null))
@@ -431,7 +428,7 @@ public class MainViewModel : ViewModelBase
         UpdateCurrentState(mapState);
     }
 
-    private async void SaveGraphics(MapState state) => await MapStateJsonMarshaller.SaveAsync(state, state.FileLocation);
+    private static async void SaveGraphics(MapState state) => await MapStateJsonMarshaller.SaveAsync(state, state.FileLocation);
 
     internal void CancelDrawing() => _editManager.CancelDrawing();
 

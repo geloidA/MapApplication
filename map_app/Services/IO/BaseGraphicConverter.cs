@@ -1,9 +1,9 @@
-using System;
-using System.Linq;
 using map_app.Models;
 using map_app.Models.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Linq;
 
 namespace map_app.Services.IO;
 
@@ -18,7 +18,7 @@ public class BaseGraphicConverter : JsonCreationConverter<BaseGraphic>
     {
         var points = jObject.Value<JArray>("LinearPoints")?
             .Select(x => x.ToObject<LinearPoint>());
-        if (points is null) 
+        if (points is null)
             throw new InvalidOperationException("JsonObject doesn't have LinearPoints field");
         return (GraphicType?)jObject["Type"]?.Value<int>() switch
         {

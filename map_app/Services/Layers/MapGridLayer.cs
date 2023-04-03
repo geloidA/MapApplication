@@ -1,11 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Threading.Tasks;
 using Mapsui;
 using Mapsui.Extensions;
 using Mapsui.Fetcher;
 using Mapsui.Layers;
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Threading.Tasks;
 
 namespace map_app.Services.Layers;
 
@@ -16,10 +16,11 @@ public class MapGridLayer : BaseLayer
 
     public MapGridLayer(GridMemoryProvider dataSource)
     {
-        _dataSource = dataSource ?? throw new ArgumentException(nameof(dataSource));
+        _dataSource = dataSource ?? throw new ArgumentException("dataSource was null", nameof(dataSource));
         _gridLines = ImmutableArray.Create<IFeature>();
         if (_dataSource is IDynamic dynamic)
-            dynamic.DataChanged += (s, e) => { 
+            dynamic.DataChanged += (s, e) =>
+            {
                 Catch.Exceptions(async () => { if (Enabled) await UpdateDataAsync(); });
             };
     }

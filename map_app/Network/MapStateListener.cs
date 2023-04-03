@@ -1,12 +1,12 @@
+using Avalonia.Media;
+using map_app.Models;
+using map_app.Services;
+using map_app.ViewModels;
 using System;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using Avalonia.Media;
-using map_app.Models;
-using map_app.Services;
-using map_app.ViewModels;
 
 namespace map_app.Network;
 
@@ -21,7 +21,7 @@ public class MapStateListener
         _listener = TcpListener.Create(port);
         _mainVM = vm;
     }
-    
+
     public async void RunAsync(Func<bool> stopPredicate)
     {
         if (_active) throw new InvalidOperationException("The server is already running");
@@ -44,7 +44,7 @@ public class MapStateListener
         else _mainVM.ShowNotification("Не удалось загрузить данные по сети", "Информация", Colors.LightBlue);
     }
 
-    private async Task<MapState?> HandleClientAsync(TcpClient handler)
+    private static async Task<MapState?> HandleClientAsync(TcpClient handler)
     {
         MapState? state = null;
         using (var stream = handler.GetStream())

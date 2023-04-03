@@ -1,8 +1,3 @@
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Threading.Tasks;
-using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Svg;
 using DynamicData;
@@ -14,12 +9,17 @@ using map_app.Services.Layers;
 using Mapsui.UI.Avalonia;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace map_app.ViewModels.Controls;
 
 internal class GraphicsPopupViewModel : ViewModelBase
 {
-    private static Image _arrowRight = new Image
+    private static readonly Image _arrowRight = new()
     {
         Source = new SvgImage
         {
@@ -28,8 +28,8 @@ internal class GraphicsPopupViewModel : ViewModelBase
         Width = 15,
         Height = 15
     };
-    
-    private static Image _arrowLeft = new Image
+
+    private static readonly Image _arrowLeft = new()
     {
         Source = new SvgImage
         {
@@ -46,7 +46,7 @@ internal class GraphicsPopupViewModel : ViewModelBase
     private readonly MapControl _mapControl;
     private bool IsSelectedGraphicNotNull => _isSelectedGraphicNotNull.Value;
     private BaseGraphic? _selectedGraphic;
-    
+
     public GraphicsPopupViewModel(MainViewModel mainViewModel)
     {
         _mapControl = mainViewModel.MapControl;
@@ -58,7 +58,7 @@ internal class GraphicsPopupViewModel : ViewModelBase
             .ToProperty(this, x => x.ArrowImage);
 
         IsGraphicsListPressed = ReactiveCommand.Create(() => IsGraphicsListOpen ^= true);
-        
+
         _isSelectedGraphicNotNull = this
             .WhenAnyValue(x => x.SelectedGraphic)
             .Select(g => g is not null)
@@ -72,7 +72,7 @@ internal class GraphicsPopupViewModel : ViewModelBase
             await OpenGraphicView(new GraphicAddEditViewModel(SelectedGraphic!, _mapControl), mainViewModel), canExecute: selectedIsNotNull);
 
         OpenAddGraphicView = ReactiveCommand.CreateFromTask<GraphicType>(async (type) =>
-            await OpenGraphicView(new GraphicAddEditViewModel(_graphics, type,  _mapControl), mainViewModel));
+            await OpenGraphicView(new GraphicAddEditViewModel(_graphics, type, _mapControl), mainViewModel));
         _graphics.LayersFeatureChanged += (_, _) => HaveAnyGraphic = _graphics.Features.Any();
         var haveAnyGraphic = this.WhenAnyValue(x => x.HaveAnyGraphic);
         ClearGraphics = ReactiveCommand.Create(ClearGraphicsImpl, canExecute: haveAnyGraphic);
@@ -101,7 +101,7 @@ internal class GraphicsPopupViewModel : ViewModelBase
                 break;
             case CollectionOperation.Clear:
                 Graphics.Clear();
-                break;            
+                break;
         }
     }
 

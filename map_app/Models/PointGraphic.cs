@@ -1,11 +1,11 @@
-using System;
-using System.Collections.Generic;
 using map_app.Services.Attributes;
 using Mapsui.Nts;
 using Mapsui.Nts.Extensions;
 using Mapsui.Styles;
 using NetTopologySuite.Geometries;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 
 namespace map_app.Models
 {
@@ -19,9 +19,9 @@ namespace map_app.Models
         public string? Image { get; set; }
 
         [JsonProperty]
-        public double Scale 
+        public double Scale
         {
-            get => _scale; 
+            get => _scale;
             set
             {
                 _scale = value;
@@ -43,7 +43,7 @@ namespace map_app.Models
         {
         }
 
-        public PointGraphic(List<Coordinate> points) : this() 
+        public PointGraphic(List<Coordinate> points) : this()
         {
             if (points.Count != 1)
                 throw new ArgumentException($"List need contain one point, but was {points.Count}");
@@ -52,15 +52,15 @@ namespace map_app.Models
         }
 
         public PointGraphic(GeometryFeature geometryFeature) : base(geometryFeature) { }
-        
+
         public PointGraphic(Geometry? geometry) : base(geometry) { }
 
-        public override VectorStyle GraphicStyle 
-        { 
-            get => _style; 
+        public override VectorStyle GraphicStyle
+        {
+            get => _style;
             set
             {
-                if (value is not SymbolStyle smblStyle) 
+                if (value is not SymbolStyle smblStyle)
                     throw new ArgumentException("PointGraphic's style only can be SymbolStyle");
                 Styles.Remove(_style);
                 _style = smblStyle;
@@ -70,7 +70,7 @@ namespace map_app.Models
 
         protected override Geometry RenderGeometry() => _coordinates[0].ToPoint();
 
-        public override PointGraphic Copy() => new PointGraphic(this);
+        public override PointGraphic Copy() => new(this);
 
         public override void Dispose()
         {
@@ -83,6 +83,7 @@ namespace map_app.Models
                     (bitmap as IDisposable)?.Dispose();
                 }
             }
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -1,8 +1,8 @@
+using Mapsui.Nts.Extensions;
+using NetTopologySuite.Geometries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mapsui.Nts.Extensions;
-using NetTopologySuite.Geometries;
 
 namespace map_app.Editing.Extensions;
 
@@ -46,7 +46,7 @@ public static class GeometryExtensions
             return new List<Coordinate> { point.Coordinate };
         throw new NotImplementedException();
     }
-    
+
     public static Geometry? InsertCoordinate(this Geometry? geometry, Coordinate coordinate, int segment)
     {
         if (geometry is null)

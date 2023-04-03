@@ -1,8 +1,8 @@
-using System;
 using map_app.Editing.Extensions;
 using Mapsui;
 using Mapsui.Nts.Extensions;
 using Mapsui.UI.Avalonia;
+using System;
 
 namespace map_app.Editing;
 

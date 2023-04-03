@@ -39,7 +39,7 @@ public class UserTag : INotifyDataErrorInfo, INotifyPropertyChanged
     }
 
     private void OnErrorsChanged([CallerMemberName] string propertyName = "")
-        => ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(propertyName));       
+        => ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(propertyName));
 
     private void OnPropertyChanged([CallerMemberName] string propertyName = "")
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

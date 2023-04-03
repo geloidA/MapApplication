@@ -1,6 +1,6 @@
+using Mapsui.Styles;
 using System.IO;
 using System.Threading.Tasks;
-using Mapsui.Styles;
 
 namespace map_app.Services.IO;
 
@@ -24,7 +24,7 @@ public static class ImageRegister
         }
         return bitmapId;
     }
-    
+
     public static void EmbedImage(string imagePath)
     {
         var imageLocation = Path.Combine(App.ImportImagesLocation, new FileInfo(imagePath).Name);

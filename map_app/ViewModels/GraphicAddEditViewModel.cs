@@ -1,30 +1,30 @@
-using System.Collections.ObjectModel;
-using System.Windows.Input;
+using Avalonia.Controls;
 using Avalonia.Media;
+using AvaloniaEdit.Utils;
+using DynamicData;
+using DynamicData.Binding;
 using map_app.Models;
+using map_app.Models.Extensions;
 using map_app.Services;
+using map_app.Services.IO;
+using map_app.Services.Layers;
+using Mapsui.Extensions;
+using Mapsui.Projections;
+using Mapsui.Styles;
+using Mapsui.UI.Avalonia;
+using MessageBox.Avalonia;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using MessageBox.Avalonia;
-using System.Collections.Generic;
-using System;
-using AvaloniaEdit.Utils;
-using Mapsui.Projections;
-using System.Reactive.Linq;
-using ReactiveUI.Validation.Helpers;
-using System.Linq;
-using map_app.Models.Extensions;
-using DynamicData.Binding;
-using DynamicData;
-using System.Reactive;
-using System.Threading.Tasks;
-using Mapsui.Styles;
-using Mapsui.Extensions;
-using map_app.Services.IO;
 using ReactiveUI.Validation.Extensions;
-using map_app.Services.Layers;
-using Avalonia.Controls;
-using Mapsui.UI.Avalonia;
+using ReactiveUI.Validation.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Reactive;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace map_app.ViewModels;
 
@@ -37,7 +37,7 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
     private readonly GraphicsLayer? _graphicPool;
     private readonly MapControl _mapControl;
 
-    public GraphicAddEditViewModel(GraphicsLayer target, GraphicType pointType, MapControl mapControl) : this(GraphicCreator.Create(pointType), mapControl) 
+    public GraphicAddEditViewModel(GraphicsLayer target, GraphicType pointType, MapControl mapControl) : this(GraphicCreator.Create(pointType), mapControl)
     {
         _graphicPool = target;
         _isAddMode = true;
@@ -55,7 +55,7 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
             ?? new List<UserTag>());
         Opacity = _editGraphic.Opacity;
         GraphicName = _editGraphic.Name;
-        GraphicType = _editGraphic.Type;            
+        GraphicType = _editGraphic.Type;
         GraphicColor = _editGraphic.StyleColor is null
             ? Colors.Black
             : new Avalonia.Media.Color(
@@ -88,7 +88,7 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
         var canRemovePoint = this
             .WhenAnyValue(x => x.SelectedPointIndex)
             .Select(x => IsIndexValid(x, Points.Count));
-        RemoveSelectedPoint = ReactiveCommand.Create(() => 
+        RemoveSelectedPoint = ReactiveCommand.Create(() =>
         {
             _linear.RemoveAt(SelectedPointIndex);
             _geo.RemoveAt(SelectedPointIndex);
@@ -172,7 +172,7 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
     }
 
     private async Task SaveChangesImpl(Window wnd)
-    {            
+    {
         if (HaveValidationErrors(out string message))
         {
             ShowMessageIncorrectData(message);
@@ -200,14 +200,14 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
         _editGraphic.Opacity = Opacity;
         _editGraphic.Name = GraphicName;
         _editGraphic.UserTags = Tags.ToDictionary(t => t.Name, t => t.Value ?? string.Empty);
-                    
+
     }
 
     private async Task UpdatePointStyleAsync(PointGraphic point)
     {
         if (point.Image == ImagePath) return;
         var style = await GetNewPointStyle(point);
-        if (style is null) 
+        if (style is null)
             ShowMessageIncorrectData("Файла нет");
         else
             point.GraphicStyle = style;
@@ -230,9 +230,9 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
             _ => throw new NotImplementedException()
         };
         Points.Add(point);
-        if (point is LinearPoint)
+        if (point is LinearPoint point1)
         {
-            _linear.Add((LinearPoint)point);
+            _linear.Add(point1);
             _geo.Add(new GeoPoint());
         }
         else
@@ -260,14 +260,14 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
             .GroupBy(x => x.Name)
             .Any(g => g.Count() > 1);
 
-    private bool IsCoordinatesIncorrect 
+    private bool IsCoordinatesIncorrect
         => _geo
             .Where(g => IsCoordinateIncorrect(g))
             .Any();
 
     private bool IsCoordinateIncorrect(GeoPoint point)
     {
-        return point.Longtitude < -180 
+        return point.Longtitude < -180
             || point.Longtitude > 180
             || point.Latitude < -85
             || point.Latitude > 85;
@@ -281,7 +281,7 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
             PolygonGraphic => _geo.Count >= 2,
             OrthodromeGraphic => _geo.Count >= 2,
             _ => throw new NotImplementedException()
-        };        
+        };
 
     private void SwapPointsSource(PointType targetType)
     {
@@ -304,8 +304,8 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
                 SetNames(new[] { "X", "Y", "Z" });
                 break;
             case PointType.Geo:
-                    SetNames(new[] { "Долгота", "Широта", "Высота" });
-                    break;
+                SetNames(new[] { "Долгота", "Широта", "Высота" });
+                break;
             default:
                 throw new NotImplementedException();
         }
@@ -321,7 +321,7 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
     private void ChangeCoordinate(Cell? cell)
     {
         if (cell is null) return;
-        
+
         switch (cell.Column)
         {
             case 0:

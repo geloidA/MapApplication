@@ -17,10 +17,10 @@ public class ObservableStack<T> : ObservableCollection<T> //todo: make limited
 
     public T Pop()
     {
-        var item = base[base.Count - 1];
-        base.RemoveAt(base.Count - 1);
+        var item = base[Count - 1];
+        RemoveAt(Count - 1);
         return item;
     }
 
-    public void Push(T item) => base.Add(item);
+    public void Push(T item) => Add(item);
 }

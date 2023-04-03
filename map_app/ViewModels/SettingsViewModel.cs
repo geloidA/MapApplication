@@ -1,5 +1,3 @@
-using System.Text.RegularExpressions;
-using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Input;
 using map_app.Services;
@@ -7,12 +5,15 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using ReactiveUI.Validation.Extensions;
 using ReactiveUI.Validation.Helpers;
+using System.Text.RegularExpressions;
+using System.Windows.Input;
 
 namespace map_app.ViewModels;
 
 public class SettingsViewModel : ReactiveValidationObject
 {
-    private readonly Regex _validateIPv4Regex = new("^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
+    private readonly Regex _validateIPv4Regex =
+        new("^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
     private readonly MainViewModel _mainViewModel;
 
     [Reactive]
@@ -32,13 +33,13 @@ public class SettingsViewModel : ReactiveValidationObject
                             "Неправильный порт");
         DeliveryPort = mainViewModel.DeliveryPort;
         DeliveryIPAddress = mainViewModel.DeliveryIPAddress;
-        Confirm = ReactiveCommand.Create<ICloseable>(wnd => 
+        Confirm = ReactiveCommand.Create<ICloseable>(wnd =>
         {
             _mainViewModel.DeliveryIPAddress = DeliveryIPAddress;
             if (_mainViewModel.DeliveryPort != DeliveryPort)
                 _mainViewModel.DeliveryPort = DeliveryPort;
             Close?.Execute(wnd);
-        }, 
+        },
         canExecute: this.IsValid());
         Close = ReactiveCommand.Create<Window>(WindowCloser.Close);
     }

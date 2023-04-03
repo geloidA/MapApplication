@@ -1,19 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Mapsui;
 using Mapsui.Fetcher;
 using Mapsui.Layers;
 using Mapsui.Nts;
 using Mapsui.Providers;
 using NetTopologySuite.Geometries;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace map_app.Services;
 
 public class GridMemoryProvider : IProvider, IDynamic
 {
-    private IReadOnlyViewport _viewport;
+    private readonly IReadOnlyViewport _viewport;
     private double _kilometerInterval;
 
     public event DataChangedEventHandler? DataChanged;
@@ -44,14 +44,14 @@ public class GridMemoryProvider : IProvider, IDynamic
     {
         var extent = GetExtent();
         if (extent == null || KilometerInterval < 0)
-            return await Task.FromResult<IEnumerable<IFeature>>(Enumerable.Empty<IFeature>());
+            return await Task.FromResult(Enumerable.Empty<IFeature>());
         var meterStep = KilometerInterval * 1000;
-        
+
         var xStart = Math.Ceiling(extent.BottomLeft.X / meterStep) * meterStep;
         var yStart = Math.Ceiling(extent.BottomLeft.Y / meterStep) * meterStep;
 
         var gridLines = new List<IFeature>();
-        await Task.Run(() => 
+        await Task.Run(() =>
         {
             for (var i = xStart; i < extent.TopRight.X; i += meterStep)
             {
@@ -72,7 +72,7 @@ public class GridMemoryProvider : IProvider, IDynamic
     }
 
     private static GeometryFeature CreateLine(Coordinate p1, Coordinate p2)
-        => new GeometryFeature { Geometry = new LineString(new[] { p1, p2 }) };
+        => new() { Geometry = new LineString(new[] { p1, p2 }) };
 
     public void DataHasChanged() => DataChanged?.Invoke(this, new DataChangedEventArgs());
 }

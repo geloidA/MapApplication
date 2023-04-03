@@ -1,5 +1,5 @@
-using System;
 using NetTopologySuite.Geometries;
+using System;
 
 namespace map_app.Models;
 
@@ -8,7 +8,7 @@ public class Coordinate3D : Coordinate
     public override double Z { get; set; }
 
     public Coordinate3D()
-    {        
+    {
     }
 
     public Coordinate3D(double x, double y, double z)
@@ -18,9 +18,9 @@ public class Coordinate3D : Coordinate
         Z = z;
     }
 
-    public override Coordinate CoordinateValue 
-    { 
-        get => this; 
+    public override Coordinate CoordinateValue
+    {
+        get => this;
         set
         {
             if (value is Coordinate3D coordinate)

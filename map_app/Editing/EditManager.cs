@@ -1,17 +1,17 @@
+using map_app.Editing.Extensions;
+using map_app.Models;
+using map_app.Services.Layers;
+using map_app.Services.Renders;
+using map_app.ViewModels;
+using Mapsui;
+using Mapsui.Nts;
+using Mapsui.Nts.Extensions;
+using Mapsui.Styles;
+using Mapsui.UI;
+using NetTopologySuite.Geometries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using map_app.Editing.Extensions;
-using Mapsui.Nts;
-using Mapsui.Nts.Extensions;
-using Mapsui.UI;
-using map_app.Models;
-using NetTopologySuite.Geometries;
-using Mapsui.Styles;
-using Mapsui;
-using map_app.ViewModels;
-using map_app.Services.Renders;
-using map_app.Services.Layers;
 
 namespace map_app.Editing;
 

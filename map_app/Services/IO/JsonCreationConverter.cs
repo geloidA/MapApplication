@@ -1,6 +1,6 @@
-using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 
 namespace map_app.Services.IO;
 
@@ -20,9 +20,9 @@ public abstract class JsonCreationConverter<T> : JsonConverter
 
     public override bool CanWrite => false;
 
-    public override object ReadJson(JsonReader reader, 
-                                    Type objectType, 
-                                    object? existingValue, 
+    public override object ReadJson(JsonReader reader,
+                                    Type objectType,
+                                    object? existingValue,
                                     JsonSerializer serializer)
     {
         // Load JObject from stream

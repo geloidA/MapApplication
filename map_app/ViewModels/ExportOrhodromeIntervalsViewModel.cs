@@ -1,9 +1,3 @@
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Csv;
@@ -13,6 +7,12 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using ReactiveUI.Validation.Extensions;
 using ReactiveUI.Validation.Helpers;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reactive;
+using System.Reactive.Linq;
+using System.Windows.Input;
 
 namespace map_app.ViewModels;
 

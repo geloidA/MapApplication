@@ -1,7 +1,7 @@
-using System;
-using System.Collections.Generic;
 using map_app.Models;
 using NetTopologySuite.Geometries;
+using System;
+using System.Collections.Generic;
 
 namespace map_app.Services;
 
@@ -29,5 +29,5 @@ public static class GraphicCreator
             GraphicType.Rectangle => new RectangleGraphic(source),
             _ => throw new NotImplementedException("Unknown graphicType")
         };
-    }            
+    }
 }

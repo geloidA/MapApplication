@@ -15,12 +15,12 @@ public static class EnumUtils
 
         return Enum.GetValues(t).Cast<Enum>().Select(ToDescription).ToList();
     }
-    
+
     public static EnumDescription ToDescription(this Enum value)
     {
         string? description;
         string? help = null;
-        
+
         var attributes = value.GetType()!.GetField(value.ToString())!.GetCustomAttributes(typeof(DescriptionAttribute), false);
         if (attributes.Any())
         {
@@ -31,11 +31,11 @@ public static class EnumUtils
             TextInfo ti = CultureInfo.CurrentCulture.TextInfo;
             description = ti.ToTitleCase(ti.ToLower(value.ToString().Replace("_", " ")));
         }
-        
-        if(description!.IndexOf(';') is var index && index != -1)
+
+        if (description!.IndexOf(';') is var index && index != -1)
         {
-            help = description.Substring(index + 1);
-            description = description.Substring(0, index);
+            help = description[(index + 1)..];
+            description = description[..index];
         }
 
         return new EnumDescription() { Value = value, Description = description, Help = help };

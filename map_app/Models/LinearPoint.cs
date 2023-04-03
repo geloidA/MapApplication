@@ -23,7 +23,7 @@ public class LinearPoint : IThreeDimensionalPoint
     public LinearPoint()
     {
     }
-    
+
     public LinearPoint(double x, double y) : this(x, y, 0) { }
 
     public LinearPoint(double x, double y, double z)
@@ -37,8 +37,8 @@ public class LinearPoint : IThreeDimensionalPoint
 
     public GeoPoint ToGeoPoint()
     {
-        var lonLat = SphericalMercator.ToLonLat(X, Y);
-        return new GeoPoint(lonLat.lon, lonLat.lat, Z); 
+        var (lon, lat) = SphericalMercator.ToLonLat(X, Y);
+        return new GeoPoint(lon, lat, Z);
     }
 
     public override string ToString() => $"X:{X:0.00} Y:{Y:0.00} Z:{Z:0.00}";

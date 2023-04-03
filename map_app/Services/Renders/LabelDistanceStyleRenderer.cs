@@ -12,7 +12,7 @@ namespace map_app.Services.Renders;
 
 public class LabelDistanceStyleRenderer : ISkiaStyleRenderer
 {
-    public bool Draw(SKCanvas canvas, IReadOnlyViewport viewport, 
+    public bool Draw(SKCanvas canvas, IReadOnlyViewport viewport,
         ILayer layer, IFeature feature, IStyle style, ISymbolCache symbolCache, long iteration)
     {
         if (feature.Extent is null) return false;
@@ -31,20 +31,18 @@ public class LabelDistanceStyleRenderer : ISkiaStyleRenderer
         return true;
     }
 
-    private void DrawDistanceLabel(string text, SKPoint point, SKCanvas canvas)
+    private static void DrawDistanceLabel(string text, SKPoint point, SKCanvas canvas)
     {
-        using (var paint = new SKPaint())
-        {
-            paint.IsAntialias = true;
-            paint.TextAlign = SKTextAlign.Center;
-            paint.TextSize = 10;
-            paint.Style = SKPaintStyle.StrokeAndFill;
-            paint.Color = SKColors.White;
-            paint.StrokeWidth = 2.3f;
-            canvas.DrawText(text, point, paint);
-            paint.Color = SKColors.Black;
-            paint.StrokeWidth = 0.5f;
-            canvas.DrawText(text, point, paint);
-        }
+        using var paint = new SKPaint();
+        paint.IsAntialias = true;
+        paint.TextAlign = SKTextAlign.Center;
+        paint.TextSize = 10;
+        paint.Style = SKPaintStyle.StrokeAndFill;
+        paint.Color = SKColors.White;
+        paint.StrokeWidth = 2.3f;
+        canvas.DrawText(text, point, paint);
+        paint.Color = SKColors.Black;
+        paint.StrokeWidth = 0.5f;
+        canvas.DrawText(text, point, paint);
     }
 }

@@ -1,9 +1,9 @@
-using System;
-using System.Collections.Generic;
 using map_app.Editing.Extensions;
 using map_app.Models;
 using Mapsui.Utilities;
 using NetTopologySuite.Geometries;
+using System;
+using System.Collections.Generic;
 
 namespace map_app.Services;
 
@@ -53,8 +53,8 @@ public static class MapAlgorithms
         return 2 * EarthKmRadius * Math.Asin(
             Math.Sqrt(
                 Math.Sin((lat1 - lat2) / 2) * Math.Sin((lat1 - lat2) / 2) +
-                Math.Cos(lat1) * Math.Cos(lat2) * 
-                Math.Sin((lon1 - lon2) / 2) * Math.Sin((lon1 - lon2) / 2) 
-                ));  
+                Math.Cos(lat1) * Math.Cos(lat2) *
+                Math.Sin((lon1 - lon2) / 2) * Math.Sin((lon1 - lon2) / 2)
+                ));
     }
 }

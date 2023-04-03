@@ -39,5 +39,5 @@ public class Geomorpher
     {
         vertex.X = center.X + (vertex.X - center.X) * scale;
         vertex.Y = center.Y + (vertex.Y - center.Y) * scale;
-    }        
+    }
 }
