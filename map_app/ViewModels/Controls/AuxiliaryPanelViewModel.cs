@@ -58,7 +58,7 @@ public class AuxiliaryPanelViewModel : ViewModelBase
 
     private void ShowGridReference() => _gridLayer.Enabled = IsGridActivated ^= true;
 
-    private void EnableRuler()
+    private void SwitchRuler()
     {
         IsRulerActivated = (_mainViewModel.IsRulerActivated ^= true);
         // because layer's styles draw first, distance labels must be in graphic feature for escape overlapping

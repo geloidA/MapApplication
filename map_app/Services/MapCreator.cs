@@ -10,6 +10,11 @@ using Mapsui.UI;
 using Mapsui.Widgets;
 using Mapsui.Widgets.ScaleBar;
 using map_app.Services.Layers;
+using System;
+using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
+using System.Linq;
+using System.Globalization;
 
 namespace map_app.Services;
 
@@ -25,14 +30,21 @@ public class MapCreator
             PanLimits = GetLimitsOfWorld(),
             ZoomLimits = new MinMax(2.5, 25000)
         };
-        var layer = new TileLayer(KnownTileSources.Create(KnownTileSource.OpenStreetMap))
-        { 
-            Name = "MainTileLayer",
-            Tag = new ManagedLayerTag { Name = "Карта", HaveTileSource = true }
-        };
+        var sources = App.Config
+            .GetSection("tile_sources")
+            .GetChildren()
+            .Select(x =>  new 
+            { 
+                Name = x["Name"], 
+                Opacity = double.Parse(x["Opacity"]!, CultureInfo.InvariantCulture), 
+                HttpTileSource = x["HttpTileSource"] 
+            })
+            .Select(x => CreateOwnTileLayer(x.Name!, x.Opacity, x.HttpTileSource!))
+            .Reverse();
+        foreach (var layer in sources)
+            map.Layers.Add(layer);
         var scaleWidget = GetScaleWidget(map);
         map.Widgets.Add(scaleWidget);
-        map.Layers.Add(layer);
         map.Layers.Add(CreateTargetWritableLayer());
         return map;
     }
@@ -79,8 +91,17 @@ public class MapCreator
         return style;
     }
 
-    private HttpTileSource CreateOwnTileSourse()
+    private static TileLayer CreateOwnTileLayer(string name, double opacity, string httpTileSource)
     {
-        return new HttpTileSource(new GlobalSphericalMercator(), "http://10.5.23.21/tile/{z}/{x}/{y}.png");
+        return new TileLayer(new HttpTileSource(new GlobalSphericalMercator(), httpTileSource))
+        {
+            Tag = new ManagedLayerTag
+            {
+                Name = name,
+                HaveTileSource = true,
+                CanRemove = true
+            },
+            Opacity = opacity
+        };
     }
 }

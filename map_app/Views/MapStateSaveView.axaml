@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         MinWidth="450" MinHeight="500"
+        Width="450" Height="500"
         MaxWidth="650" MaxHeight="700"
         Name="MapStateView"
         x:Class="map_app.Views.MapStateSaveView"

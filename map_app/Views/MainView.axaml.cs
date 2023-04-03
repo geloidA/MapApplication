@@ -38,12 +38,6 @@ public partial class MainView : ReactiveWindow<MainViewModel>
         this.WhenActivated(d => d(ViewModel!.ShowExportOrhodromeIntervalsDialogAsync.RegisterHandler(x => this.ShowDialogAsync(x, new ExportOrhodromeIntervalsView()))));
     }
 
-    protected override void OnKeyUp(KeyEventArgs e)
-    {
-        if (e.Key == Key.Escape)
-            MapControl.RefreshGraphics();
-    }
-
     protected override void OnKeyDown(KeyEventArgs e)
     {
         if (e.Key == Key.Escape)

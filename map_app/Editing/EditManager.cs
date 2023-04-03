@@ -175,7 +175,7 @@ public class EditManager
             return false;
 
         var i = 0;
-        foreach (var coordinate in _dragInfo.Feature.Coordinates) // throw index out of range exception "idk"
+        foreach (var coordinate in _dragInfo.Feature.Coordinates)
         {
             coordinate.SetXY(worldPosition.ToMPoint() - _dragInfo.StartOffsetsToVertexes[i]);
             i++;
@@ -190,6 +190,7 @@ public class EditManager
         {
             _dragInfo.Feature.Geometry?.GeometryChanged();
             _dragInfo.Feature = null;
+            _dragInfo.StartOffsetsToVertexes = null;
         }
     }
 

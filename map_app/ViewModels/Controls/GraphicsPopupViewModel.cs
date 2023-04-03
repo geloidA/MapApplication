@@ -69,10 +69,10 @@ internal class GraphicsPopupViewModel : ViewModelBase
         Graphics = new ObservableCollection<BaseGraphic>(_graphics.Features);
         _graphics.LayersFeatureChanged += OnLayersFeatureChanged;
         OpenEditGraphicView = ReactiveCommand.CreateFromTask(async () =>
-            await OpenGraphicView(new GraphicAddEditViewModel(SelectedGraphic!), mainViewModel), canExecute: selectedIsNotNull);
+            await OpenGraphicView(new GraphicAddEditViewModel(SelectedGraphic!, _mapControl), mainViewModel), canExecute: selectedIsNotNull);
 
         OpenAddGraphicView = ReactiveCommand.CreateFromTask<GraphicType>(async (type) =>
-            await OpenGraphicView(new GraphicAddEditViewModel(_graphics, type), mainViewModel));
+            await OpenGraphicView(new GraphicAddEditViewModel(_graphics, type,  _mapControl), mainViewModel));
         _graphics.LayersFeatureChanged += (_, _) => HaveAnyGraphic = _graphics.Features.Any();
         var haveAnyGraphic = this.WhenAnyValue(x => x.HaveAnyGraphic);
         ClearGraphics = ReactiveCommand.Create(ClearGraphicsImpl, canExecute: haveAnyGraphic);
@@ -139,7 +139,6 @@ internal class GraphicsPopupViewModel : ViewModelBase
     private void ClearGraphicsImpl()
     {
         _graphics.Clear();
-        _mapControl.RefreshGraphics();
         if (_mainVM.EditMode != EditMode.None && EditMode.DrawingMode.HasFlag(_mainVM.EditMode))
             _mainVM.EditMode = _mainVM.EditMode.GetAddMode();
     }

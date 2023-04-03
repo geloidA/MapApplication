@@ -24,6 +24,7 @@ using map_app.Services.IO;
 using ReactiveUI.Validation.Extensions;
 using map_app.Services.Layers;
 using Avalonia.Controls;
+using Mapsui.UI.Avalonia;
 
 namespace map_app.ViewModels;
 
@@ -34,15 +35,17 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
     private readonly List<GeoPoint> _geo;
     private readonly bool _isAddMode;
     private readonly GraphicsLayer? _graphicPool;
+    private readonly MapControl _mapControl;
 
-    public GraphicAddEditViewModel(GraphicsLayer target, GraphicType pointType) : this(GraphicCreator.Create(pointType)) 
-    { 
+    public GraphicAddEditViewModel(GraphicsLayer target, GraphicType pointType, MapControl mapControl) : this(GraphicCreator.Create(pointType), mapControl) 
+    {
         _graphicPool = target;
         _isAddMode = true;
     }
 
-    public GraphicAddEditViewModel(BaseGraphic editGraphic)
+    public GraphicAddEditViewModel(BaseGraphic editGraphic, MapControl mapControl)
     {
+        _mapControl = mapControl;
         _editGraphic = editGraphic;
         PointTypes = EnumUtils.ToDescriptions(typeof(PointType));
         _linear = new List<LinearPoint>(_editGraphic.LinearPoints);
@@ -98,7 +101,7 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
             .Select(x => !x.Any() || x.All(y => !y.HasErrors))
             .StartWith(true);
         Cancel = ReactiveCommand.Create<Window>(x => WindowCloser.Close(x, DialogResult.Cancel));
-        SaveChanges = ReactiveCommand.Create<Window>(SaveChangesImpl, Observable.Merge(this.IsValid(), isTagsValid));
+        SaveChanges = ReactiveCommand.Create<Window>(async (w) => await SaveChangesImpl(w), Observable.Merge(this.IsValid(), isTagsValid));
         SelectImageAsync = ReactiveCommand.CreateFromTask(SelectImageAsyncImpl);
         var isImageInit = this
             .WhenAnyValue(x => x.ImagePath)
@@ -168,7 +171,7 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
         ImagePath = imagePath;
     }
 
-    private async void SaveChangesImpl(Window wnd)
+    private async Task SaveChangesImpl(Window wnd)
     {            
         if (HaveValidationErrors(out string message))
         {
@@ -181,6 +184,7 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
             _graphicPool!.Add(_editGraphic);
         }
         WindowCloser.Close(wnd, DialogResult.OK);
+        _mapControl.RefreshGraphics();
     }
 
     private async Task ConfirmChanges()

@@ -110,7 +110,8 @@ public class MainViewModel : ViewModelBase
         MapControl = mapControl;
         MapControl.Map = MapCreator.Create();
         GraphicsLayer = (GraphicsLayer)MapControl.Map!.Layers.FindLayer(nameof(GraphicsLayer)).Single();
-        _deliveryPort = int.Parse(App.Config["default_port"] 
+        GraphicsLayer.LayersFeatureChanged += (_, _) => MapControl.RefreshGraphics();
+        _deliveryPort = int.Parse(App.Config["default_port"]
             ?? throw new InvalidOperationException("Can't find default port from appsettings.json"));
         _mapStateListener = new(_deliveryPort, this);
         _mapStateListener.RunAsync(stopPredicate: () => true);
@@ -144,7 +145,7 @@ public class MainViewModel : ViewModelBase
         var graphicUnderPointer = this.WhenAnyValue(x => x.IsBaseGraphicUnderPointer);
         OpenGraphicEditingView = ReactiveCommand.CreateFromTask(async () =>
         {
-            var vm = new GraphicAddEditViewModel(UnderPointerGraphic ?? throw new NullReferenceException());
+            var vm = new GraphicAddEditViewModel(UnderPointerGraphic ?? throw new NullReferenceException(), MapControl);
             var result = await ShowGraphicEditingDialog.Handle(vm);
             if (result == DialogResult.OK)
                 DataState = DataState.Unsaved;
@@ -282,8 +283,6 @@ public class MainViewModel : ViewModelBase
 
     internal void MapControlOnPointerReleased(object? sender, PointerReleasedEventArgs args)
     {
-        var point = args.GetCurrentPoint(MapControl);
-
         var screenPosition = args.GetPosition(MapControl).ToMapsui();
 
         if (_isRightWasPressed) // need for escape drawing by right click
@@ -370,7 +369,6 @@ public class MainViewModel : ViewModelBase
         UpdateGraphics(state.Graphics ?? Enumerable.Empty<BaseGraphic>());
         state.FileLocation = loadLocation;
         UpdateCurrentState(state);
-        MapControl.RefreshGraphics();
     }
 
     internal async void UpdateGraphics(IEnumerable<BaseGraphic> newGraphics, bool clearing = true)
