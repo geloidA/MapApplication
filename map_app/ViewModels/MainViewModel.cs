@@ -388,7 +388,8 @@ public class MainViewModel : ViewModelBase
             point.GraphicStyle = new Mapsui.Styles.SymbolStyle
             {
                 BitmapId = bitmapId.Value,
-                SymbolScale = point.Scale
+                SymbolScale = point.Scale,
+                Opacity = (float)point.Opacity
             };
         }
         return haveFailedImagesPaths;

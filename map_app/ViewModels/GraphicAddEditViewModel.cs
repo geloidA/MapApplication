@@ -361,7 +361,7 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
             _linear[cell.Row].X = SphericalMercator.FromLonLat(_geo[cell.Row].Longtitude, 0).x;
     }
 
-    private void ShowMessageIncorrectData(string message)
+    private static void ShowMessageIncorrectData(string message)
     {
         MessageBoxManager.GetMessageBoxStandardWindow(
             "Некорректные данные",
