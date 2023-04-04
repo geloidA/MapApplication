@@ -105,7 +105,8 @@ public class MapCreator
                 HaveTileSource = true,
                 CanRemove = true
             },
-            Opacity = opacity
+            Opacity = opacity,
+            Attribution = new Hyperlink { Url = httpTileSource }
         };
     }
 }

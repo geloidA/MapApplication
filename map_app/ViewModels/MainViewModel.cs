@@ -41,8 +41,6 @@ public class MainViewModel : ViewModelBase
     private readonly ObservableAsPropertyHelper<bool> _isBaseGraphicUnderPointer;
     private readonly ObservableAsPropertyHelper<bool> _isOrthodromeUnderPointer;
     private readonly MapStateListener _mapStateListener;
-    private readonly LayersManageViewModel layersManageViewModel;
-    private readonly SettingsViewModel settingsViewModel;
 
     internal DataState DataState
     {
@@ -110,15 +108,13 @@ public class MainViewModel : ViewModelBase
         MapControl.Map = MapCreator.Create();
         GraphicsLayer = (GraphicsLayer)MapControl.Map!.Layers.FindLayer(nameof(GraphicsLayer)).Single();
         GraphicsLayer.LayersFeatureChanged += (_, _) => MapControl.RefreshGraphics();
-        _deliveryPort = int.Parse(App.Config["default_port"]
+        _deliveryPort = int.Parse(App.Config["delivery_port"]
             ?? throw new InvalidOperationException("Can't find default port from appsettings.json"));
         _mapStateListener = new(_deliveryPort, this);
         _mapStateListener.RunAsync(stopPredicate: () => true);
         _editManager = new(this, new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap));
         GraphicsPopupViewModel = new(this);
         NavigationPanelViewModel = new(this);
-        layersManageViewModel = new(MapControl.Map);
-        settingsViewModel = new(this);
         AuxiliaryPanelViewModel = new(this);
         _isBaseGraphicUnderPointer = this
             .WhenAnyValue(x => x.UnderPointerGraphic)
@@ -139,8 +135,8 @@ public class MainViewModel : ViewModelBase
 
     private void InitializeCommands()
     {
-        OpenLayersManageView = ReactiveCommand.CreateFromTask(async () => await ShowLayersManageDialog.Handle(layersManageViewModel));
-        OpenSettingsView = ReactiveCommand.CreateFromTask(async () => await ShowSettingsDialog.Handle(settingsViewModel));
+        OpenLayersManageView = ReactiveCommand.CreateFromTask(async () => await ShowLayersManageDialog.Handle(new LayersManageViewModel(MapControl.Map!)));
+        OpenSettingsView = ReactiveCommand.CreateFromTask(async () => await ShowSettingsDialog.Handle(new SettingsViewModel(this)));
         var graphicUnderPointer = this.WhenAnyValue(x => x.IsBaseGraphicUnderPointer);
         OpenGraphicEditingView = ReactiveCommand.CreateFromTask(async () =>
         {

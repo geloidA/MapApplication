@@ -10,7 +10,7 @@
         Width="650" Height="650"
         Name="thisWindow"
         x:Class="map_app.Views.GraphicAddEditView"
-        Title="Обзор">
+        Title="Редактирование">
     <Window.Resources>
         <convrts:GraphicTypePointCheckerConverter x:Key="onlyPointPassedConverter"/>
         <convrts:EnumDescriptionConverter x:Key="enumConverter" />
@@ -133,7 +133,7 @@
             <!-- Opacity -->
             <Grid HorizontalAlignment="Center" Grid.Row="4" ColumnDefinitions="*,*,100"
                 VerticalAlignment="Center" >
-                <TextBlock Text="Прозрачность:" VerticalAlignment="Center" Margin="0 0 10 0" />
+                <TextBlock Text="Непрозрачность:" VerticalAlignment="Center" Margin="0 0 10 0" />
                 <Slider Width="150" Minimum="0" Grid.Column="1" Maximum="1" Value="{Binding Opacity}"
                     Margin="5" TickFrequency="0.1" TickPlacement="Outside" />
                 <TextBox Name="opacityTextBox" CornerRadius="0" Grid.Column="2" HorizontalContentAlignment="Center" Height="10" Margin="10 5 0 0" 

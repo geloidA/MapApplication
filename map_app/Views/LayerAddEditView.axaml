@@ -17,7 +17,7 @@
                 HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Grid>
         <Grid ColumnDefinitions="1*,1*">
-            <TextBlock Text="Прозрачность" Margin="50 4 0 10" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+            <TextBlock Text="Непрозрачность" Margin="50 4 0 10" HorizontalAlignment="Left" VerticalAlignment="Center"/>
             <Slider Value="{Binding Opacity}" Width="120" Minimum="0" Maximum="1" Grid.Column="1"
                 HorizontalAlignment="Center" VerticalAlignment="Center" />
         </Grid>

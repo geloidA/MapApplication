@@ -14,11 +14,13 @@
         Width="{Binding $parent.Width}" Height="{Binding $parent.Height}" BorderThickness="1" BorderBrush="black">
         <Button.Flyout>
             <MenuFlyout Placement="Top">
-                <MenuItem Background="yellow" Command="{Binding ChooseColor}"
+                <MenuItem Background="red" Command="{Binding ChooseColor}"
                     CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Background}"/>
                 <MenuItem Background="orange" Command="{Binding ChooseColor}" 
                     CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Background}"/>
                 <MenuItem Background="blue" Command="{Binding ChooseColor}" 
+                    CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Background}"/>
+                <MenuItem Background="gray" Command="{Binding ChooseColor}" 
                     CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Background}"/>
             </MenuFlyout>
         </Button.Flyout>

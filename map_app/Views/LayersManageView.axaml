@@ -14,10 +14,10 @@
     <Grid ColumnDefinitions="2*,0.8*" RowDefinitions="2*,1*" >
         
         <DataGrid Items="{Binding Layers}" CanUserResizeColumns="True" Margin="10 10 0 0" SelectedItem="{Binding SelectedLayer}" 
-                AutoGenerateColumns="False" IsReadOnly="True" ColumnWidth="*" >
+                AutoGenerateColumns="False" IsReadOnly="True" >
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Имя" Binding="{Binding Tag.Name}"/>
-                <DataGridTextColumn Header="Прозрачность" Binding="{Binding Opacity}"/>
+                <DataGridTextColumn Header="Непрозрачность" Binding="{Binding Opacity}"/>
                 <DataGridTextColumn Header="Источник" Binding="{Binding Attribution.Url}"/>
             </DataGrid.Columns>
         </DataGrid>

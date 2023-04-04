@@ -24,10 +24,10 @@
                 <avalonia:MapControl x:Name="MapControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                     <avalonia:MapControl.ContextMenu>
                         <ContextMenu Name="GraphicCotxtMenu" >
-                            <MenuItem Header="Обзор" Command="{Binding OpenGraphicEditingView}" />
+                            <MenuItem Header="Редактировать" Command="{Binding OpenGraphicEditingView}" />
                             <MenuItem Header="Удалить" Command="{Binding DeleteGraphic}" />
                             <MenuItem Header="Копировать" Command="{Binding CopyGraphic}" />
-                            <MenuItem Header="Выгрузить последовательность точек" 
+                            <MenuItem Header="Выгрузить" 
                                 Command="{Binding OpenExportOrhodromeIntervalsView}" IsVisible="{Binding IsOrthodromeUnderPointer}" />
                         </ContextMenu>
                     </avalonia:MapControl.ContextMenu>

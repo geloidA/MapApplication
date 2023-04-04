@@ -35,7 +35,7 @@
             Height="35" >
             <Grid ColumnDefinitions="Auto,0.1*">
                 <StackPanel Orientation="Horizontal">
-                    <ToggleButton Classes="main" IsChecked="{Binding IsRectangleMode}" Content="{StaticResource rectangle}" Command="{Binding EnableRectangleMode}" ToolTip.Tip="Квадрат" />
+                    <ToggleButton Classes="main" IsChecked="{Binding IsRectangleMode}" Content="{StaticResource rectangle}" Command="{Binding EnableRectangleMode}" ToolTip.Tip="Прямоугольник" />
                     <ToggleButton Classes="main" IsChecked="{Binding IsOrthodromeMode}" Content="{StaticResource orthodrome}" Command="{Binding EnableOrthodromeMode}" ToolTip.Tip="Ортодромия" />
                     <ToggleButton Classes="main" IsChecked="{Binding IsPolygonMode}" Content="{StaticResource polygon}" Command="{Binding EnablePolygonMode}" ToolTip.Tip="Полигон" />
                     <ToggleButton Classes="main" IsChecked="{Binding IsPointMode}" Content="{StaticResource point}" Command="{Binding EnablePointMode}" ToolTip.Tip="Точка" />
