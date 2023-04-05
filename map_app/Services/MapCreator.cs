@@ -32,18 +32,9 @@ public class MapCreator
                 ZoomLimits = new MinMax(2.5, 25000)
             }
         };
-        var sources = App.Config
-            .GetSection("tile_sources")
-            .GetChildren()
-            .Select(x => new
-            {
-                Name = x["Name"],
-                Opacity = double.Parse(x["Opacity"]!, CultureInfo.InvariantCulture),
-                HttpTileSource = x["HttpTileSource"]
-            })
-            .Select(x => CreateOwnTileLayer(x.Name!, x.Opacity, x.HttpTileSource!))
-            .Reverse();
-        foreach (var layer in sources)
+        var sources = App.Configuration.TileSources?
+            .Select(CreateOwnTileLayer);        
+        foreach (var layer in sources ?? Enumerable.Empty<ILayer>())
             map.Layers.Add(layer);
         var scaleWidget = GetScaleWidget(map);
         map.Widgets.Add(scaleWidget);
@@ -95,18 +86,18 @@ public class MapCreator
         };
     }
 
-    private static TileLayer CreateOwnTileLayer(string name, double opacity, string httpTileSource)
+    private static TileLayer CreateOwnTileLayer(TileSource tileSource)
     {
-        return new TileLayer(new HttpTileSource(new GlobalSphericalMercator(), httpTileSource))
+        return new TileLayer(new HttpTileSource(new GlobalSphericalMercator(), tileSource.HttpTileSource))
         {
             Tag = new ManagedLayerTag
             {
-                Name = name,
+                Name = tileSource.Name,
                 HaveTileSource = true,
                 CanRemove = true
             },
-            Opacity = opacity,
-            Attribution = new Hyperlink { Url = httpTileSource }
+            Opacity = tileSource.Opacity,
+            Attribution = new Hyperlink { Url = tileSource.HttpTileSource }
         };
     }
 }

@@ -5,8 +5,9 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using map_app.Services;
 using map_app.Views;
-using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using Splat.ModeDetection;
 
 namespace map_app;
@@ -14,17 +15,15 @@ namespace map_app;
 public partial class App : Application
 {
     public static readonly string ImportImagesLocation;
-    public static readonly IConfigurationRoot Config;
+    public static readonly ConfigurationData Configuration;
 
     static App()
     {
         ImportImagesLocation = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "ImportedImages");
         if (!Directory.Exists(ImportImagesLocation))
             Directory.CreateDirectory(ImportImagesLocation);
-        Config = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional:true, reloadOnChange: true)
-            .Build();
+        Configuration = JsonConvert.DeserializeObject<ConfigurationData>(File.ReadAllText("appsettings.json"))
+            ?? throw new NullReferenceException($"appsettings.json have wrong format. Need be suited with properties {nameof(ConfigurationData)} class");
     }
 
     public App()

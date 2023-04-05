@@ -108,8 +108,7 @@ public class MainViewModel : ViewModelBase
         MapControl.Map = MapCreator.Create();
         GraphicsLayer = (GraphicsLayer)MapControl.Map!.Layers.FindLayer(nameof(GraphicsLayer)).Single();
         GraphicsLayer.LayersFeatureChanged += (_, _) => MapControl.RefreshGraphics();
-        _deliveryPort = int.Parse(App.Config["delivery_port"]
-            ?? throw new InvalidOperationException("Can't find default port from appsettings.json"));
+        _deliveryPort = App.Configuration.DeliveryPort;
         _mapStateListener = new(_deliveryPort, this);
         _mapStateListener.RunAsync(stopPredicate: () => true);
         _editManager = new(this, new Mapsui.MRect(LeftBorderMap, LeftBorderMap, -LeftBorderMap, -LeftBorderMap));

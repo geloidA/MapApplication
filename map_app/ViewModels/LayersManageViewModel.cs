@@ -28,7 +28,14 @@ public class LayersManageViewModel : ViewModelBase
             .Select(items => items.Any())
             .ToPropertyEx(this, x => x.CanUndo); // need for observe changes in observable collection
 
-        SaveAndClose = ReactiveCommand.Create<Window>(WindowCloser.Close);
+        SaveAndClose = ReactiveCommand.Create<Window>(window =>
+        {
+            // App.Configuration.TileSources = Layers
+            //     .Where(x => x.Tag is ManagedLayerTag)
+            //     .Where(x => ((ManagedLayerTag)x.Tag).HaveTileSource)
+            //     .Select(x => new TileSource { Name = ((ManagedLayerTag)x.Tag).Name, } );
+            WindowCloser.Close(window);
+        });
         var managedLayers = map.Layers.Where(l => l.Tag is ManagedLayerTag);
         Layers = new ObservableCollection<ILayer>(managedLayers);
         _map.Layers.Changed += (s, e) =>
