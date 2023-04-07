@@ -8,17 +8,22 @@ using NetTopologySuite.Geometries;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace map_app.Models;
 
 [JsonObject(MemberSerialization.OptIn)]
 [JsonConverter(typeof(BaseGraphicConverter))]
-public abstract class BaseGraphic : GeometryFeature
+public abstract class BaseGraphic : GeometryFeature, INotifyPropertyChanged
 {
     private Color _color = new(Color.Black);
     private double _opacity = 1;
     protected List<Coordinate> _coordinates = new();
+    private string? _name;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     protected BaseGraphic(BaseGraphic source)
     {
@@ -48,7 +53,15 @@ public abstract class BaseGraphic : GeometryFeature
     }
 
     [JsonProperty]
-    public string? Name { get; set; }
+    public string? Name 
+    { 
+        get => _name; 
+        set
+        {
+            _name = value;
+            NotifyPropertyChanged();
+        }
+    }
 
     [JsonProperty]
     public abstract GraphicType Type { get; }
@@ -122,4 +135,7 @@ public abstract class BaseGraphic : GeometryFeature
     public abstract BaseGraphic Copy();
 
     public void RerenderGeometry() => Geometry = RenderGeometry();
+
+    private void NotifyPropertyChanged([CallerMemberName] string? propertyName = null)
+        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }

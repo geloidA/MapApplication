@@ -6,6 +6,7 @@
         MinHeight="200"
         MaxHeight="200"
         MinWidth="400"
+        WindowStartupLocation="CenterOwner"
         MaxWidth="400"
         x:Class="map_app.Views.LayerAddEditView"
         x:Name="LayerAddView"

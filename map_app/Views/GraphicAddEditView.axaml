@@ -9,6 +9,7 @@
         MinWidth="650" MinHeight="650"
         Width="650" Height="650"
         Name="thisWindow"
+        WindowStartupLocation="CenterOwner"
         x:Class="map_app.Views.GraphicAddEditView"
         Title="Редактирование">
     <Window.Resources>

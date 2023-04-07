@@ -6,6 +6,7 @@
         MinWidth="450" MinHeight="500"
         Width="450" Height="500"
         MaxWidth="650" MaxHeight="700"
+        WindowStartupLocation="CenterOwner"
         Name="MapStateView"
         x:Class="map_app.Views.MapStateSaveView"
         Title="Сохранение">

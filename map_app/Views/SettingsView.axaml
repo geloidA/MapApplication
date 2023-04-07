@@ -6,6 +6,7 @@
         MinWidth="750" MinHeight="500"
         Width="750" Height="500"
         Name="settingsWnd"
+        WindowStartupLocation="CenterOwner"
         x:Class="map_app.Views.SettingsView"
         Title="Настройки">
     <Window.Styles>

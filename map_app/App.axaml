@@ -4,8 +4,14 @@
              xmlns:convrts="clr-namespace:map_app.Services.Converters;assembly=map_app"
              xmlns:notification="clr-namespace:Avalonia.Notification;assembly=Notification.Avalonia"
              x:Class="map_app.App">
+
+    <Application.Resources>
+        <FontFamily x:Key="Ubuntu">Fonts/Ubuntu-Regular.ttf</FontFamily>
+    </Application.Resources>
+
     <Application.Styles>
         <FluentTheme Mode="Light"/>
+
         <Style Selector="Button.dialog">
             <Setter Property="Background" Value="Black" />
             <Setter Property="Foreground" Value="Gray" />
@@ -14,11 +20,14 @@
             <Setter Property="FontWeight" Value="Bold" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
         </Style>
+
         <notification:NotificationStyle />
-        <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseLight.xaml"/>
+
+        <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseLight.xaml" />
         <StyleInclude Source="avares://ThemeEditor.Controls.ColorPicker/ColorPicker.axaml" />
-        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Default.xaml"/>
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Default.xaml" />
         <StyleInclude Source="avares://map_app/Views/Controls/PopupColorPicker.axaml" />
+
         <Style Selector="DataValidationErrors">
             <Setter Property="Template">
                 <ControlTemplate>
@@ -58,6 +67,11 @@
                 </Canvas>
                 </DataTemplate>
             </Setter>
-        </Style>        
+        </Style>
+
+        <Style Selector="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource Ubuntu}"/>
+        </Style>
+
     </Application.Styles>
 </Application>

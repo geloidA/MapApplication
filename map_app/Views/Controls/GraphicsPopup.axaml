@@ -52,7 +52,10 @@
                 <ListBox Items="{Binding Graphics}" SelectedItem="{Binding SelectedGraphic}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding, Converter={StaticResource graphicConverter}}" />
+                            <StackPanel Orientation="Horizontal" >
+                                <TextBlock Text="{Binding, Converter={StaticResource graphicConverter}, Mode=OneTime}" />
+                                <TextBlock Text="{Binding Name, StringFormat=' - {0}'}" IsVisible="{Binding Name, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                            </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                     <ListBox.ContextMenu>

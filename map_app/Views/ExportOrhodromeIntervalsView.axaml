@@ -5,6 +5,7 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="map_app.Views.ExportOrhodromeIntervalsView"
         Name="exportWnd"
+        WindowStartupLocation="CenterScreen"
         MinWidth="400" MinHeight="200"
         Width="400" Height="200"
         Title="Экспорт ортодромии">

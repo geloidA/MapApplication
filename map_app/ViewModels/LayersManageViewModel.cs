@@ -4,12 +4,15 @@ using DynamicData.Binding;
 using map_app.Services;
 using Mapsui;
 using Mapsui.Layers;
+using Newtonsoft.Json;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace map_app.ViewModels;
@@ -28,12 +31,9 @@ public class LayersManageViewModel : ViewModelBase
             .Select(items => items.Any())
             .ToPropertyEx(this, x => x.CanUndo); // need for observe changes in observable collection
 
-        SaveAndClose = ReactiveCommand.Create<Window>(window =>
+        SaveAndClose = ReactiveCommand.CreateFromTask<Window>(async window =>
         {
-            // App.Configuration.TileSources = Layers
-            //     .Where(x => x.Tag is ManagedLayerTag)
-            //     .Where(x => ((ManagedLayerTag)x.Tag).HaveTileSource)
-            //     .Select(x => new TileSource { Name = ((ManagedLayerTag)x.Tag).Name, } );
+            await SaveTileSourcesInConfig();
             WindowCloser.Close(window);
         });
         var managedLayers = map.Layers.Where(l => l.Tag is ManagedLayerTag);
@@ -99,4 +99,18 @@ public class LayersManageViewModel : ViewModelBase
     public ICommand? RemoveLayer { get; private set; }
 
     public bool IsNotNull(ILayer? layer) => layer != null;
+
+    private Task SaveTileSourcesInConfig()
+    {
+        App.Configuration.TileSources = Layers
+            .Where(x => ((ManagedLayerTag)x.Tag!).HaveTileSource)
+            .Select(x => new TileSource 
+                { 
+                    Name = ((ManagedLayerTag)x.Tag!).Name, 
+                    Opacity = x.Opacity,
+                    HttpTileSource = x.Attribution.Url
+                });
+        var configJson = JsonConvert.SerializeObject(App.Configuration, Formatting.Indented);
+        return File.WriteAllTextAsync("appsettings.json", configJson);
+    }
 }
