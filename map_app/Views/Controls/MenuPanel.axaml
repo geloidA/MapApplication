@@ -4,9 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="map_app.Views.Controls.MenuPanel">
-  <Menu Background="LightGray" Height="20">
-    <MenuItem Header="Файл">
-        <MenuItem Header="Открыть" Command="{Binding LoadGraphicStateAsync}"/>
+  <Menu Background="LightGray" Height="20" >
+    <MenuItem Header="Файл" >
+        <MenuItem Header="Открыть" Command="{Binding LoadGraphicStateAsync}" />
         <MenuItem Header="Сохранить" Command="{Binding SaveGraphicStateInOpenedFile}"/>
         <MenuItem Header="Сохранить как..." Command="{Binding SaveGraphicStateInFile}"/>
         <MenuItem Header="Отправить по локальной сети" Command="{Binding SendViaTCP}" />

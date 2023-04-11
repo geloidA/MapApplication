@@ -59,7 +59,7 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                     <ListBox.ContextMenu>
-                        <ContextMenu Name="GraphicPopupContxtMenu">
+                        <ContextMenu Name="GraphicPopupContxtMenu" FontFamily="{StaticResource Ubuntu}">
                             <MenuItem Header="Добавить" >
                                 <MenuItem Header="Точка" Command="{Binding OpenAddGraphicView}"
                                     CommandParameter="{x:Static models:GraphicType.Point}" />

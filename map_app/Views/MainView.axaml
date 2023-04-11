@@ -23,7 +23,7 @@
             <Grid DockPanel.Dock="Bottom" Name="MainGrid">
                 <avalonia:MapControl x:Name="MapControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                     <avalonia:MapControl.ContextMenu>
-                        <ContextMenu Name="GraphicCotxtMenu" >
+                        <ContextMenu Name="GraphicCotxtMenu" FontFamily="{StaticResource Ubuntu}" >
                             <MenuItem Header="Редактировать" Command="{Binding OpenGraphicEditingView}" />
                             <MenuItem Header="Удалить" Command="{Binding DeleteGraphic}" />
                             <MenuItem Header="Копировать" Command="{Binding CopyGraphic}" />

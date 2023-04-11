@@ -6,7 +6,7 @@
              x:Class="map_app.App">
 
     <Application.Resources>
-        <FontFamily x:Key="Ubuntu">Fonts/Ubuntu-Regular.ttf</FontFamily>
+        <FontFamily x:Key="Ubuntu">/Fonts/Ubuntu-Regular.ttf#Ubuntu</FontFamily>
     </Application.Resources>
 
     <Application.Styles>
@@ -16,6 +16,7 @@
             <Setter Property="Background" Value="Black" />
             <Setter Property="Foreground" Value="Gray" />
             <Setter Property="Width" Value="90" />
+            <Setter Property="FontFamily" Value="Ubuntu" />
             <Setter Property="Margin" Value="10" />
             <Setter Property="FontWeight" Value="Bold" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
@@ -70,6 +71,10 @@
         </Style>
 
         <Style Selector="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource Ubuntu}"/>
+        </Style>
+
+        <Style Selector="TextBox">
             <Setter Property="FontFamily" Value="{StaticResource Ubuntu}"/>
         </Style>
 
