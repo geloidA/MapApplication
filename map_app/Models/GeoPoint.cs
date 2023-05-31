@@ -8,7 +8,7 @@ namespace map_app.Models;
 public class GeoPoint : IThreeDimensionalPoint
 {
     [JsonProperty("Lon")]
-    public double Longtitude { get; set; }
+    public double Longitude { get; set; }
 
     [JsonProperty("Lat")]
     public double Latitude { get; set; }
@@ -16,7 +16,7 @@ public class GeoPoint : IThreeDimensionalPoint
     [JsonProperty("Alt")]
     public double Altitude { get; set; }
 
-    public double First { get => Longtitude; set => Longtitude = value; }
+    public double First { get => Longitude; set => Longitude = value; }
     public double Second { get => Latitude; set => Latitude = value; }
     public double Third { get => Altitude; set => Altitude = value; }
 
@@ -28,14 +28,14 @@ public class GeoPoint : IThreeDimensionalPoint
 
     public GeoPoint(double lon, double lat, double alt)
     {
-        Longtitude = lon;
+        Longitude = lon;
         Latitude = lat;
         Altitude = alt;
     }
 
     public Coordinate ToWorldPosition()
     {
-        var (x, y) = SphericalMercator.FromLonLat(Longtitude, Latitude);
+        var (x, y) = SphericalMercator.FromLonLat(Longitude, Latitude);
         return new Coordinate3D(x, y, Altitude);
     }
 
@@ -49,7 +49,7 @@ public class GeoPoint : IThreeDimensionalPoint
         );
     }
 
-    public GeoPoint Copy() => new(Longtitude, Latitude, Altitude);
+    public GeoPoint Copy() => new(Longitude, Latitude, Altitude);
 
-    public override string ToString() => $"Lon:{Longtitude:0.00} ; Lat:{Latitude:0.00} ; Alt:{Altitude:0.00}";
+    public override string ToString() => $"Lon:{Longitude:0.00} ; Lat:{Latitude:0.00} ; Alt:{Altitude:0.00}";
 }

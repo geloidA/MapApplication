@@ -21,8 +21,8 @@ public static class MapAlgorithms
             yield break;
         var lat1 = Algorithms.DegreesToRadians(degPoint1.Latitude);
         var lat2 = Algorithms.DegreesToRadians(degPoint2.Latitude);
-        var lon1 = Algorithms.DegreesToRadians(degPoint1.Longtitude);
-        var lon2 = Algorithms.DegreesToRadians(degPoint2.Longtitude);
+        var lon1 = Algorithms.DegreesToRadians(degPoint1.Longitude);
+        var lon2 = Algorithms.DegreesToRadians(degPoint2.Longitude);
         var d = Haversine(degPoint1, degPoint2) / 6371;
         var oneInterval = 1.0f / intervalCount;
         for (var i = 0; i <= intervalCount; i++)
@@ -47,8 +47,8 @@ public static class MapAlgorithms
     {
         var lat1 = Algorithms.DegreesToRadians(p1.Latitude);
         var lat2 = Algorithms.DegreesToRadians(p2.Latitude);
-        var lon1 = Algorithms.DegreesToRadians(p1.Longtitude);
-        var lon2 = Algorithms.DegreesToRadians(p2.Longtitude);
+        var lon1 = Algorithms.DegreesToRadians(p1.Longitude);
+        var lon2 = Algorithms.DegreesToRadians(p2.Longitude);
 
         return 2 * EarthKmRadius * Math.Asin(
             Math.Sqrt(

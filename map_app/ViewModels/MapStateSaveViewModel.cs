@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace map_app.ViewModels;
@@ -38,11 +39,30 @@ public class MapStateSaveViewModel : ViewModelBase
                     Graphics = _graphics.ToList(),
                     FileLocation = saveLocation
                 };
-                await MapStateJsonMarshaller.SaveAsync(state, saveLocation);
+                if (await TrySaveState(state, saveLocation) == false)
+                {
+                    await MessageBox.Avalonia.MessageBoxManager
+                        .GetMessageBoxStandardWindow("Ошибка", "Не удалось сохранить состояние")
+                        .ShowDialog(wnd);
+                    return;
+                }
             }
             WindowCloser.Close(wnd, state);
         });
         Cancel = ReactiveCommand.Create<Window>(WindowCloser.Close);
+    }
+
+    private async Task<bool> TrySaveState(MapState state, string saveLocation)
+    {
+        try
+        {
+            await MapStateJsonMarshaller.SaveAsync(state, saveLocation);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     internal Interaction<Unit, string?> ShowSaveGraphicsDialog { get; } = new();

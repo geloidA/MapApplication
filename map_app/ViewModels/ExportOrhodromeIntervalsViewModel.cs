@@ -46,7 +46,7 @@ public class ExportOrhodromeIntervalsViewModel : ReactiveValidationObject
         return orthodrome.GeoPoints
             .Zip(orthodrome.GeoPoints.Skip(1))
             .SelectMany(pair => MapAlgorithms.GetOrthodromePath(pair.First, pair.Second, Interval))
-            .Select(p => new[] { $"{p.Longtitude}", $"{p.Latitude}" })
+            .Select(p => new[] { $"{p.Longitude}", $"{p.Latitude}" })
             .ToAsyncEnumerable();
     }
 

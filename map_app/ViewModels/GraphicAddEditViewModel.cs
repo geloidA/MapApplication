@@ -267,8 +267,8 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
 
     private bool IsCoordinateIncorrect(GeoPoint point)
     {
-        return point.Longtitude < -180
-            || point.Longtitude > 180
+        return point.Longitude < -180
+            || point.Longitude > 180
             || point.Latitude < -85
             || point.Latitude > 85;
     }
@@ -356,9 +356,9 @@ public class GraphicAddEditViewModel : ReactiveValidationObject
     private void ChangeFirstCoordinate(Cell cell)
     {
         if (SelectedPointType == PointType.Linear)
-            _geo[cell.Row].Longtitude = SphericalMercator.ToLonLat(_linear[cell.Row].X, 0).lon;
+            _geo[cell.Row].Longitude = SphericalMercator.ToLonLat(_linear[cell.Row].X, 0).lon;
         else
-            _linear[cell.Row].X = SphericalMercator.FromLonLat(_geo[cell.Row].Longtitude, 0).x;
+            _linear[cell.Row].X = SphericalMercator.FromLonLat(_geo[cell.Row].Longitude, 0).x;
     }
 
     private static void ShowMessageIncorrectData(string message)
